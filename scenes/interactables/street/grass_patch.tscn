@@ -1,0 +1,73 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/grass_area.gd" id="1_grass_area"]
+[ext_resource type="Texture2D" path="res://art/environment/street/grass_b.png" id="2_grass_b"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3"]
+atlas = ExtResource("2_grass_b")
+region = Rect2(0, 0, 56, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4"]
+atlas = ExtResource("2_grass_b")
+region = Rect2(56, 0, 56, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5"]
+atlas = ExtResource("2_grass_b")
+region = Rect2(112, 0, 56, 30)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6"]
+atlas = ExtResource("2_grass_b")
+region = Rect2(168, 0, 56, 30)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8"]
+size = Vector2(110.0, 30.0)
+
+[node name="GrassPatch" type="Area2D"]
+z_index = 2
+script = ExtResource("1_grass_area")
+
+[node name="Tuft0" type="AnimatedSprite2D" parent="."]
+position = Vector2(-37.0, -15.0)
+sprite_frames = SubResource("SpriteFrames_7")
+autoplay = "default"
+frame = 0
+flip_h = false
+
+[node name="Tuft1" type="AnimatedSprite2D" parent="."]
+position = Vector2(0.0, -15.0)
+sprite_frames = SubResource("SpriteFrames_7")
+autoplay = "default"
+frame = 1
+flip_h = true
+
+[node name="Tuft2" type="AnimatedSprite2D" parent="."]
+position = Vector2(37.0, -15.0)
+sprite_frames = SubResource("SpriteFrames_7")
+autoplay = "default"
+frame = 2
+flip_h = false
+
+[node name="Shape" type="CollisionShape2D" parent="."]
+position = Vector2(0.0, -15.0)
+shape = SubResource("RectangleShape2D_8")
+

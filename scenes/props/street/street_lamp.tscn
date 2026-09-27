@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://art/environment/city/street_lamp.png" id="1_street_lamp"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="2_radial_large"]
+[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="3_flicker_ligh"]
+[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="4_radial"]
+[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="5_light_zone"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6"]
+size = Vector2(96.0, 40.0)
+
+[node name="StreetLamp" type="Node2D"]
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_street_lamp")
+centered = false
+offset = Vector2(-20.0, -130.0)
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(14.0, -110.0)
+color = Color(1, 0.85, 0.6, 1.0)
+energy = 1.1
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("2_radial_large")
+texture_scale = 0.9
+script = ExtResource("3_flicker_ligh")
+base_energy = 1.1
+min_interval = 3.0
+max_interval = 8.0
+dead_chance = 0.35
+buzz_sound = &"tube_buzz"
+
+[node name="Pool" type="PointLight2D" parent="."]
+position = Vector2(14.0, -20.0)
+color = Color(1, 0.85, 0.6, 1.0)
+energy = 0.5
+range_item_cull_mask = 3
+texture = ExtResource("4_radial")
+texture_scale = 1.1
+
+[node name="LightZone" type="Area2D" parent="."]
+script = ExtResource("5_light_zone")
+
+[node name="Shape" type="CollisionShape2D" parent="LightZone"]
+position = Vector2(14.0, -20.0)
+shape = SubResource("RectangleShape2D_6")
+

@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/hide_spot.gd" id="1_hide_spot"]
+[ext_resource type="Texture2D" path="res://art/environment/street/car_sedan_blue.png" id="2_car_sedan_bl"]
+[ext_resource type="Texture2D" path="res://art/environment/street/car_sedan_blue_open.png" id="3_car_sedan_bl"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="5_interactable"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(40.0, 36.0)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_6"]
+cull_mode = 0
+polygon = PackedVector2Array(-50.0, 0.0, -49.0, -10.0, -36.0, -20.0, -22.0, -34.0, 18.0, -36.0, 32.0, -22.0, 48.0, -19.0, 51.0, 0.0)
+
+[node name="CarHide" type="Node2D"]
+script = ExtResource("1_hide_spot")
+hide_offset = Vector2(-6.0, 0.0)
+occupied_texture = ExtResource("2_car_sedan_bl")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("3_car_sedan_bl")
+centered = false
+offset = Vector2(-52.0, -42.0)
+
+[node name="Interactable" type="Area2D" parent="."]
+position = Vector2(0.0, -18.0)
+script = ExtResource("5_interactable")
+prompt_text = "躲藏"
+prompt_offset = Vector2(0.0, -30.0)
+focus_priority = 0.2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("RectangleShape2D_4")
+
+[node name="Occluder" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_6")
+occluder_light_mask = 1
+

@@ -1,0 +1,88 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Texture2D" path="res://art/environment/street/fire_barrel.png" id="1_fire_barrel"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="7_radial_large"]
+[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="8_flicker_ligh"]
+[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="9_light_zone"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="11_pixel"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2"]
+atlas = ExtResource("1_fire_barrel")
+region = Rect2(0, 0, 22, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3"]
+atlas = ExtResource("1_fire_barrel")
+region = Rect2(22, 0, 22, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4"]
+atlas = ExtResource("1_fire_barrel")
+region = Rect2(44, 0, 22, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5"]
+atlas = ExtResource("1_fire_barrel")
+region = Rect2(66, 0, 22, 40)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5")
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_10"]
+size = Vector2(110.0, 40.0)
+
+[node name="FireBarrel" type="Node2D"]
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+position = Vector2(0.0, -20.0)
+sprite_frames = SubResource("SpriteFrames_6")
+autoplay = "default"
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(0.0, -26.0)
+color = Color(1, 0.62, 0.3, 1.0)
+energy = 1.0
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("7_radial_large")
+texture_scale = 0.7
+script = ExtResource("8_flicker_ligh")
+base_energy = 1.0
+min_interval = 0.3
+max_interval = 1.2
+dead_chance = 0.0
+
+[node name="LightZone" type="Area2D" parent="."]
+script = ExtResource("9_light_zone")
+
+[node name="Shape" type="CollisionShape2D" parent="LightZone"]
+position = Vector2(0.0, -20.0)
+shape = SubResource("RectangleShape2D_10")
+
+[node name="Embers" type="CPUParticles2D" parent="."]
+position = Vector2(0.0, -38.0)
+amount = 6
+lifetime = 1.6
+texture = ExtResource("11_pixel")
+direction = Vector2(0.0, -1.0)
+spread = 25.0
+gravity = Vector2(0.0, -10.0)
+initial_velocity_min = 8.0
+initial_velocity_max = 20.0
+color = Color(1, 0.6, 0.25, 1)
+

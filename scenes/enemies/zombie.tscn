@@ -1,0 +1,118 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/actors/zombie.gd" id="1_zombie"]
+[ext_resource type="Resource" path="res://resources/enemies/zombie_default.tres" id="2_zombie_defau"]
+[ext_resource type="SpriteFrames" path="res://art/characters/zombie_a/zombie_a_frames.tres" id="3_zombie_a_fra"]
+[ext_resource type="Texture2D" path="res://art/fx/icon_suspicious.png" id="5_icon_suspici"]
+[ext_resource type="Script" path="res://scripts/components/vision_component.gd" id="6_vision_compo"]
+[ext_resource type="Script" path="res://scripts/components/hearing_component.gd" id="7_hearing_comp"]
+[ext_resource type="Script" path="res://scripts/components/ground_nav_component.gd" id="8_ground_nav_c"]
+[ext_resource type="Script" path="res://scripts/components/patrol_component.gd" id="9_patrol_compo"]
+[ext_resource type="Script" path="res://scripts/components/attack_component.gd" id="10_attack_compo"]
+[ext_resource type="Script" path="res://scripts/ai/state_machine.gd" id="11_state_machin"]
+[ext_resource type="Script" path="res://scripts/ai/states/idle.gd" id="12_idle"]
+[ext_resource type="Script" path="res://scripts/ai/states/wander.gd" id="13_wander"]
+[ext_resource type="Script" path="res://scripts/ai/states/patrol.gd" id="14_patrol"]
+[ext_resource type="Script" path="res://scripts/ai/states/patrol_resume.gd" id="15_patrol_resum"]
+[ext_resource type="Script" path="res://scripts/ai/states/suspicious.gd" id="16_suspicious"]
+[ext_resource type="Script" path="res://scripts/ai/states/investigate.gd" id="17_investigate"]
+[ext_resource type="Script" path="res://scripts/ai/states/alert.gd" id="18_alert"]
+[ext_resource type="Script" path="res://scripts/ai/states/chase.gd" id="19_chase"]
+[ext_resource type="Script" path="res://scripts/ai/states/attack.gd" id="20_attack"]
+[ext_resource type="Script" path="res://scripts/ai/states/search.gd" id="21_search"]
+[ext_resource type="Script" path="res://scripts/ai/states/return.gd" id="22_return"]
+[ext_resource type="Script" path="res://scripts/ai/states/feed.gd" id="23_feed"]
+[ext_resource type="Script" path="res://scripts/ai/states/dead.gd" id="24_dead"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(12.0, 38.0)
+
+[node name="Zombie" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+floor_snap_length = 4.0
+script = ExtResource("1_zombie")
+data = ExtResource("2_zombie_defau")
+frames = ExtResource("3_zombie_a_fra")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.0, -19.0)
+shape = SubResource("RectangleShape2D_4")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual"]
+position = Vector2(0.0, -24.0)
+sprite_frames = ExtResource("3_zombie_a_fra")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="StatusIcon" type="Sprite2D" parent="."]
+position = Vector2(0.0, -54.0)
+texture = ExtResource("5_icon_suspici")
+
+[node name="Vision" type="Node2D" parent="."]
+position = Vector2(4.0, -38.0)
+script = ExtResource("6_vision_compo")
+
+[node name="HearingComponent" type="Node" parent="."]
+script = ExtResource("7_hearing_comp")
+
+[node name="GroundNavComponent" type="Node" parent="."]
+script = ExtResource("8_ground_nav_c")
+
+[node name="PatrolComponent" type="Node" parent="."]
+script = ExtResource("9_patrol_compo")
+
+[node name="AttackComponent" type="Node" parent="."]
+script = ExtResource("10_attack_compo")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("11_state_machin")
+initial_state = &"Idle"
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("12_idle")
+
+[node name="Wander" type="Node" parent="StateMachine"]
+script = ExtResource("13_wander")
+
+[node name="Patrol" type="Node" parent="StateMachine"]
+script = ExtResource("14_patrol")
+
+[node name="PatrolResume" type="Node" parent="StateMachine"]
+script = ExtResource("15_patrol_resum")
+
+[node name="Suspicious" type="Node" parent="StateMachine"]
+script = ExtResource("16_suspicious")
+
+[node name="Investigate" type="Node" parent="StateMachine"]
+script = ExtResource("17_investigate")
+
+[node name="Alert" type="Node" parent="StateMachine"]
+script = ExtResource("18_alert")
+
+[node name="Chase" type="Node" parent="StateMachine"]
+script = ExtResource("19_chase")
+
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("20_attack")
+
+[node name="Search" type="Node" parent="StateMachine"]
+script = ExtResource("21_search")
+
+[node name="Return" type="Node" parent="StateMachine"]
+script = ExtResource("22_return")
+
+[node name="Feed" type="Node" parent="StateMachine"]
+script = ExtResource("23_feed")
+
+[node name="Dead" type="Node" parent="StateMachine"]
+script = ExtResource("24_dead")
+
+[node name="Voice" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(0.0, -36.0)
+max_distance = 700.0
+attenuation = 1.4
+bus = &"World"
+

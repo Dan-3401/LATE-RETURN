@@ -121,9 +121,9 @@ func _flash_muzzle(pos: Vector2) -> void:
 		return
 	_flash.global_position = pos
 	_flash.enabled = true
-	await get_tree().create_timer(0.06).timeout
-	if is_instance_valid(_flash):
-		_flash.enabled = false
+	var t := create_tween()
+	t.tween_interval(0.06)
+	t.tween_callback(func(): _flash.enabled = false)
 
 
 # --- knife -----------------------------------------------------------------
@@ -131,11 +131,12 @@ func _swing(actor: Node2D, origin: Vector2, facing: int) -> void:
 	busy = true
 	_cooldown = current.cooldown
 	AudioManager.play(current.attack_sound, -3.0)
-	NoiseSystem.emit_noise(origin, current.noise_radius, actor, &"knife")
 	attacked.emit(current)
 	var t := create_tween()
 	t.tween_property(self, "_swing_offset", -1.1, 0.07)
 	t.tween_callback(_knife_hit.bind(actor, origin))
+	# the swoosh is heard after the blow lands (a victim cannot turn in time)
+	t.tween_callback(func(): NoiseSystem.emit_noise(origin, current.noise_radius if current else 34.0, actor, &"knife"))
 	t.tween_property(self, "_swing_offset", 0.7, 0.08)
 	t.tween_property(self, "_swing_offset", 0.0, 0.18)
 	t.tween_callback(func(): busy = false)

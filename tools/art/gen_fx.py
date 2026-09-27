@@ -61,3 +61,20 @@ if __name__ == "__main__":
     blood()
     sparks()
     print("fx ok")
+
+
+def status_icons():
+    q = ["XXX.", "...X", "..X.", ".X..", "....", ".X.."]
+    e = [".X", ".X", ".X", ".X", "..", ".X"]
+    for name, tpl, col in [("icon_suspicious", q, c("yellow", 5)), ("icon_alert", e, c("red", 5))]:
+        cv = Canvas(6, 8)
+        for y, r in enumerate(tpl):
+            for x, ch in enumerate(r):
+                if ch == "X":
+                    cv.px(x + 1, y + 1, col)
+        cv.outline(c("ink", 0))
+        cv.save(f"fx/{name}.png")
+
+
+if __name__ == "__main__":
+    status_icons()

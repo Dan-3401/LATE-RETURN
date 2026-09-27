@@ -34,7 +34,7 @@ func _intro() -> void:
 	SceneManager.set_black(1.0)
 	await wait(1.0)
 	AudioManager.play(&"wake_breath", -8.0)
-	await SceneManager.fade_to(0.0, 3.5)
+	await fade(0.0, 3.5)
 	await wait(1.4)
 	player.play_locked("getup")
 	await player.body_sprite.animation_finished

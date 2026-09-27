@@ -333,6 +333,7 @@ func enter_hide(spot: Node2D, hide_pos: Vector2) -> void:
 	visual.visible = false
 	collision.set_deferred(&"disabled", true)
 	stealth.set_hidden(true, spot)
+	breath.noise_scale = 0.7
 	flashlight.set_on(false, true)
 	interaction.clear()
 	interaction.enabled = false
@@ -343,6 +344,7 @@ func exit_hide(exit_pos: Vector2) -> void:
 	visual.visible = true
 	collision.set_deferred(&"disabled", false)
 	stealth.set_hidden(false)
+	breath.noise_scale = 1.0
 	interaction.enabled = true
 	_set_state(State.NORMAL)
 

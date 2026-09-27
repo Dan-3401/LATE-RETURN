@@ -17,6 +17,8 @@ signal hold_changed(holding: bool)
 @export var gasp_noise := 125.0
 @export var gasp_interval := 0.55
 
+## Scales breath noise (e.g. muffled inside a hiding place).
+var noise_scale := 1.0
 var oxygen := 100.0
 var holding := false
 var gasping := false
@@ -55,7 +57,7 @@ func _physics_process(delta: float) -> void:
 		if _breath_timer <= 0.0:
 			_breath_timer = gasp_interval
 			if owner_node:
-				NoiseSystem.emit_noise(owner_node.global_position + Vector2(0, -30), gasp_noise, owner_node, &"gasp")
+				NoiseSystem.emit_noise(owner_node.global_position + Vector2(0, -30), gasp_noise * noise_scale, owner_node, &"gasp")
 			AudioManager.play(&"gasp", -4.0, 0.1)
 		if _gasp_left <= 0.0:
 			gasping = false
@@ -67,7 +69,7 @@ func _physics_process(delta: float) -> void:
 		if _breath_timer <= 0.0 and enabled:
 			_breath_timer = breath_interval + randf_range(-0.3, 0.3)
 			if owner_node:
-				NoiseSystem.emit_noise(owner_node.global_position + Vector2(0, -30), breath_noise, owner_node, &"breath")
+				NoiseSystem.emit_noise(owner_node.global_position + Vector2(0, -30), breath_noise * noise_scale, owner_node, &"breath")
 	oxygen_changed.emit(oxygen, max_oxygen)
 
 

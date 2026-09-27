@@ -20,7 +20,14 @@ func _initialize() -> void:
 		for a in args[3].split(","):
 			var p := a.split(":")
 			_actions.append({"t": float(p[0]), "a": p[1], "arg": p[2] if p.size() > 2 else ""})
-	change_scene_to_file.call_deferred(_scene)
+	var packed: PackedScene = load(_scene)
+	var inst := packed.instantiate()
+	if args.size() > 4 and args[4] != "":
+		for kv in args[4].split(","):
+			var p := kv.split("=")
+			inst.set(p[0], str_to_var(p[1]))
+	root.add_child.call_deferred(inst)
+	set_deferred("current_scene", inst)
 
 
 func _process(delta: float) -> bool:

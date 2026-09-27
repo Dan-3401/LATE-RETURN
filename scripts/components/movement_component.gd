@@ -14,7 +14,7 @@ enum Mode { WALK, SNEAK, RUN }
 @export var acceleration := 760.0
 @export var friction := 1000.0
 @export var air_control := 0.55
-@export var jump_velocity := -262.0
+@export var jump_velocity := -285.0
 @export var coyote_time := 0.1
 @export var jump_buffer_time := 0.12
 @export var step_distance_walk := 17.0

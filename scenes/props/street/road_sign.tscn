@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://art/environment/street/road_sign.png" id="1_road_sign"]
+
+[node name="RoadSign" type="Node2D"]
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_road_sign")
+centered = false
+offset = Vector2(-13.0, -70.0)
+

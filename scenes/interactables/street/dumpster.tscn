@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/hide_spot.gd" id="1_hide_spot"]
+[ext_resource type="Texture2D" path="res://art/environment/street/dumpster.png" id="2_dumpster"]
+[ext_resource type="Texture2D" path="res://art/environment/street/dumpster_open.png" id="3_dumpster_ope"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="5_interactable"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(40.0, 36.0)
+
+[node name="Dumpster" type="Node2D"]
+script = ExtResource("1_hide_spot")
+hide_offset = Vector2(0.0, 0.0)
+occupied_texture = ExtResource("2_dumpster")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("3_dumpster_ope")
+centered = false
+offset = Vector2(-32.0, -40.0)
+
+[node name="Interactable" type="Area2D" parent="."]
+position = Vector2(0.0, -18.0)
+script = ExtResource("5_interactable")
+prompt_text = "躲藏"
+prompt_offset = Vector2(0.0, -28.0)
+focus_priority = 0.2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("RectangleShape2D_4")
+
