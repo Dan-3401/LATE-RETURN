@@ -492,6 +492,17 @@ def amb_menu():
     return loopify(buf)
 
 
+def cough():
+    d = 0.9
+    buf = np.zeros(int(SR * d))
+    for at, a in [(0.0, 1.0), (0.28, 0.7)]:
+        ln = 0.22
+        burst = bp(noise(ln), 400, 3500) * env(int(SR * ln), 0.005, 0.06) * a
+        v = voice(ln, 260, 200, 0.7, ((400, 1400), (1800, 3000))) * env(int(SR * ln), 0.005, 0.05) * 0.4 * a
+        place(buf, burst + v, at)
+    return reverb(buf, 0.2, 0.25, 0.6)
+
+
 def heartbeat():
     d = 0.9
     buf = np.zeros(int(SR * d))
@@ -555,6 +566,7 @@ def main():
     save("door_open", door_open(), peak=0.7)
     save("tube_buzz", tube_buzz(), peak=0.4)
     save("heartbeat", heartbeat(), peak=0.8)
+    save("cough", cough(), peak=0.5)
     save("sting_death", sting_death(), peak=0.8)
     save("hide_enter", bp(noise(0.5), 300, 2500) * env(int(SR * 0.5), 0.02, 0.15), peak=0.5)
     save("hide_exit", bp(noise(0.4), 300, 2500) * env(int(SR * 0.4), 0.01, 0.12), peak=0.5)

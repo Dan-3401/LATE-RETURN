@@ -1,0 +1,108 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/dialogue_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+script_text = "# 结尾：他这次回来了。
+[cmd sister sit_down]
+[pause 1.0]
+[cmd door_open]
+[pause 0.4]
+[cmd brother_walk 352]
+[cmd sister sit_up]
+[pause 0.8]
+妹妹: ……你回来啦。
+哥哥: 嗯。
+妹妹: 今天好晚。
+哥哥: 路上耽搁了一会儿。
+[cmd sister sit_talk]
+[pause 1.0]
+妹妹: 没受伤吧？
+哥哥: 没有。
+[cmd sister sit_up]
+[pause 1.2]
+妹妹: 骗人。
+哥哥: ……
+妹妹: 你的衣服又脏了。
+哥哥: 只是蹭到墙了。
+妹妹: 每次都是这么说。
+[cmd brother_putdown]
+哥哥: 别管这些了。
+哥哥: 找到吃的了。
+[cmd brother_stand]
+妹妹: 真的？
+哥哥: 还有水。
+妹妹: 多少？
+哥哥: 够我们撑一阵子。
+[cmd sister sit_idle]
+[pause 0.8]
+妹妹: 太好了……
+[pause 1.6]
+[cmd sister sit_down]
+妹妹: 外面还有很多那些东西吗？
+哥哥: 嗯。
+妹妹: ……
+哥哥: 不过我没招惹它们。
+[cmd sister sit_up]
+妹妹: 那就好。
+妹妹: 以后也不要。
+哥哥: 知道了。
+妹妹: 你每次都说知道了。
+哥哥: 那你想让我说什么？
+[cmd sister sit_down]
+[pause 1.4]
+妹妹: 早点回来。
+[pause 0.7]
+哥哥: 嗯。
+妹妹: 我一个人在这里的时候……
+[pause 1.0]
+妹妹: 算了。
+哥哥: 怎么了？
+妹妹: 没什么。
+[cmd sister_cough]
+[pause 0.6]
+[cmd brother_look_table]
+[pause 0.9]
+[cmd brother_face_sister]
+哥哥: 今天有喘吗？
+妹妹: 一点点。
+哥哥: 药呢？
+妹妹: 还有。
+哥哥: 还有多少？
+妹妹: 够用。
+哥哥: 我问还有多少。
+[pause 1.4]
+妹妹: ……不多了。
+哥哥: 为什么之前不告诉我？
+妹妹: 因为你已经每天都出去很久了。
+哥哥: 这不是你该担心的事。
+[cmd sister sit_up]
+妹妹: 那你呢？
+哥哥: 什么？
+妹妹: 你出去以后……
+妹妹: 我也会担心啊。
+[pause 2.0]
+[cmd sister hug_knees]
+妹妹: 至少……
+妹妹: 别让我等太久。
+哥哥: ……
+[pause 0.6]
+哥哥: 知道了。
+[cmd sister sit_up]
+妹妹: 你刚才已经说过一次了。
+哥哥: 那我保证。
+妹妹: 真的？
+哥哥: 真的。
+[pause 1.2]
+[cmd sister sit_talk]
+妹妹: 饿了。
+哥哥: 你这人……
+妹妹: 不是找到吃的吗？
+[cmd sister sit_up]
+哥哥: 行。
+哥哥: 等着。
+妹妹: 嗯。
+[pause 0.8]
+[cmd ending]
+"

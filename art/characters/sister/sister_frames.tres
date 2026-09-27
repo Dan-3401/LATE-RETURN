@@ -1,0 +1,188 @@
+[gd_resource type="SpriteFrames" load_steps=28 format=3]
+
+[ext_resource type="Texture2D" path="res://art/characters/sister/sit_idle.png" id="1_sit_idle"]
+[ext_resource type="Texture2D" path="res://art/characters/sister/sit_down.png" id="2_sit_down"]
+[ext_resource type="Texture2D" path="res://art/characters/sister/sit_up.png" id="3_sit_up"]
+[ext_resource type="Texture2D" path="res://art/characters/sister/sit_talk.png" id="4_sit_talk"]
+[ext_resource type="Texture2D" path="res://art/characters/sister/cough.png" id="5_cough"]
+[ext_resource type="Texture2D" path="res://art/characters/sister/hug_knees.png" id="6_hug_knees"]
+
+[sub_resource type="AtlasTexture" id="at_1"]
+atlas = ExtResource("1_sit_idle")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_2"]
+atlas = ExtResource("1_sit_idle")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_3"]
+atlas = ExtResource("1_sit_idle")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_4"]
+atlas = ExtResource("1_sit_idle")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_5"]
+atlas = ExtResource("2_sit_down")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_6"]
+atlas = ExtResource("2_sit_down")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_7"]
+atlas = ExtResource("2_sit_down")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_8"]
+atlas = ExtResource("2_sit_down")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_9"]
+atlas = ExtResource("3_sit_up")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_10"]
+atlas = ExtResource("3_sit_up")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_11"]
+atlas = ExtResource("3_sit_up")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_12"]
+atlas = ExtResource("3_sit_up")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_13"]
+atlas = ExtResource("4_sit_talk")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_14"]
+atlas = ExtResource("4_sit_talk")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_15"]
+atlas = ExtResource("4_sit_talk")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_16"]
+atlas = ExtResource("4_sit_talk")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_17"]
+atlas = ExtResource("5_cough")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_18"]
+atlas = ExtResource("5_cough")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_19"]
+atlas = ExtResource("5_cough")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_20"]
+atlas = ExtResource("6_hug_knees")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="at_21"]
+atlas = ExtResource("6_hug_knees")
+region = Rect2(48, 0, 48, 48)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_4")
+}],
+"loop": true,
+"name": &"sit_idle",
+"speed": 2.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_8")
+}],
+"loop": true,
+"name": &"sit_down",
+"speed": 2.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_9")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_12")
+}],
+"loop": true,
+"name": &"sit_up",
+"speed": 2.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_16")
+}],
+"loop": true,
+"name": &"sit_talk",
+"speed": 3.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_17")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_18")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_19")
+}],
+"loop": false,
+"name": &"cough",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("at_20")
+}, {
+"duration": 1.0,
+"texture": SubResource("at_21")
+}],
+"loop": true,
+"name": &"hug_knees",
+"speed": 1.0
+}]

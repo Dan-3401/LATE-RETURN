@@ -26,8 +26,13 @@ func say(speaker: Node2D, text: String, hold: float = -1.0) -> void:
 	var ui := WorldUI.get_instance(self)
 	if ui == null:
 		return
-	var b := ui.say(speaker, text, hold)
-	await b.finished
+	var b: Control
+	if speaker.has_method(&"say"):
+		b = speaker.call(&"say", text, hold)
+	else:
+		b = ui.say(speaker, text, hold)
+	if b:
+		await b.finished
 
 
 ## Waits using a Timer owned by the level: if the level is freed mid-wait
