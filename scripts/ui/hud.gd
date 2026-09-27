@@ -14,6 +14,7 @@ extends Node
 @onready var weapon_label: Label = $Overlay/Weapon/Name
 @onready var ammo_label: Label = $Overlay/Weapon/Ammo
 @onready var damage_vignette: TextureRect = $Overlay/DamageVignette
+@onready var hide_shade: TextureRect = $Overlay/HideShade
 @onready var inventory_ui: Node = $InventoryUI
 @onready var pause_menu: Node = $PauseMenu
 
@@ -58,6 +59,7 @@ func _process(delta: float) -> void:
 		if _hp_show <= 0.0 and player.health.hp >= player.health.max_hp:
 			hp_bar.target_alpha = 0.0
 	damage_vignette.modulate.a = move_toward(damage_vignette.modulate.a, 0.0, delta * 1.5)
+	hide_shade.modulate.a = move_toward(hide_shade.modulate.a, 0.85 if player.is_hidden() else 0.0, delta * 3.0)
 
 
 func _on_hp_changed(hp: float, max_hp: float) -> void:

@@ -37,6 +37,7 @@ var last_heard_pos := Vector2.ZERO
 var roar_cooldown := 0.0
 var _player: Player
 var _groan := 0.0
+var _step_acc := 0.0
 
 
 func _ready() -> void:
@@ -74,6 +75,7 @@ func _physics_process(delta: float) -> void:
 		machine.physics_update(delta)
 		_update_groan(delta)
 	nav.physics_step(delta)
+	_update_steps(delta)
 	visual.scale.x = facing
 	vision.position.x = 4.0 * facing
 	_update_icon()
@@ -93,6 +95,17 @@ func _update_icon() -> void:
 		status_icon.texture = ICON_SUSPICIOUS
 	else:
 		status_icon.visible = false
+
+
+## Dragging footsteps, positional so the player can hear where danger is.
+func _update_steps(delta: float) -> void:
+	if dead or not is_on_floor() or absf(velocity.x) < 5.0:
+		return
+	_step_acc += absf(velocity.x) * delta
+	var fast := absf(velocity.x) > data.investigate_speed * 1.2
+	if _step_acc >= (24.0 if fast else 13.0):
+		_step_acc = 0.0
+		AudioManager.play_at(&"zombie_step", global_position, -6.0 if fast else -14.0, 460.0, 0.12)
 
 
 func _update_groan(delta: float) -> void:
