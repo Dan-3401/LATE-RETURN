@@ -68,6 +68,23 @@ python3 tools/builders/build_camp.py && python3 tools/builders/build_actors.py
 | Camp back wall (chalkboard tally marks, route map, window, drawings, laundry) | 640×224 | light_mask 2 | no | no | camp |
 | Camp tiles (parquet), door (open/closed), bedroll, desk table (medicine + inhaler), lantern, candle (3 frames), supplies shelf, stacked chairs, blanket | – | – | no | no | camp |
 
+## Demo 2 additions
+
+| Asset | Path | Notes |
+|---|---|---|
+| Warehouse wall / tiles | `environment/store/warehouse_wall.png`, `warehouse_tiles.png` | 512×224, cramped block wall, pipes, staff notice board |
+| Staff lockers (closed/open), hide locker (green paint + vine, open/closed) | `environment/store/locker*.png` | 40×76; hide locker uses the green visual language |
+| Storage boxes (closed/open), cleaning shelf (full/searched), mop bucket | `environment/store/*` | warehouse containers |
+| Storeroom door (open overlay) | `environment/store/storeroom_door_open.png` | drawn over the painted door once unlocked |
+| Camp storage ×4 stock levels | `environment/camp/water_storage_{0-3}.png`, `food_storage_{0-3}.png` | chosen from the real camp stock |
+| Hide spots with green language | `environment/street/car_hide_open/closed.png`, `dumpster*.png` | weeds, vines, moss, a green rag — no glowing outline |
+| Region map | `ui/region_map.png` 400×236 | hand-marked paper map; circles/labels/highlight drawn at runtime |
+| Diary paper | `ui/diary_paper.png` 300×214 | exercise-book page, creases, cup ring, stains |
+| Bottle arm / bottle / glass | `characters/player/arm_bottle.png`, `fx/bottle.png`, `fx/glass.png` | throw aim & projectile |
+| Icons | `ui/icons/warehouse_key.png`, `work_uniform.png`, `soap.png` | 16×16 |
+| Handwriting font | `fonts/lxgw-wenkai-subset.ttf` | re-run `tools/fonts/build_hand_font.py` after adding diary text |
+| Sounds | `bottle_break`, `throw`, `lock_rattle`, `key_jingle`, `lock_open`, `page` | synthesised placeholders |
+
 ## UI
 
 | Asset | Notes |

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"hospital"
+display_name = "市中心医院"
+description = "最有可能找到哮喘药的地方。很远，那边的它们也更多。"
+cost_food = 3
+cost_water = 2
+map_position = Vector2(322, 196)
+playable = false
+region_scene = ""

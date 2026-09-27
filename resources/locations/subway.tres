@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"subway"
+display_name = "地铁站"
+description = "地下的通道。水是找不到了，但也许能少走很多路。"
+cost_food = 2
+cost_water = 0
+map_position = Vector2(220, 214)
+playable = false
+region_scene = ""

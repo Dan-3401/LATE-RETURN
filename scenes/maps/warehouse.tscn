@@ -1,0 +1,168 @@
+[gd_scene load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/warehouse_level.gd" id="1_warehouse_le"]
+[ext_resource type="Texture2D" path="res://art/environment/store/warehouse_wall.png" id="2_warehouse_wa"]
+[ext_resource type="Texture2D" path="res://art/environment/store/storeroom_door_open.png" id="3_storeroom_do"]
+[ext_resource type="TileSet" path="res://resources/tilesets/warehouse_tiles.tres" id="4_warehouse_ti"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/warehouse/storage_boxes.tscn" id="5_storage_boxe"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/warehouse/cleaning_shelf.tscn" id="6_cleaning_she"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/warehouse/staff_locker.tscn" id="7_staff_locker"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/warehouse/hide_locker.tscn" id="8_hide_locker"]
+[ext_resource type="PackedScene" path="res://scenes/props/warehouse/mop_bucket.tscn" id="9_mop_bucket"]
+[ext_resource type="PackedScene" path="res://scenes/props/store/fallen_shelf.tscn" id="10_fallen_shelf"]
+[ext_resource type="PackedScene" path="res://scenes/props/store/trash_papers.tscn" id="11_trash_papers"]
+[ext_resource type="PackedScene" path="res://scenes/props/store/trash_pile.tscn" id="12_trash_pile"]
+[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="13_radial"]
+[ext_resource type="Texture2D" path="res://art/lights/door_slit.png" id="14_door_slit"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="15_radial_large"]
+[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="16_flicker_ligh"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="17_pixel"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="18_interactable"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="20_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="21_game_camera"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="22_item_data"]
+[ext_resource type="Script" path="res://scripts/systems/loot_director.gd" id="23_loot_directo"]
+[ext_resource type="Resource" path="res://resources/loot_tables/warehouse_refill.tres" id="24_warehouse_re"]
+[ext_resource type="Resource" path="res://resources/items/work_uniform.tres" id="25_work_uniform"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="26_hud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_19"]
+size = Vector2(30.0, 40.0)
+
+[node name="Warehouse" type="Node2D"]
+script = ExtResource("1_warehouse_le")
+ambience = Array[StringName]([&"amb_store"])
+ambience_volume_db = -8.0
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.1, 0.1, 0.14, 1.0)
+
+[node name="Background" type="Node2D" parent="."]
+z_index = -20
+
+[node name="Wall" type="Sprite2D" parent="Background"]
+light_mask = 2
+texture = ExtResource("2_warehouse_wa")
+centered = false
+
+[node name="DoorSprite" type="Sprite2D" parent="Background"]
+light_mask = 2
+texture = ExtResource("3_storeroom_do")
+centered = false
+position = Vector2(30.0, 158.0)
+
+[node name="Tiles" type="TileMapLayer" parent="."]
+z_index = -5
+tile_map_data = PackedByteArray(0, 0, 255, 255, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 255, 255, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 255, 255, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 0, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 1, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 2, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 2, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 3, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 3, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 4, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 4, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 4, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 5, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 5, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 5, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 6, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 6, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 6, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 7, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 7, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 8, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 8, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 8, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 9, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 9, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 9, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 10, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 10, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 10, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 11, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 11, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 11, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 12, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 12, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 12, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 13, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 13, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 13, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 14, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 14, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 15, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 15, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 16, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 16, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 16, 0, 16, 0, 0, 0, 1, 0, 2, 0, 0, 0, 17, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 17, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 18, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 18, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 18, 0, 16, 0, 0, 0, 1, 0, 2, 0, 0, 0, 19, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 19, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 19, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 20, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 20, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 20, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 21, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 21, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 21, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 22, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 22, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 22, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 23, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 23, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 23, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 24, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 24, 0, 16, 0, 0, 0, 1, 0, 2, 0, 0, 0, 25, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 25, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 26, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 26, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 26, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 27, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 27, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 28, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 28, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 28, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 29, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 29, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 29, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 30, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 30, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 30, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 31, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 31, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 31, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 32, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 32, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 32, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 33, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 33, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 255, 255, 254, 255, 0, 0, 0, 0, 3, 0, 0, 0, 32, 0, 254, 255, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 255, 255, 0, 0, 1, 0, 3, 0, 0, 0, 32, 0, 255, 255, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 1, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 1, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 2, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 32, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 4, 0, 0, 0, 0, 0, 3, 0, 0, 0, 32, 0, 4, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 5, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 5, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 6, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 6, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 7, 0, 0, 0, 1, 0, 3, 0, 0, 0, 32, 0, 7, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 8, 0, 0, 0, 1, 0, 3, 0, 0, 0, 32, 0, 8, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 9, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 9, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 10, 0, 0, 0, 2, 0, 3, 0, 0, 0, 32, 0, 10, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 11, 0, 0, 0, 0, 0, 3, 0, 0, 0, 32, 0, 11, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 12, 0, 0, 0, 1, 0, 3, 0, 0, 0, 32, 0, 12, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 13, 0, 0, 0, 1, 0, 3, 0, 0, 0, 32, 0, 13, 0, 0, 0, 2, 0, 3, 0, 0, 0)
+tile_set = ExtResource("4_warehouse_ti")
+
+[node name="Props" type="Node2D" parent="."]
+z_index = -10
+
+[node name="BoxesA" parent="Props" instance=ExtResource("5_storage_boxe")]
+position = Vector2(120.0, 224.0)
+
+[node name="CleaningShelf" parent="Props" instance=ExtResource("6_cleaning_she")]
+position = Vector2(176.0, 224.0)
+
+[node name="StaffLocker" parent="Props" instance=ExtResource("7_staff_locker")]
+position = Vector2(300.0, 224.0)
+
+[node name="StaffLocker2" parent="Props" instance=ExtResource("7_staff_locker")]
+position = Vector2(342.0, 224.0)
+
+[node name="HideLocker" parent="Props" instance=ExtResource("8_hide_locker")]
+position = Vector2(404.0, 224.0)
+
+[node name="BoxesB" parent="Props" instance=ExtResource("5_storage_boxe")]
+position = Vector2(462.0, 224.0)
+
+[node name="Clutter" type="Node2D" parent="."]
+z_index = -4
+
+[node name="Mop" parent="Clutter" instance=ExtResource("9_mop_bucket")]
+position = Vector2(220.0, 224.0)
+
+[node name="Fallen" parent="Clutter" instance=ExtResource("10_fallen_shelf")]
+position = Vector2(250.0, 224.0)
+
+[node name="Papers" parent="Clutter" instance=ExtResource("11_trash_papers")]
+position = Vector2(150.0, 224.0)
+
+[node name="Pile" parent="Clutter" instance=ExtResource("12_trash_pile")]
+position = Vector2(372.0, 224.0)
+
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="DoorLight" type="PointLight2D" parent="Lights"]
+position = Vector2(48.0, 190.0)
+color = Color(0.45, 0.52, 0.7, 1.0)
+energy = 0.55
+range_item_cull_mask = 3
+texture = ExtResource("14_door_slit")
+texture_scale = 1.3
+
+[node name="Bulb" type="PointLight2D" parent="Lights"]
+position = Vector2(330.0, 40.0)
+color = Color(1, 0.8, 0.5, 1.0)
+energy = 0.3
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("15_radial_large")
+texture_scale = 0.7
+script = ExtResource("16_flicker_ligh")
+base_energy = 0.3
+min_interval = 1.2
+max_interval = 4.0
+dead_chance = 0.6
+
+[node name="Dust" type="CPUParticles2D" parent="."]
+position = Vector2(250.0, 150.0)
+amount = 16
+lifetime = 10.0
+preprocess = 10.0
+texture = ExtResource("17_pixel")
+emission_shape = 3
+emission_rect_extents = Vector2(220.0, 60.0)
+direction = Vector2(1.0, 0.2)
+spread = 180.0
+gravity = Vector2(0.0, 1.0)
+initial_velocity_min = 1.0
+initial_velocity_max = 3.0
+color = Color(0.9, 0.9, 0.95, 0.4)
+
+[node name="ExitDoor" type="Area2D" parent="."]
+position = Vector2(48.0, 204.0)
+script = ExtResource("18_interactable")
+prompt_text = "回到店里"
+prompt_offset = Vector2(0.0, -60.0)
+
+[node name="Shape" type="CollisionShape2D" parent="ExitDoor"]
+shape = SubResource("RectangleShape2D_19")
+
+[node name="Player" parent="." instance=ExtResource("20_player")]
+position = Vector2(72.0, 224.0)
+
+[node name="GameCamera" type="Camera2D" parent="."]
+position = Vector2(240.0, 135.0)
+limit_left = 0
+limit_top = 0
+limit_right = 512
+limit_bottom = 270
+script = ExtResource("21_game_camera")
+target_path = NodePath("../Player")
+
+[node name="LootDirector" type="Node" parent="."]
+script = ExtResource("23_loot_directo")
+world_prefix = "warehouse"
+required = {}
+bonus = {}
+refill_table = ExtResource("24_warehouse_re")
+refill_chance = 0.25
+guaranteed_in = {
+"StaffLocker": ExtResource("25_work_uniform")
+}
+
+[node name="HUD" parent="." instance=ExtResource("26_hud")]
+

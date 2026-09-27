@@ -45,7 +45,21 @@ func calm_vision_check() -> bool:
 	return false
 
 
+## A breaking bottle is a strong, strange sound: sprint to it — unless the
+## zombie is looking right at the player (seeing beats hearing).
+func bottle_noise(ev: Dictionary) -> bool:
+	if ev.kind != &"bottle":
+		return false
+	if zombie.vision.can_see and zombie.vision.suspicion >= 0.3:
+		return true
+	zombie.last_heard_pos = ev.position
+	machine.transition_to(&"Investigate", {"pos": ev.position, "sprint": true, "startle": 0.4})
+	return true
+
+
 func calm_noise(ev: Dictionary, intensity: float) -> void:
+	if bottle_noise(ev):
+		return
 	zombie.last_heard_pos = ev.position
 	if ev.kind in LOUD_KINDS:
 		machine.transition_to(&"Investigate", {"pos": ev.position, "fast": true})

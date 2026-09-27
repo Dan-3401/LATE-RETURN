@@ -135,7 +135,7 @@ func _run() -> void:
 	check(absf(walker.global_position.x - dumpster.global_position.x) < 40.0, "zombie lingers near hide spot")
 	await shot("street_search_hide")
 	check(player.is_hidden() and not player.is_dead(), "hidden player not found")
-	for i in 200:
+	for i in 600:   # the witnessed-hide search is long by design (search_time × 2.8)
 		await wait(0.1)
 		if walker.machine.state_name() in [&"Return", &"Idle", &"Patrol", &"PatrolResume"]:
 			break

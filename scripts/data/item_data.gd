@@ -2,7 +2,7 @@ class_name ItemData
 extends Resource
 ## Static description of an item. New items are new .tres files — no code changes.
 
-enum ItemType { CONSUMABLE, MATERIAL, JUNK, CURRENCY, WEAPON, AMMO, EQUIPMENT, QUEST }
+enum ItemType { CONSUMABLE, MATERIAL, JUNK, CURRENCY, WEAPON, AMMO, EQUIPMENT, QUEST, THROWABLE, KEY }
 
 @export var id: StringName
 @export var display_name: String = ""
@@ -15,3 +15,9 @@ enum ItemType { CONSUMABLE, MATERIAL, JUNK, CURRENCY, WEAPON, AMMO, EQUIPMENT, Q
 @export var weight: float = 0.0
 ## Objective tag counted by tasks (e.g. &"water", &"food"). Empty = none.
 @export var task_tag: StringName = &""
+## Equipment slot this item can be equipped into ("clothing", "throwable"...). Empty = not equippable.
+@export var equip_slot: StringName = &""
+## Extra backpack slots while equipped.
+@export var capacity_bonus: int = 0
+## Name used in the diary ("水", "食物"...). Empty = display_name.
+@export var diary_name: String = ""

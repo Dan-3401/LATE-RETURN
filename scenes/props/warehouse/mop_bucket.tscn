@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://art/environment/store/mop_bucket.png" id="1_mop_bucket"]
+
+[node name="MopBucket" type="Node2D"]
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_mop_bucket")
+centered = false
+offset = Vector2(-11.0, -36.0)
+

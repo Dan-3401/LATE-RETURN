@@ -39,6 +39,8 @@ func physics_update(delta: float) -> void:
 
 
 func on_noise(ev: Dictionary, intensity: float) -> void:
+	if bottle_noise(ev):
+		return
 	if ev.kind in LOUD_KINDS:
 		machine.transition_to(&"Investigate", {"pos": ev.position, "fast": true})
 		return

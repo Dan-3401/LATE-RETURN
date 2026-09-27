@@ -16,6 +16,11 @@ extends Node
 @onready var damage_vignette: TextureRect = $Overlay/DamageVignette
 @onready var hide_shade: TextureRect = $Overlay/HideShade
 @onready var inventory_ui: Node = $InventoryUI
+@onready var camp_box: Control = $Overlay/Camp
+@onready var camp_food: Label = $Overlay/Camp/HBox/Food
+@onready var camp_water: Label = $Overlay/Camp/HBox/Water
+@onready var settlement: Control = $Overlay/Settlement
+@onready var settlement_rows: Label = $Overlay/Settlement/VBox/Rows
 @onready var pause_menu: Node = $PauseMenu
 
 var player: Player
@@ -27,6 +32,8 @@ var _last_objective_done := false
 func _ready() -> void:
 	GameState.objective_changed.connect(_refresh_objective)
 	GameState.ammo_changed.connect(func(_a): _refresh_weapon())
+	GameState.camp_changed.connect(_refresh_camp)
+	_refresh_camp()
 	hint_label.modulate.a = 0.0
 	damage_vignette.modulate.a = 0.0
 	_refresh_objective()
@@ -39,6 +46,8 @@ func bind_player(p: Player) -> void:
 	if player == null:
 		return
 	player.weapons.equipped_changed.connect(func(_w): _refresh_weapon())
+	player.throw.readied.connect(func(_on): _refresh_weapon())
+	GameState.inventory_changed.connect(_refresh_weapon)
 	player.health.changed.connect(_on_hp_changed)
 	player.health.damaged.connect(func(_a, _s): _flash_damage())
 	_refresh_weapon()
@@ -73,9 +82,56 @@ func _flash_damage() -> void:
 	damage_vignette.modulate.a = 0.55
 
 
+var _camp_hold := false
+
+
+func _refresh_camp() -> void:
+	camp_box.visible = GameState.is_free_phase()
+	if _camp_hold:
+		return
+	camp_food.text = str(GameState.camp.food)
+	camp_water.text = str(GameState.camp.water)
+
+
+## Short "获得物资 食物 +3 水 +2" note; the camp numbers tick up afterwards.
+func show_settlement(got: Dictionary) -> void:
+	var rows := PackedStringArray()
+	if int(got.get("food", 0)) > 0:
+		rows.append("食物 +%d" % got.food)
+	if int(got.get("water", 0)) > 0:
+		rows.append("水   +%d" % got.water)
+	if rows.is_empty():
+		rows.append("这次什么也没带回来")
+		settlement_rows.add_theme_color_override(&"font_color", Color(0.65, 0.63, 0.57))
+	settlement_rows.text = "\n".join(rows)
+	_camp_hold = true
+	camp_food.text = str(GameState.camp.food - int(got.get("food", 0)))
+	camp_water.text = str(GameState.camp.water - int(got.get("water", 0)))
+	var t := create_tween()
+	t.tween_property(settlement, "modulate:a", 1.0, 0.4)
+	t.tween_interval(1.4)
+	t.tween_callback(func():
+		_camp_hold = false
+		_refresh_camp()
+		AudioManager.play(&"pickup", -8.0)
+		var p := create_tween()
+		camp_box.scale = Vector2(1.0, 1.0)
+		p.tween_property(camp_box, "modulate", Color(1.4, 1.35, 1.1, 1), 0.12)
+		p.tween_property(camp_box, "modulate", Color(1, 1, 1, 0.9), 0.4))
+	t.tween_interval(1.6)
+	t.tween_property(settlement, "modulate:a", 0.0, 0.8)
+
+
 func _refresh_weapon() -> void:
 	if player == null:
 		weapon_box.visible = false
+		return
+	if player.throw.is_ready and GameState.throwable():
+		var it := GameState.throwable()
+		weapon_box.visible = true
+		weapon_label.text = it.display_name
+		ammo_label.visible = true
+		ammo_label.text = "×%d" % GameState.inventory.count_item(it.id)
 		return
 	var w := player.weapons.current
 	weapon_box.visible = w != null

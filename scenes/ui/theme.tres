@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=15 format=3]
+[gd_resource type="Theme" load_steps=16 format=3]
 
 [ext_resource type="FontFile" path="res://fonts/fusion-pixel.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://art/ui/panel.png" id="2_panel"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://art/ui/slot.png" id="5_slot"]
 [ext_resource type="Texture2D" path="res://art/ui/slot_focus.png" id="6_slotf"]
 [ext_resource type="Texture2D" path="res://art/ui/button_focus.png" id="7_btnf"]
+[ext_resource type="FontFile" path="res://fonts/lxgw-wenkai-subset.ttf" id="8_hand"]
 
 [sub_resource type="StyleBoxTexture" id="sb_panel"]
 content_margin_left = 8.0
@@ -85,6 +86,17 @@ Button/styles/focus = SubResource("sb_empty")
 Button/styles/hover = SubResource("sb_btn_focus")
 Button/styles/normal = SubResource("sb_empty")
 Button/styles/pressed = SubResource("sb_btn_focus")
+DiaryLabel/base_type = &"Label"
+DiaryLabel/colors/font_color = Color(0.16, 0.16, 0.24, 1)
+DiaryLabel/colors/font_shadow_color = Color(0, 0, 0, 0)
+DiaryLabel/constants/line_spacing = 2
+DiaryLabel/font_sizes/font_size = 14
+DiaryLabel/fonts/font = ExtResource("8_hand")
+DiaryDate/base_type = &"Label"
+DiaryDate/colors/font_color = Color(0.14, 0.13, 0.2, 1)
+DiaryDate/colors/font_shadow_color = Color(0, 0, 0, 0)
+DiaryDate/font_sizes/font_size = 17
+DiaryDate/fonts/font = ExtResource("8_hand")
 Label/colors/font_color = Color(0.83, 0.8, 0.72, 1)
 Label/colors/font_shadow_color = Color(0.02, 0.02, 0.03, 0.9)
 Label/constants/shadow_offset_x = 1

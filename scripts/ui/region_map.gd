@@ -1,0 +1,207 @@
+class_name RegionMap
+extends CanvasLayer
+## The hand-marked city map used to pick today's destination.
+## Hover: highlight + name, cost and description. Click: confirm, pay, go.
+## Locations that are not open yet only get a remark from the brother.
+
+signal closed
+signal departed(location: LocationData)
+
+const MARK_COLOR := Color(0.55, 0.14, 0.1)
+const MARK_HOVER := Color(0.78, 0.2, 0.12)
+const INK := Color(0.2, 0.16, 0.13)
+
+@export var locations: Array[LocationData] = []
+
+@onready var root: Control = $Root
+@onready var map_rect: TextureRect = $Root/Map
+@onready var marks: Control = $Root/Map/Marks
+@onready var info_name: Label = $Root/Info/VBox/Name
+@onready var info_cost: Label = $Root/Info/VBox/Cost
+@onready var info_desc: Label = $Root/Info/VBox/Desc
+@onready var info_warn: Label = $Root/Info/VBox/Warn
+@onready var res_label: Label = $Root/Resources
+@onready var note: Label = $Root/Note
+@onready var confirm: Control = $Root/Confirm
+@onready var confirm_cost: Label = $Root/Confirm/VBox/Cost
+@onready var go_btn: Button = $Root/Confirm/VBox/Buttons/Go
+@onready var cancel_btn: Button = $Root/Confirm/VBox/Buttons/Cancel
+
+var is_open := false
+var hovered: LocationData = null
+var _selected: LocationData = null
+var _t := 0.0
+var _note_tween: Tween
+
+
+func _ready() -> void:
+	layer = 25
+	root.visible = false
+	marks.draw.connect(_draw_marks)
+	go_btn.pressed.connect(_depart)
+	cancel_btn.pressed.connect(_cancel_confirm)
+	for b in [go_btn, cancel_btn]:
+		b.mouse_entered.connect(func(): AudioManager.play(&"ui_move", -14.0, 0.0, &"UI"))
+
+
+func open() -> void:
+	is_open = true
+	root.visible = true
+	confirm.visible = false
+	note.modulate.a = 0.0
+	hovered = null
+	_show_info(null)
+	res_label.text = "食物 %d    水 %d" % [GameState.camp.food, GameState.camp.water]
+	SceneManager.set_cursor(SceneManager.CursorMode.ARROW)
+	AudioManager.play(&"page", -8.0)
+	root.modulate.a = 0.0
+	create_tween().tween_property(root, "modulate:a", 1.0, 0.35)
+
+
+func close() -> void:
+	if not is_open:
+		return
+	is_open = false
+	AudioManager.play(&"page", -12.0)
+	var t := create_tween()
+	t.tween_property(root, "modulate:a", 0.0, 0.25)
+	t.tween_callback(func(): root.visible = false)
+	SceneManager.set_cursor(SceneManager.CursorMode.CROSSHAIR)
+	closed.emit()
+
+
+func _process(delta: float) -> void:
+	if not is_open:
+		return
+	_t += delta
+	if not confirm.visible:
+		var mp := map_rect.get_local_mouse_position()
+		var h: LocationData = null
+		for l in locations:
+			if mp.distance_to(l.map_position) <= l.marker_radius + 6.0:
+				h = l
+		if h != hovered:
+			hovered = h
+			if h:
+				AudioManager.play(&"ui_move", -14.0, 0.0, &"UI")
+			_show_info(h)
+	marks.queue_redraw()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_open:
+		return
+	if event.is_action_pressed(&"pause") or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT):
+		get_viewport().set_input_as_handled()
+		if confirm.visible:
+			_cancel_confirm()
+		else:
+			close()
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not confirm.visible:
+		if hovered:
+			get_viewport().set_input_as_handled()
+			choose(hovered)
+
+
+## Click on a location (also used by tests).
+func choose(loc: LocationData) -> void:
+	if not loc.playable:
+		_say("这里以后再来探索吧。")
+		return
+	if GameState.expedition_done_today:
+		_say("今天已经很晚了，明天再出去吧。")
+		return
+	if not GameState.can_afford({"food": loc.cost_food, "water": loc.cost_water}):
+		_say("现在过去的话，带的东西不够。")
+		return
+	_selected = loc
+	confirm_cost.text = "食物 ×%d  /  水 ×%d" % [loc.cost_food, loc.cost_water]
+	confirm.visible = true
+	go_btn.grab_focus()
+	AudioManager.play(&"ui_confirm", -12.0, 0.0, &"UI")
+
+
+func _cancel_confirm() -> void:
+	confirm.visible = false
+	_selected = null
+
+
+func _depart() -> void:
+	if _selected == null:
+		return
+	var loc := _selected
+	_selected = null
+	confirm.visible = false
+	if not GameState.begin_expedition(loc):
+		_say("现在过去的话，带的东西不够。")
+		return
+	res_label.text = "食物 %d    水 %d" % [GameState.camp.food, GameState.camp.water]
+	is_open = false
+	departed.emit(loc)
+
+
+func _show_info(l: LocationData) -> void:
+	info_warn.text = ""
+	if l == null:
+		info_name.text = "选择要去的地方"
+		info_cost.text = ""
+		info_desc.text = "右键 / Esc 收起地图"
+		return
+	info_name.text = l.display_name
+	info_cost.text = "消耗  食物 ×%d  水 ×%d" % [l.cost_food, l.cost_water]
+	info_desc.text = l.description
+	var lack := PackedStringArray()
+	if GameState.camp.food < l.cost_food:
+		lack.append("食物不足。")
+	if GameState.camp.water < l.cost_water:
+		lack.append("水不足。")
+	info_warn.text = " ".join(lack)
+
+
+func _say(text: String) -> void:
+	note.text = "“%s”" % text
+	if _note_tween:
+		_note_tween.kill()
+	_note_tween = create_tween()
+	_note_tween.tween_property(note, "modulate:a", 1.0, 0.2)
+	_note_tween.tween_interval(2.2)
+	_note_tween.tween_property(note, "modulate:a", 0.0, 0.6)
+
+
+## Hand-drawn circles around the places; the hovered one gets a thicker,
+## slightly breathing ring and its name inked darker.
+func _draw_marks() -> void:
+	var font := ThemeDB.fallback_font
+	if root.theme:
+		font = root.get_theme_default_font()
+	for l in locations:
+		var is_h := l == hovered
+		var col := MARK_HOVER if is_h else MARK_COLOR
+		if not l.playable and not is_h:
+			col = col.darkened(0.25)
+		var r := l.marker_radius + (1.0 + roundf(sin(_t * 4.0)) if is_h else 0.0)
+		_pixel_ring(l.map_position, r, col, 2 if is_h else 1)
+		if is_h:
+			_pixel_ring(l.map_position, r + 3, Color(col, 0.5), 1)
+		# name label next to the circle
+		var name_pos := l.map_position + Vector2(l.marker_radius + 4, 4)
+		draw_label(font, name_pos, l.display_name, INK if not is_h else Color(0.35, 0.05, 0.03))
+
+
+func draw_label(font: Font, pos: Vector2, text: String, col: Color) -> void:
+	marks.draw_string(font, pos.round(), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
+
+
+func _pixel_ring(center: Vector2, r: float, col: Color, width: int) -> void:
+	var steps := int(r * 7)
+	var last := Vector2i(9999, 9999)
+	for i in steps:
+		var a := TAU * i / steps
+		# slightly wobbly, like a pencil circle
+		var rr := r + sin(a * 3.0 + center.x) * 0.8
+		var p := Vector2i(roundi(center.x + cos(a) * rr), roundi(center.y + sin(a) * rr))
+		if p == last:
+			continue
+		last = p
+		marks.draw_rect(Rect2(p, Vector2(width, width)), col)

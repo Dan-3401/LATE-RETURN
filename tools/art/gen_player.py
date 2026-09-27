@@ -322,3 +322,30 @@ if __name__ == "__main__":
         os.makedirs(pdir, exist_ok=True)
         im = Image.fromarray(sheet.a, "RGBA")
         im.resize((sheet.w * 4, sheet.h * 4), Image.NEAREST).save(os.path.join(pdir, "player_contact.png"))
+
+
+def build_bottle_art(outdir="characters/player"):
+    """Arm holding an empty bottle (throw aim) + the flying bottle sprite."""
+    cv = Canvas(20, 12)
+    capsule(cv, 3, 5, 9, 5.5, 1.9, "jacket", 3)
+    capsule(cv, 9, 5.5, 13, 5, 1.6, "jacket", 3)
+    capsule(cv, 13.5, 5, 14.5, 5, 1.4, "skin", 3)
+    cv.rect(14, 0, 3, 8, c("green", 3))
+    cv.rect(15, 0, 1, 2, c("green", 5))
+    cv.vline(14, 2, 5, c("green", 5))
+    cv.outline(factor=0.3)
+    cv.save(f"{outdir}/arm_bottle.png")
+    b = Canvas(5, 9)
+    b.rect(1, 3, 3, 6, c("green", 3))
+    b.rect(2, 0, 1, 3, c("green", 4))
+    b.vline(1, 4, 4, c("green", 5))
+    b.outline(c("ink", 0))
+    b.save("fx/bottle.png")
+    g = Canvas(3, 3)
+    g.px(1, 1, c("green", 5))
+    g.px(0, 1, c("cold", 5))
+    g.save("fx/glass.png")
+
+
+if __name__ == "__main__":
+    build_bottle_art()

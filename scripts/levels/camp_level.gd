@@ -1,7 +1,7 @@
 extends Level
 ## Chapter 3 — the school camp. The brother comes home; the ending plays.
 
-const DEMO_END := "res://scenes/ui/demo_end.tscn"
+const DIARY := "res://scenes/ui/diary.tscn"
 
 @export var dialogue: DialogueData
 
@@ -130,9 +130,12 @@ func _do_ending() -> void:
 	var fade_t := create_tween()
 	fade_t.tween_property(lamp_light, "energy", lamp_light.energy * 0.6, 3.0)
 	await fade(1.0, 3.5)
+	await wait(1.4)
 	AudioManager.stop_all_loops(2.0)
 	_step_done.emit()
-	SceneManager.change_scene(DEMO_END, 0.01)
+	# the first day ends with the brother's diary
+	GameState.pending_diary = {"date": GameState.date_text(0), "lines": DiaryWriter.first_day(), "next": &"first"}
+	SceneManager.change_scene(DIARY, 0.01)
 
 
 func _letterbox(on: bool, time: float) -> void:

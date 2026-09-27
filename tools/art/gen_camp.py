@@ -401,3 +401,71 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ---------------------------------------------------------------------------
+# Demo 2: camp storage whose look follows the real stock level (0..3)
+# ---------------------------------------------------------------------------
+def water_storage(level):
+    """Blue water drum + bottles lined up in front (more stock = more bottles)."""
+    w, h = 56, 44
+    cv = Canvas(w, h)
+    # drum
+    cv.rect(4, 6, 22, 38, c("blue", 2))
+    cv.vline(4, 6, 38, c("blue", 3))
+    cv.vline(25, 6, 38, c("blue", 1))
+    for y in (14, 28, 40):
+        cv.hline(4, y, 22, c("blue", 1))
+    cv.ellipse(15, 6, 11, 3, c("blue", 3))
+    cv.ellipse(15, 6, 4, 1, c("blue", 1))
+    cv.rect(8, 20, 14, 6, c("paper", 4))
+    text(cv, 9, 18, "水", c("blue", 2), 12)
+    bottles = [0, 2, 5, 8][level]
+    for i in range(bottles):
+        bx = 28 + (i % 4) * 7
+        by = h - 14 - (i // 4) * 14
+        cv.rect(bx, by + 3, 5, 11, c("cold", 4))
+        cv.rect(bx + 1, by, 3, 3, c("cold", 5))
+        cv.px(bx + 1, by - 1, c("white", 0))
+        cv.rect(bx, by + 6, 5, 3, c("paper", 5))
+    cv.outline(c("ink", 0))
+    return cv
+
+
+def food_storage(level):
+    """Wooden crate with the food they have; fuller crate = more food."""
+    rng = random.Random(9 + level)
+    w, h = 50, 40
+    cv = Canvas(w, h)
+    cv.rect(0, 14, 50, 26, c("wood", 3))
+    for x in range(0, 50, 10):
+        cv.vline(x, 14, 26, c("wood", 2))
+    cv.hline(0, 14, 50, c("wood", 5))
+    cv.hline(0, 27, 50, c("wood", 2))
+    text(cv, 4, 18, "粮", c("wood", 1), 12)
+    items = [0, 3, 7, 11][level]
+    for i in range(items):
+        x = 2 + (i * 7) % 44
+        y = 13 - (i // 6) * 7
+        k = rng.random()
+        if k < 0.4:
+            cv.rect(x, y - 7, 6, 7, c("metal", 5))
+            cv.rect(x, y - 5, 6, 3, c("red", 3))
+        elif k < 0.7:
+            cv.rect(x, y - 6, 7, 6, c("yellow", 4))
+            cv.hline(x, y - 6, 7, c("yellow", 6))
+        else:
+            cv.poly([(x, y - 7), (x + 6, y - 7), (x + 5, y), (x + 1, y)], c("red", 3))
+            cv.hline(x, y - 7, 6, c("paper", 6))
+    cv.outline(c("ink", 0))
+    return cv
+
+
+def storage_main():
+    for lv in range(4):
+        water_storage(lv).save(f"{OUT}/water_storage_{lv}.png")
+        food_storage(lv).save(f"{OUT}/food_storage_{lv}.png")
+
+
+if __name__ == "__main__":
+    storage_main()

@@ -15,6 +15,8 @@ signal searched(container: LootContainer, loot: Array)
 ## Array of { item: ItemData, count: int } — locked on level load.
 var loot: Array = []
 var is_searched := false
+## Key in GameState.world (set by the LootDirector).
+var persist_key := ""
 
 @onready var interactable: Interactable = $Interactable
 
@@ -24,6 +26,22 @@ func _ready() -> void:
 	interactable.prompt_text = data.prompt if data else "搜刮"
 	interactable.interacted.connect(_on_interacted)
 	interactable.condition = func(_a): return not is_searched
+
+
+## Apply the persistent world state for this container.
+func apply_state(st) -> void:
+	if st == null:
+		return
+	loot = LootDirector.from_data(st.get("loot", []))
+	if st.get("searched", false):
+		_mark_searched()
+
+
+func _mark_searched() -> void:
+	is_searched = true
+	interactable.enabled = false
+	if searched_texture and has_node(sprite_path):
+		(get_node(sprite_path) as Sprite2D).texture = searched_texture
 
 
 func get_meter_position() -> Vector2:
@@ -41,10 +59,9 @@ func _on_interacted(actor: Node2D) -> void:
 func _on_search_done(success: bool, actor: Node2D) -> void:
 	if not success:
 		return
-	is_searched = true
-	interactable.enabled = false
-	if searched_texture and has_node(sprite_path):
-		(get_node(sprite_path) as Sprite2D).texture = searched_texture
+	_mark_searched()
+	if persist_key != "":
+		GameState.world_set(persist_key, {"searched": true, "loot": []})
 	if loot.is_empty():
 		if actor.has_method(&"say") and data and data.empty_lines.size() > 0:
 			actor.call(&"say", data.empty_lines[randi() % data.empty_lines.size()])

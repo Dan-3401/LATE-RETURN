@@ -503,6 +503,67 @@ def cough():
     return reverb(buf, 0.2, 0.25, 0.6)
 
 
+def bottle_break():
+    d = 1.4
+    buf = np.zeros(int(SR * d))
+    thunk = lp(noise(0.06), 900) * env(int(SR * 0.06), 0.0005, 0.015) * 1.2
+    place(buf, thunk, 0.0)
+    crash = hp(noise(0.5), 2500) * env(int(SR * 0.5), 0.0005, 0.09)
+    place(buf, crash, 0.005)
+    for k in range(26):
+        f = rng.uniform(2500, 7500)
+        ln = rng.uniform(0.03, 0.12)
+        at = rng.uniform(0.0, 0.5) ** 1.6
+        tink = np.sin(2 * np.pi * f * t(ln)) * env(int(SR * ln), 0.0005, ln / 4) * rng.uniform(0.15, 0.5)
+        place(buf, tink, at)
+    return reverb(buf, 0.5, 0.35, 1.2)
+
+
+def throw_whoosh():
+    d = 0.3
+    return bp(noise(d), 500, 3500) * np.sin(np.pi * t(d) / d) ** 2 * 0.8
+
+
+def page_turn():
+    d = 0.6
+    x = bp(noise(d), 1200, 7000) * (np.abs(np.sin(2 * np.pi * 7 * t(d))) ** 3) * env(int(SR * d), 0.05, 0.25)
+    return x
+
+
+def lock_rattle():
+    d = 0.9
+    buf = np.zeros(int(SR * d))
+    for k in range(5):
+        at = k * 0.13 + rng.uniform(0, 0.03)
+        clank = (bp(noise(0.08), 1500, 5000) + np.sin(2 * np.pi * rng.uniform(900, 1400) * t(0.08)) * 0.4) * env(int(SR * 0.08), 0.0005, 0.02)
+        place(buf, clank * (1.0 if k % 2 == 0 else 0.7), at)
+    thud = lp(noise(0.2), 250) * env(int(SR * 0.2), 0.002, 0.06)
+    place(buf, thud, 0.02)
+    place(buf, thud * 0.8, 0.28)
+    return reverb(buf, 0.3, 0.3, 0.8)
+
+
+def key_jingle():
+    d = 0.6
+    buf = np.zeros(int(SR * d))
+    for k in range(7):
+        f = rng.uniform(3000, 6000)
+        tink = np.sin(2 * np.pi * f * t(0.07)) * env(int(SR * 0.07), 0.0005, 0.02) * rng.uniform(0.2, 0.5)
+        place(buf, tink, rng.uniform(0, 0.4))
+    return buf
+
+
+def lock_open():
+    d = 0.8
+    buf = np.zeros(int(SR * d))
+    scrape = bp(noise(0.25), 800, 3000) * env(int(SR * 0.25), 0.02, 0.1) * 0.5
+    place(buf, scrape, 0.0)
+    clack = (bp(noise(0.05), 600, 4000) + lp(noise(0.05), 400)) * env(int(SR * 0.05), 0.0005, 0.012) * 1.3
+    place(buf, clack, 0.3)
+    place(buf, clack * 0.7, 0.42)
+    return reverb(buf, 0.3, 0.3, 0.6)
+
+
 def heartbeat():
     d = 0.9
     buf = np.zeros(int(SR * d))
@@ -567,6 +628,12 @@ def main():
     save("tube_buzz", tube_buzz(), peak=0.4)
     save("heartbeat", heartbeat(), peak=0.8)
     save("cough", cough(), peak=0.5)
+    save("bottle_break", bottle_break(), peak=0.9)
+    save("throw", throw_whoosh(), peak=0.45)
+    save("lock_rattle", lock_rattle(), peak=0.75)
+    save("key_jingle", key_jingle(), peak=0.4)
+    save("lock_open", lock_open(), peak=0.7)
+    save("page", page_turn(), group="ui", peak=0.35)
     save("sting_death", sting_death(), peak=0.8)
     save("hide_enter", bp(noise(0.5), 300, 2500) * env(int(SR * 0.5), 0.02, 0.15), peak=0.5)
     save("hide_exit", bp(noise(0.4), 300, 2500) * env(int(SR * 0.4), 0.01, 0.12), peak=0.5)

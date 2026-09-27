@@ -299,7 +299,13 @@ class Canvas:
         return self
 
     # -- export -----------------------------------------------------------
-    def quantize(self):
+    def quantize(self, ramps=None):
+        pal = PALETTE
+        if ramps:
+            cols = []
+            for r in ramps:
+                cols.extend(PAL[r])
+            pal = np.array(sorted(set(cols)), dtype=np.int64)[:, :3]
         rgb = self.a[:, :, :3].astype(np.int64)
         alpha = self.a[:, :, 3]
         flat = rgb.reshape(-1, 3)
@@ -307,19 +313,19 @@ class Canvas:
         wts = np.array([2, 4, 3])
         best = np.zeros(flat.shape[0], dtype=np.int32)
         bestd = np.full(flat.shape[0], 1 << 30, dtype=np.int64)
-        for i, pc in enumerate(PALETTE):
+        for i, pc in enumerate(pal):
             d = (((flat - pc) ** 2) * wts).sum(axis=1)
             m = d < bestd
             bestd[m] = d[m]
             best[m] = i
-        q = PALETTE[best].reshape(self.h, self.w, 3).astype(np.uint8)
+        q = pal[best].reshape(self.h, self.w, 3).astype(np.uint8)
         self.a[:, :, :3] = np.where(alpha[:, :, None] > 0, q, 0)
         self.a[:, :, 3] = np.where(alpha > 0, 255, 0)
         return self
 
-    def save(self, rel, quantize=True, scale=1):
+    def save(self, rel, quantize=True, scale=1, ramps=None):
         if quantize:
-            self.quantize()
+            self.quantize(ramps)
         path = os.path.join(ART, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         im = Image.fromarray(self.a, "RGBA")

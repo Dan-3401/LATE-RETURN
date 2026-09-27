@@ -134,3 +134,36 @@ func toast(text: String, world_pos: Vector2, color := Color(0.9, 0.86, 0.72)) ->
 		, 0.0, 14.0, 1.2)
 	t.parallel().tween_property(l, "modulate:a", 0.0, 0.5).set_delay(0.7)
 	t.tween_callback(l.queue_free)
+
+
+# --- Throw arc preview --------------------------------------------------------
+var _traj: Control
+
+
+## Dotted pixel arc for throwing: small dots with gaps, a tiny cross where it
+## lands. Drawn in screen space so it stays crisp and is never darkened.
+func set_trajectory(world_points: PackedVector2Array, visible_now: bool) -> void:
+	if _traj == null:
+		_traj = Control.new()
+		_traj.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_traj.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_traj.draw.connect(_draw_traj)
+		add_child(_traj)
+	_traj.set_meta(&"pts", world_points)
+	_traj.visible = visible_now and world_points.size() > 1
+	_traj.queue_redraw()
+
+
+func _draw_traj() -> void:
+	var pts: PackedVector2Array = _traj.get_meta(&"pts", PackedVector2Array())
+	if pts.size() < 2:
+		return
+	var col := Color(0.86, 0.82, 0.66, 0.8)
+	for i in range(0, pts.size() - 1, 4):
+		var s := world_to_screen(pts[i]).round()
+		_traj.draw_rect(Rect2(s, Vector2(1, 1)), col)
+	var e := world_to_screen(pts[pts.size() - 1]).round()
+	var mark := Color(0.9, 0.55, 0.35, 0.9)
+	for d in [-2, -1, 1, 2]:
+		_traj.draw_rect(Rect2(e + Vector2(d, d), Vector2(1, 1)), mark)
+		_traj.draw_rect(Rect2(e + Vector2(d, -d), Vector2(1, 1)), mark)

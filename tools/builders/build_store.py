@@ -61,6 +61,20 @@ def build_exit_door():
     sc.save("scenes/interactables/store/exit_door.tscn")
 
 
+def build_warehouse_door():
+    sc = Scene()
+    dw, dh = png_size(ART + "storeroom_door_open.png")
+    sc.node("WarehouseDoor", "Node2D", None, {
+        "script": sc.ext_res("Script", "res://scripts/interactables/warehouse_door.gd"),
+        "key_item": sc.ext_res("Resource", "res://resources/items/warehouse_key.tres"),
+    })
+    sc.node("OpenSprite", "Sprite2D", ".", {"visible": False, "light_mask": 2,
+                                            "texture": sc.ext_res("Texture2D", "res://" + ART + "storeroom_door_open.png"),
+                                            "centered": False, "offset": V2(-(dw // 2), -dh)})
+    props.add_interactable(sc, ".", 30, 40, "互动", (0, -dh - 8))
+    sc.save("scenes/interactables/store/warehouse_door.tscn")
+
+
 def build_store():
     rng = random.Random(7)
     sc = Scene()
@@ -126,6 +140,9 @@ def build_store():
     for name, scene, x in clutter:
         sc.node(name, None, "Clutter", {"position": V2(x, FLOOR_Y)}, instance=sc.ext_res("PackedScene", f"res://scenes/props/store/{scene}.tscn"))
 
+    # --- back warehouse door (painted on the wall at x 40..76)
+    sc.node("WarehouseDoor", None, ".", {"position": V2(58, FLOOR_Y), "z_index": -19},
+            instance=sc.ext_res("PackedScene", "res://scenes/interactables/store/warehouse_door.tscn"))
     # --- exit
     sc.node("ExitDoor", None, ".", {"position": V2(966, FLOOR_Y), "z_index": -9}, instance=sc.ext_res("PackedScene", "res://scenes/interactables/store/exit_door.tscn"))
 
@@ -189,6 +206,8 @@ def build_store():
     sc.node("LootDirector", "Node", ".", {
         "script": sc.ext_res("Script", "res://scripts/systems/loot_director.gd"),
         "fill_items": Raw(f"Array[{sc.ext_res('Script', 'res://scripts/data/item_data.gd')}]([" + ", ".join(str(sc.ext_res("Resource", f"res://resources/items/{i}.tres")) for i in items) + "])"),
+        "refill_table": sc.ext_res("Resource", "res://resources/loot_tables/store_refill.tres"),
+        "key_item": sc.ext_res("Resource", "res://resources/items/warehouse_key.tres"),
     })
     sc.node("HUD", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/hud.tscn"))
     sc.save("scenes/maps/convenience_store.tscn")
@@ -198,5 +217,6 @@ if __name__ == "__main__":
     props.build_store_props()
     build_tileset()
     build_exit_door()
+    build_warehouse_door()
     build_store()
     print("store ok")

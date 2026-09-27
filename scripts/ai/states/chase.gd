@@ -26,16 +26,16 @@ func physics_update(delta: float) -> void:
 	if p.is_hidden():
 		var spot := p.stealth.hide_spot as Node2D
 		if spot and zombie.vision.time_since_seen < zombie.data.lose_sight_time:
-			machine.transition_to(&"Investigate", {"pos": spot.global_position, "hide_spot": spot, "fast": true})
+			machine.transition_to(&"Investigate", {"pos": spot.global_position, "hide_spot": spot, "fast": true, "from_chase": true})
 		else:
-			machine.transition_to(&"Investigate", {"pos": zombie.last_seen_pos, "fast": true})
+			machine.transition_to(&"Investigate", {"pos": zombie.last_seen_pos, "fast": true, "from_chase": true})
 		return
 	if zombie.vision.can_see:
 		_lost = 0.0
 	else:
 		_lost += delta
 		if _lost > zombie.data.lose_sight_time:
-			machine.transition_to(&"Investigate", {"pos": zombie.last_seen_pos, "fast": true})
+			machine.transition_to(&"Investigate", {"pos": zombie.last_seen_pos, "fast": true, "from_chase": true})
 			return
 	# while it has line of sight it tracks the real position, otherwise the last seen one
 	var tx := p.global_position.x if zombie.vision.can_see else zombie.last_seen_pos.x

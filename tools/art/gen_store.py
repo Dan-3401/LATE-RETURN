@@ -965,3 +965,218 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ---------------------------------------------------------------------------
+# Back warehouse (Demo 2): cramped, cluttered, darker than the shop floor
+# ---------------------------------------------------------------------------
+WH_W = 512
+
+
+def storeroom_door_open():
+    """Overlay for the painted storeroom door once it is unlocked (ajar, dark gap)."""
+    cv = storeroom_door()
+    cv.rect(2, 3, 14, cv.h - 3, c("ink", 0))
+    cv.vline(16, 3, cv.h - 3, c("metal", 6))
+    cv.rect(18, 34, 3, 2, c("metal", 7))
+    return cv
+
+
+def warehouse_wall():
+    rng = random.Random(4242)
+    W, H = WH_W, 224
+    cv = Canvas(W, H)
+    # bare concrete block wall, water damage, exposed pipes
+    n = value_noise(W, H, 18, 77, 4)
+    cv.fill_field(0, 0, W, H, "concrete", np.clip(n * 0.8 + np.linspace(-0.2, 0.05, H)[:, None], 0, 1), lo=1, hi=4)
+    for y in range(8, H, 12):
+        off = 0 if (y // 12) % 2 else 12
+        cv.hline(0, y, W, c("concrete", 1))
+        for x in range(off, W, 24):
+            cv.vline(x, y - 11, 11, c("concrete", 1))
+    # low ceiling, pipes and a cable tray
+    cv.rect(0, 0, W, 16, c("ink", 1))
+    for py, col in [(18, 4), (24, 3)]:
+        cv.rect(0, py, W, 3, c("metal", col))
+        cv.hline(0, py, W, c("metal", col + 2))
+        for x in range(30, W, 90):
+            cv.rect(x, py - 2, 3, 7, c("metal", 2))
+    drips(cv, 140, 27, 4, 90, 0.3, rng)
+    drips(cv, 360, 27, 3, 70, 0.3, rng)
+    for _ in range(10):
+        stain(cv, rng.randint(0, W), rng.randint(30, H), rng.randint(10, 30), rng.randint(8, 24), 0.25, rng, rng.randint(0, 999))
+    for _ in range(8):
+        crack(cv, rng.randint(0, W), rng.randint(30, 200), rng.randint(10, 30), c("concrete", 0), rng, 0.2)
+    # a staff notice board with a shift calendar, a photo and a note
+    bx, by = 200, 60
+    cv.rect(bx, by, 70, 46, c("wood", 3))
+    cv.rect(bx + 2, by + 2, 66, 42, c("wood", 5))
+    cv.rect(bx + 5, by + 5, 28, 30, c("paper", 5))  # calendar
+    for r in range(5):
+        for k in range(7):
+            cv.px(bx + 7 + k * 4, by + 12 + r * 5, c("paper", 3))
+    cv.px(bx + 7 + 5 * 4, by + 12 + 3 * 5, c("red", 4))
+    cv.line(bx + 7, by + 27, bx + 30, by + 27, c("red", 3))
+    cv.rect(bx + 38, by + 6, 14, 11, c("white", 0))  # staff photo
+    cv.rect(bx + 39, by + 7, 12, 7, c("warm", 2))
+    cv.rect(bx + 38, by + 22, 24, 14, c("yellow", 5))  # note
+    text(cv, bx + 39, by + 23, "值班", c("ink", 2), 12)
+    # a painted green marker next to the hide locker (visual language)
+    for k in range(6):
+        cv.px(410 + k, 130 + (k % 2), c("green", 3))
+    cv.rect(0, H - 12, W, 12, c("concrete", 1))
+    cv.hline(0, H - 12, W, c("concrete", 3))
+    return cv
+
+
+def warehouse_tiles():
+    rng = random.Random(55)
+    atlas = Canvas(16 * 8, 16 * 4)
+    for row in range(3):
+        for v in range(8):
+            t = Canvas(16, 16)
+            n = value_noise(16, 16, 5, rng.randint(0, 9999))
+            t.fill_field(0, 0, 16, 16, "concrete", n * 0.7, lo=1, hi=3)
+            if row == 0:
+                t.hline(0, 0, 16, c("concrete", 0))
+                t.hline(0, 1, 16, c("concrete", 4))
+            if v in (1, 5):
+                crack(t, rng.randint(2, 13), 0, 12, c("ink", 1), rng, 0.2)
+            if v == 2:
+                stain(t, 8, 8, 6, 3, 0.35, rng, rng.randint(0, 99))
+            if v == 3:
+                t.hline(2, 7, 11, c("yellow", 2))  # worn floor marking
+            if v == 4:
+                speckle(t, 0, 0, 16, 16, [c("paper", 2), c("concrete", 5)], 0.06, rng)
+            if row == 2:
+                for y in range(8, 16):
+                    for x in range(16):
+                        t.darken(x, y, (y - 8) / 8 * 0.35)
+            atlas.blit(t, v * 16, row * 16)
+    for v in range(4):
+        atlas.blit(wall_tile(rng, v), v * 16, 48)
+    return atlas
+
+
+def locker(seed, open_=False, green=False):
+    """Staff locker bank (2 doors). green=True: the hide-able one (paint mark + vines)."""
+    rng = random.Random(seed)
+    w, h = 40, 76
+    cv = Canvas(w, h)
+    cv.rect(0, 0, w, h, c("metal", 3))
+    cv.vline(0, 0, h, c("metal", 5))
+    cv.vline(w - 1, 0, h, c("metal", 1))
+    for d in range(2):
+        dx = 2 + d * 19
+        cv.rect(dx, 3, 17, h - 8, c("metal", 4 if not (green and d == 1) else 3))
+        for k in range(6, 16, 3):
+            cv.hline(dx + 4, k, 9, c("metal", 1))  # vents
+        cv.rect(dx + 13, 34, 2, 6, c("metal", 7))
+        cv.rect(dx + 4, 22, 9, 6, c("paper", 4))  # name tag
+        cv.hline(dx + 5, 24, 6, c("ink", 2))
+    if open_:
+        cv.rect(4, 5, 13, h - 12, c("ink", 0))
+        cv.hline(4, 30, 13, c("metal", 2))
+        cv.poly([(2, 3), (-4 + 2, 6), (-4 + 2, h - 6), (2, h - 5)], c("metal", 5))
+    if green:
+        # faded green paint stripe and a creeping vine: "you can hide in here"
+        for y in range(8, h - 10, 2):
+            cv.px(22, y, c("green", 3))
+            cv.px(23, y + 1, c("green", 2))
+        vx = w - 3
+        for y in range(h - 1, 12, -1):
+            vx += rng.choice([-1, 0, 0, 1])
+            vx = max(w - 6, min(w - 1, vx))
+            cv.px(vx, y, c("grass", 3))
+            if rng.random() < 0.3:
+                cv.px(vx - 1, y, c("grass", 5))
+    for _ in range(5):
+        rust_patch(cv, rng.randint(0, w), rng.randint(40, h), rng.randint(1, 3), rng)
+    for _ in range(3):
+        stain(cv, rng.randint(0, w), rng.randint(0, h), 4, 8, 0.2, rng, rng.randint(0, 99))
+    cv.outline(c("ink", 1))
+    return cv
+
+
+def locker_hide_occupied():
+    cv = locker(33, False, True)
+    return cv
+
+
+def cleaning_shelf(searched=False):
+    rng = random.Random(21)
+    w, h = 44, 58
+    cv = Canvas(w, h)
+    cv.rect(0, 0, 3, h, c("metal", 4))
+    cv.rect(w - 3, 0, 3, h, c("metal", 3))
+    for ly in (16, 34, 52):
+        cv.rect(0, ly, w, 3, c("metal", 5))
+        cv.hline(0, ly, w, c("metal", 7))
+        if searched and ly != 52:
+            continue
+        x = 4
+        while x < w - 8:
+            if rng.random() < 0.7:
+                col = rng.choice(["blue", "yellow", "red", "paper"])
+                bh = rng.randint(8, 13)
+                cv.rect(x, ly - bh, 6, bh, c(col, 3))
+                cv.rect(x + 1, ly - bh - 2, 3, 2, c("white", 0))
+                cv.rect(x + 1, ly - bh + 3, 4, 3, c("paper", 5))
+            x += 8
+    cv.outline(c("ink", 1))
+    return cv
+
+
+def mop_bucket():
+    cv = Canvas(22, 36)
+    cv.poly([(2, 22), (20, 22), (18, 35), (4, 35)], c("yellow", 3))
+    cv.hline(2, 22, 18, c("yellow", 5))
+    cv.line(12, 21, 16, 0, c("wood", 4), 1)
+    cv.rect(8, 16, 8, 6, c("paper", 3))
+    cv.outline(c("ink", 1))
+    return cv
+
+
+def storage_boxes(seed, searched=False):
+    rng = random.Random(seed)
+    w, h = 52, 44
+    cv = Canvas(w, h)
+
+    def cbox(x, y, bw, bh, open_=False):
+        cv.rect(x, y, bw, bh, c("wood", 4))
+        cv.vline(x, y, bh, c("wood", 5))
+        cv.vline(x + bw - 1, y, bh, c("wood", 2))
+        cv.hline(x, y, bw, c("wood", 6))
+        cv.rect(x + bw // 2 - 2, y, 4, bh // 2, c("paper", 3))
+        cv.rect(x + 3, y + bh - 8, 7, 4, c("paper", 4))
+        if open_:
+            cv.rect(x + 2, y, bw - 4, 3, c("ink", 1))
+            cv.poly([(x, y), (x - 4, y - 5), (x + 8, y - 3)], c("wood", 5))
+        for _ in range(2):
+            stain(cv, x + rng.randint(0, bw), y + rng.randint(0, bh), 3, 3, 0.2, rng, rng.randint(0, 99))
+
+    cbox(0, 20, 26, 24)
+    cbox(25, 16, 27, 28, open_=searched)
+    cbox(6, 2, 20, 18, open_=searched)
+    cv.outline(c("ink", 1))
+    return cv
+
+
+def wh_main():
+    OUTW = OUT
+    storeroom_door_open().save(f"{OUTW}/storeroom_door_open.png")
+    warehouse_wall().save(f"{OUTW}/warehouse_wall.png")
+    warehouse_tiles().save(f"{OUTW}/warehouse_tiles.png")
+    locker(31).save(f"{OUTW}/locker.png")
+    locker(31, True).save(f"{OUTW}/locker_open.png")
+    locker(33, True, True).save(f"{OUTW}/locker_hide.png")
+    locker(33, False, True).save(f"{OUTW}/locker_hide_closed.png")
+    cleaning_shelf(False).save(f"{OUTW}/cleaning_shelf.png")
+    cleaning_shelf(True).save(f"{OUTW}/cleaning_shelf_searched.png")
+    mop_bucket().save(f"{OUTW}/mop_bucket.png")
+    storage_boxes(61).save(f"{OUTW}/storage_boxes.png")
+    storage_boxes(61, True).save(f"{OUTW}/storage_boxes_open.png")
+
+
+if __name__ == "__main__":
+    wh_main()

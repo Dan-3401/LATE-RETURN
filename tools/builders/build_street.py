@@ -84,7 +84,7 @@ def build_props():
     solid_prop("scenes/props/street/barrier.tscn", ART + "barrier.png", [(-25, 0), (-21, -26), (21, -26), (25, 0)])
     # hide spots
     hide_spot_scene("scenes/interactables/street/dumpster.tscn", ART + "dumpster_open.png", ART + "dumpster.png")
-    hide_spot_scene("scenes/interactables/street/car_hide.tscn", ART + "car_sedan_blue_open.png", ART + "car_sedan_blue.png",
+    hide_spot_scene("scenes/interactables/street/car_hide.tscn", ART + "car_hide_open.png", ART + "car_hide_closed.png",
                     poly=[(-50, 0), (-49, -10), (-36, -20), (-22, -34), (18, -36), (32, -22), (48, -19), (51, 0)], hide_offset=(-6, 0), solid=False)
     # grass
     grass_scene("scenes/interactables/street/grass_patch.tscn", ART + "grass_b.png", width=110)
@@ -135,14 +135,21 @@ def build_props():
     sc.save("scenes/props/street/street_lamp.tscn")
 
 
-def build_street():
+def build_street(region=False):
     rng = random.Random(11)
     sc = Scene()
-    sc.node("Street", "Node2D", None, {
-        "script": sc.ext_res("Script", "res://scripts/levels/street_level.gd"),
-        "ambience": Raw('Array[StringName]([&"amb_street"])'),
-        "ambience_volume_db": -3.0,
-    })
+    if region:
+        sc.node("StoreDistrict", "Node2D", None, {
+            "script": sc.ext_res("Script", "res://scripts/levels/region_level.gd"),
+            "ambience": Raw('Array[StringName]([&"amb_street"])'),
+            "ambience_volume_db": -3.0,
+        })
+    else:
+        sc.node("Street", "Node2D", None, {
+            "script": sc.ext_res("Script", "res://scripts/levels/street_level.gd"),
+            "ambience": Raw('Array[StringName]([&"amb_street"])'),
+            "ambience_volume_db": -3.0,
+        })
     sc.node("CanvasModulate", "CanvasModulate", ".", {"color": Col(0.22, 0.25, 0.36)})
 
     # --- far background in its own canvas layer (not darkened by the level modulate)
@@ -234,18 +241,41 @@ def build_street():
         ("Pacer", 1820, "a", 0, -100, 110, -1),
         ("GateGuard", 2330, "b", 2, -30, 40, -1),
     ]
+    if region:
+        # the next days: the dead have drifted around; one lingers by the store
+        zombies = [
+            ("StoreLoiterer", 300, "c", 0, -70, 90, 1),
+            ("Walker", 760, "a", 0, -90, 90, -1),
+            ("Doorman", 960, "b", 2, -20, 20, 1),
+            ("DrifterA", 1250, "c", 1, -80, 90, 1),
+            ("DrifterB", 1340, "a", 2, -30, 30, -1),
+            ("Pacer", 1860, "b", 0, -110, 100, 1),
+            ("Stray", 2210, "a", 2, -20, 30, 1),
+        ]
     for name, zx, v, beh, l, r, f in zombies:
         n = sc.node(name, None, "Zombies", {"position": V2(zx, FLOOR_Y), "frames": fr[v], "start_facing": f}, instance=Z)
         sc.node("PatrolComponent", None, f"Zombies/{name}", {"behavior": beh, "left": float(l), "right": float(r)})
 
-    # --- triggers
-    sc.node("Triggers", "Node2D", ".", {})
-    tz = sc.ext_res("Script", "res://scripts/interactables/trigger_zone.gd")
-    for name, tx, w in [("FirstSight", 300, 30), ("BreathHint", 560, 20), ("HideHint", 690, 20)]:
-        sc.node(name, "Area2D", "Triggers", {"position": V2(tx, 200), "script": tz})
-        sc.node("Shape", "CollisionShape2D", f"Triggers/{name}", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(w, 80)})})
-    sc.node("ExitZone", "Area2D", ".", {"position": V2(2540, 200), "script": tz})
-    sc.node("Shape", "CollisionShape2D", "ExitZone", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(40, 100)})})
+    if region:
+        itc = sc.ext_res("Script", "res://scripts/interactables/interactable.gd")
+        # the school gate (home) and the store's glass door (the location)
+        sc.node("SchoolGate", "Area2D", ".", {"position": V2(2530, FLOOR_Y - 20), "script": itc, "prompt_text": "返回营地", "prompt_offset": V2(0, -70)})
+        sc.node("Shape", "CollisionShape2D", "SchoolGate", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(60, 40)})})
+        sc.node("LocationDoor", "Area2D", ".", {"position": V2(146, FLOOR_Y - 20), "script": itc, "prompt_text": "进入便利店", "prompt_offset": V2(0, -80)})
+        sc.node("Shape", "CollisionShape2D", "LocationDoor", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(44, 40)})})
+        # empty bottles lying in the street (throwable decoys)
+        pick = sc.ext_res("PackedScene", "res://scenes/items/pickup.tscn")
+        bottle = sc.ext_res("Resource", "res://resources/items/empty_bottle.tres")
+        for i, bx in enumerate([2380, 1720, 1100]):
+            sc.node(f"Bottle{i}", None, "Props", {"position": V2(bx, FLOOR_Y), "item": bottle, "count": 1}, instance=pick)
+    else:
+        sc.node("Triggers", "Node2D", ".", {})
+        tz = sc.ext_res("Script", "res://scripts/interactables/trigger_zone.gd")
+        for name, tx, w in [("FirstSight", 300, 30), ("BreathHint", 560, 20), ("HideHint", 690, 20)]:
+            sc.node(name, "Area2D", "Triggers", {"position": V2(tx, 200), "script": tz})
+            sc.node("Shape", "CollisionShape2D", f"Triggers/{name}", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(w, 80)})})
+        sc.node("ExitZone", "Area2D", ".", {"position": V2(2540, 200), "script": tz})
+        sc.node("Shape", "CollisionShape2D", "ExitZone", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(40, 100)})})
 
     # --- ambient light (moon)
     sc.node("Lights", "Node2D", ".", {})
@@ -258,7 +288,7 @@ def build_street():
         sc.node(f"Ambient{i}", "PointLight2D", "Lights", {"position": V2(lx, ly), "color": Col(*col), "energy": e, "range_item_cull_mask": 3, "texture": radial_l, "texture_scale": 0.5})
 
     # --- player & camera
-    sc.node("Player", None, ".", {"position": V2(146, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
+    sc.node("Player", None, ".", {"position": V2(2480 if region else 146, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
     sc.node("GameCamera", "Camera2D", ".", {
         "position": V2(240, 135), "limit_left": 0, "limit_top": 0, "limit_right": WIDTH, "limit_bottom": 270,
         "script": sc.ext_res("Script", "res://scripts/systems/game_camera.gd"), "target_path": NP("../Player"),
@@ -272,11 +302,12 @@ def build_street():
         sc.node(f"FgGrass{i}", "Sprite2D", "Foreground", {"position": V2(fx, 270), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_grass.png"), "centered": False, "offset": V2(0, -40)})
 
     sc.node("HUD", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/hud.tscn"))
-    sc.save("scenes/maps/street.tscn")
+    sc.save("scenes/maps/region_store.tscn" if region else "scenes/maps/street.tscn")
 
 
 if __name__ == "__main__":
     build_tileset("resources/tilesets/street_tiles.tres", "res://art/environment/street/tiles.png")
     build_props()
     build_street()
+    build_street(region=True)
     print("street ok")

@@ -25,16 +25,24 @@ def spr(sc, parent, name, tex, x, y=FLOOR_Y, light_mask=1, z=0, flip=False, bott
     sc.node(name, "Sprite2D", parent, props)
 
 
-def build():
+def build(hub=False):
     rng = random.Random(5)
     sc = Scene()
-    sc.node("SchoolCamp", "Node2D", None, {
-        "script": sc.ext_res("Script", "res://scripts/levels/camp_level.gd"),
-        "ambience": Raw('Array[StringName]([&"amb_camp"])'),
-        "ambience_volume_db": -6.0,
-        "cursor_crosshair": False,
-        "dialogue": sc.ext_res("Resource", "res://resources/dialogue/ending.tres"),
-    })
+    if hub:
+        sc.node("CampHub", "Node2D", None, {
+            "script": sc.ext_res("Script", "res://scripts/levels/camp_hub_level.gd"),
+            "ambience": Raw('Array[StringName]([&"amb_camp"])'),
+            "ambience_volume_db": -6.0,
+            "sister_pool": sc.ext_res("Resource", "res://resources/dialogue/sister_pool.tres"),
+        })
+    else:
+        sc.node("SchoolCamp", "Node2D", None, {
+            "script": sc.ext_res("Script", "res://scripts/levels/camp_level.gd"),
+            "ambience": Raw('Array[StringName]([&"amb_camp"])'),
+            "ambience_volume_db": -6.0,
+            "cursor_crosshair": False,
+            "dialogue": sc.ext_res("Resource", "res://resources/dialogue/ending.tres"),
+        })
     sc.node("CanvasModulate", "CanvasModulate", ".", {"color": Col(0.2, 0.2, 0.28)})
     sc.node("Room", "Node2D", ".", {"z_index": -20})
     sc.node("BackWall", "Sprite2D", "Room", {"light_mask": 2, "texture": sc.ext_res("Texture2D", "res://" + ART + "backwall.png"), "centered": False})
@@ -48,6 +56,19 @@ def build():
     spr(sc, "Furniture", "Table", ART + "desk_table.png", 290)
     spr(sc, "Furniture", "Lamp", ART + "lamp.png", 278, FLOOR_Y - 34)
     spr(sc, "Furniture", "Bedroll", ART + "bedroll.png", 440)
+    if hub:
+        # the camp's shared storage: its look follows the real stock
+        sc.node("Storage", "Node2D", "Furniture", {"position": V2(0, 0),
+                                                  "script": sc.ext_res("Script", "res://scripts/levels/camp_storage.gd")})
+        wtex = [sc.ext_res("Texture2D", f"res://{ART}water_storage_{i}.png") for i in range(4)]
+        ftex = [sc.ext_res("Texture2D", f"res://{ART}food_storage_{i}.png") for i in range(4)]
+        sw, sh = png_size(ART + "water_storage_0.png")
+        fw, fh = png_size(ART + "food_storage_0.png")
+        sc.node("Water", "Sprite2D", "Furniture/Storage", {"texture": wtex[0], "centered": False, "position": V2(530 - sw // 2, FLOOR_Y - sh)})
+        sc.node("Food", "Sprite2D", "Furniture/Storage", {"texture": ftex[0], "centered": False, "position": V2(586 - fw // 2, FLOOR_Y - fh)})
+        sc.nodes[-3] = (sc.nodes[-3][0], dict(sc.nodes[-3][1], **{
+            "water_textures": Raw("Array[Texture2D]([" + ", ".join(wtex) + "])"),
+            "food_textures": Raw("Array[Texture2D]([" + ", ".join(ftex) + "])")}))
     # candle (animated)
     atlas = sc.ext_res("Texture2D", "res://" + ART + "candle.png")
     subs = [sc.sub_res("AtlasTexture", {"atlas": atlas, "region": Raw(f"Rect2({f * 6}, 0, 6, 14)")}) for f in range(3)]
@@ -97,12 +118,24 @@ def build():
                                             "emission_rect_extents": V2(120, 60), "direction": V2(1, 0.2), "spread": 180.0,
                                             "gravity": V2(0, 1), "initial_velocity_min": 1.0, "initial_velocity_max": 3.0,
                                             "color": Col(1, 0.9, 0.75, 0.45)})
+    if hub:
+        # interactions: the classroom door (go out) and the sister (talk / end the day)
+        itc = sc.ext_res("Script", "res://scripts/interactables/interactable.gd")
+        sc.node("DoorInteract", "Area2D", ".", {"position": V2(68, FLOOR_Y - 20), "script": itc, "prompt_text": "外出", "prompt_offset": V2(0, -94)})
+        sc.node("Shape", "CollisionShape2D", "DoorInteract", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(40, 40)})})
+        sc.node("SisterInteract", "Area2D", ".", {"position": V2(420, FLOOR_Y - 20), "script": itc, "prompt_text": "与妹妹交谈", "prompt_offset": V2(0, -44)})
+        sc.node("Shape", "CollisionShape2D", "SisterInteract", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(44, 40)})})
     # player (enters from the door)
-    sc.node("Player", None, ".", {"position": V2(60, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
+    sc.node("Player", None, ".", {"position": V2(60 if not hub else 250, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
     sc.node("GameCamera", "Camera2D", ".", {"position": V2(330, 135), "limit_left": 0, "limit_top": 0, "limit_right": W, "limit_bottom": 270,
                                             "script": sc.ext_res("Script", "res://scripts/systems/game_camera.gd"), "target_path": NP("../Player")})
     sc.node("DialoguePlayer", "Node", ".", {"script": sc.ext_res("Script", "res://scripts/systems/dialogue_player.gd")})
     sc.node("HUD", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/hud.tscn"))
+    if hub:
+        sc.node("RegionMap", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/region_map.tscn"))
+        sc.node("ConfirmDialog", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/confirm_dialog.tscn"))
+        sc.save("scenes/maps/camp_hub.tscn")
+        return
     sc.node("Letterbox", "CanvasLayer", ".", {"layer": 8})
     sc.node("Top", "ColorRect", "Letterbox", {"offset_right": 480.0, "offset_bottom": 22.0, "color": Col(0, 0, 0, 1), "mouse_filter": 2})
     sc.node("Bottom", "ColorRect", "Letterbox", {"offset_top": 248.0, "offset_right": 480.0, "offset_bottom": 270.0, "color": Col(0, 0, 0, 1), "mouse_filter": 2})
@@ -112,4 +145,5 @@ def build():
 if __name__ == "__main__":
     build_tileset("resources/tilesets/camp_tiles.tres", "res://art/environment/camp/tiles.png")
     build()
+    build(hub=True)
     print("camp ok")

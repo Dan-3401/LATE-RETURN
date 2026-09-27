@@ -232,11 +232,43 @@ def i_bandage(cv):
     cv.rect(7, 7, 2, 3, c("red", 4))
 
 
+def i_key(cv):
+    cv.disc(4, 5, 3, c("yellow", 4))
+    cv.disc(4, 5, 1, TRANSPARENT)
+    cv.px(3, 3, c("yellow", 6))
+    cv.rect(7, 5, 7, 2, c("yellow", 4))
+    cv.hline(7, 5, 7, c("yellow", 6))
+    cv.rect(11, 7, 1, 2, c("yellow", 3))
+    cv.rect(13, 7, 1, 3, c("yellow", 3))
+    # paper tag on a string
+    cv.line(4, 8, 5, 11, c("paper", 3))
+    cv.rect(3, 11, 5, 4, c("paper", 5))
+    cv.hline(4, 13, 3, c("ink", 2))
+
+
+def i_uniform(cv):
+    cv.poly([(4, 2), (7, 3), (9, 3), (12, 2), (15, 6), (13, 8), (12, 7), (12, 15), (4, 15), (4, 7), (3, 8), (1, 6)], c("green", 2))
+    cv.line(8, 3, 8, 15, c("green", 1))
+    cv.rect(5, 9, 3, 2, c("green", 4))
+    cv.rect(9, 9, 3, 2, c("green", 4))
+    cv.rect(9, 5, 2, 2, c("paper", 5))
+    cv.hline(5, 3, 2, c("green", 4))
+
+
+def i_soap(cv):
+    cv.rect(3, 7, 10, 6, c("blue", 4))
+    cv.hline(3, 7, 10, c("blue", 5))
+    cv.rect(5, 9, 6, 2, c("paper", 5))
+    cv.rect(6, 3, 4, 4, c("white", 1))
+    cv.rect(7, 2, 2, 1, c("red", 3))
+
+
 def icons():
     for n, f in [("water", i_water), ("canned_food", i_food_can), ("biscuits", i_biscuit), ("noodles", i_noodle),
                  ("parts", i_parts), ("empty_bottle", i_empty_bottle), ("junk", i_junk), ("cash", i_cash),
                  ("pistol", i_pistol), ("knife", i_knife), ("backpack", i_backpack), ("helmet", i_helmet),
-                 ("armor", i_armor), ("ammo", i_ammo), ("bandage", i_bandage)]:
+                 ("armor", i_armor), ("ammo", i_ammo), ("bandage", i_bandage),
+                 ("warehouse_key", i_key), ("work_uniform", i_uniform), ("soap", i_soap)]:
         icon(n, f)
 
 
@@ -393,3 +425,133 @@ def vignette():
 
 if __name__ == "__main__":
     vignette()
+
+
+# ---------------------------------------------------------------------------
+# Demo 2: region map, diary paper
+# ---------------------------------------------------------------------------
+def aged_paper(w, h, seed, base=5, folds=True):
+    """Old paper: uneven tone, darker edges, creases, cup ring, water marks.
+    All darkening tints toward warm browns so quantisation stays in the paper hues."""
+    rng = random.Random(seed)
+    cv = Canvas(w, h)
+    from pixlib import value_noise
+    n = value_noise(w, h, 22, seed, 4)
+    cv.fill_field(0, 0, w, h, "paper", np.clip(n * 0.6 + 0.35, 0, 1), lo=base - 2, hi=base)
+    brown = c("wood", 5)
+    dark = c("paper", 2)
+
+    def pd(x, y, a):
+        cv.tint(x, y, dark, min(1.0, a))
+
+    for y in range(h):
+        for x in range(w):
+            d = min(x, y, w - 1 - x, h - 1 - y)
+            if d < 7 and rng.random() < (7 - d) / 8:
+                pd(x, y, 0.25 + (7 - d) * 0.08)
+    cv.poly([(w - 14, 0), (w, 0), (w, 11)], TRANSPARENT)
+    for x in range(0, w, 3):
+        if rng.random() < 0.3:
+            cv.px(x, h - 1, TRANSPARENT)
+    if folds:
+        fx, fy = w // 2 + rng.randint(-6, 6), h // 2 + rng.randint(-4, 4)
+        for y in range(h):
+            pd(fx, y, 0.45)
+            cv.tint(fx + 1, y, c("paper", 6), 0.5)
+        for x in range(w):
+            pd(x, fy, 0.4)
+            cv.tint(x, fy + 1, c("paper", 6), 0.45)
+    # cup ring
+    cx, cy, r = rng.randint(30, w - 30), rng.randint(30, h - 30), 13
+    for a in range(0, 360, 3):
+        for dr in (0, 1):
+            x = int(cx + math.cos(math.radians(a)) * (r + dr))
+            y = int(cy + math.sin(math.radians(a)) * (r + dr) * 0.9)
+            if rng.random() < 0.75:
+                cv.tint(x, y, brown, 0.45)
+    # water / dirt marks
+    for _ in range(6):
+        sx, sy = rng.randint(0, w), rng.randint(0, h)
+        rx, ry = rng.randint(6, 16), rng.randint(4, 10)
+        nn = value_noise(rx * 2 + 3, ry * 2 + 3, 3, rng.randint(0, 999), 2)
+        for yy in range(-ry, ry + 1):
+            for xx in range(-rx, rx + 1):
+                dd = (xx / rx) ** 2 + (yy / ry) ** 2
+                if dd < 0.6 + nn[yy + ry, xx + rx] * 0.5:
+                    edge = 0.35 if dd > 0.7 else 0.18
+                    cv.tint(sx + xx, sy + yy, brown, edge)
+    return cv
+
+
+def diary_paper():
+    w, h = 300, 214
+    cv = aged_paper(w, h, 17)
+    # faint ruled lines and a margin, like a school exercise book
+    for y in range(40, h - 10, 18):
+        for x in range(10, w - 10):
+            if x % 3 != 0:
+                cv.px(x, y, c("paper", 3))
+    for y in range(8, h - 6):
+        cv.tint(34, y, c("red", 4), 0.45)
+    # binding holes
+    for y in (24, 104, 184):
+        cv.disc(12, y, 3, TRANSPARENT)
+    cv.save(f"{OUT}/diary_paper.png", ramps=["paper", "wood", "red", "blue", "ink"])
+
+
+def region_map():
+    """A hand-marked city map: streets, the river, route traces, circled places."""
+    rng = random.Random(23)
+    w, h = 400, 236
+    cv = aged_paper(w, h, 29, base=5)
+    ink = c("wood", 1)
+    faint = c("paper", 2)
+    # river
+    pts = [(0, 150), (60, 140), (120, 160), (200, 150), (280, 170), (400, 158)]
+    for i in range(len(pts) - 1):
+        for k in range(-4, 5):
+            cv.line(pts[i][0], pts[i][1] + k, pts[i + 1][0], pts[i + 1][1] + k, c("cold", 4) if abs(k) < 3 else c("cold", 3))
+    # street grid (slightly irregular, hand drawn)
+    for x in range(20, w, 46):
+        cv.line(x + rng.randint(-3, 3), 10, x + rng.randint(-6, 6), h - 12, faint)
+    for y in range(22, h, 38):
+        cv.line(10, y + rng.randint(-3, 3), w - 10, y + rng.randint(-4, 4), faint)
+    # main roads
+    cv.line(10, 96, w - 10, 88, ink, 1)
+    cv.line(10, 97, w - 10, 89, ink, 1)
+    cv.line(150, 10, 170, h - 12, ink, 1)
+    cv.line(262, 12, 250, h - 14, ink, 1)
+    # bridge
+    cv.rect(160, 148, 8, 16, c("wood", 2))
+    # blocks shading
+    for _ in range(40):
+        bx, by = rng.randint(14, w - 30), rng.randint(14, h - 30)
+        cv.rect(bx, by, rng.randint(6, 16), rng.randint(5, 12), c("paper", 3))
+    # the school (home) with a little house mark
+    hx, hy = 70, 64
+    cv.poly([(hx - 7, hy), (hx, hy - 7), (hx + 7, hy)], c("red", 3))
+    cv.rect(hx - 5, hy, 10, 7, c("red", 3))
+    cv.rect(hx - 1, hy + 3, 2, 4, c("paper", 5))
+    text(cv, hx - 12, hy + 8, "学校", ink, 12)
+    # dashed route traces from home (in red pencil)
+    for (tx, ty) in [(112, 98), (300, 52), (322, 196), (220, 214)]:
+        steps = int(math.hypot(tx - hx, ty - hy) / 3)
+        for s in range(steps):
+            if (s // 2) % 2 == 0:
+                x = hx + (tx - hx) * s / steps
+                y = hy + (ty - hy) * s / steps + math.sin(s / 5) * 2
+                cv.px(int(x), int(y), c("red", 2))
+    # an X over a blocked road and a skull-ish scribble for danger
+    for d in range(-4, 5):
+        cv.px(205 + d, 120 + d, c("red", 3))
+        cv.px(205 + d, 120 - d, c("red", 3))
+    # tape at the corners
+    for (tx, ty) in [(6, 4), (w - 38, h - 14)]:
+        cv.rect(tx, ty, 30, 9, c("paper", 4))
+        cv.hline(tx, ty, 30, c("paper", 5))
+    cv.save(f"{OUT}/region_map.png", ramps=["paper", "wood", "red", "cold", "ink"])
+
+
+if __name__ == "__main__":
+    diary_paper()
+    region_map()

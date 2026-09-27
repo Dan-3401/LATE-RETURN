@@ -15,6 +15,8 @@
 [ext_resource type="Script" path="res://scripts/components/interaction_component.gd" id="13_interact"]
 [ext_resource type="Resource" path="res://resources/weapons/pistol.tres" id="14_pistol"]
 [ext_resource type="Resource" path="res://resources/weapons/knife.tres" id="15_knife"]
+[ext_resource type="Texture2D" path="res://art/characters/player/arm_bottle.png" id="16_armb"]
+[ext_resource type="Script" path="res://scripts/components/throw_component.gd" id="17_throw"]
 
 [sub_resource type="RectangleShape2D" id="shape_body"]
 size = Vector2(10, 38)
@@ -47,6 +49,15 @@ position = Vector2(0, -29)
 texture = ExtResource("3_arm")
 centered = false
 offset = Vector2(-3, -4)
+
+[node name="ThrowPivot" type="Node2D" parent="Visual"]
+visible = false
+position = Vector2(0, -29)
+
+[node name="ThrowArm" type="Sprite2D" parent="Visual/ThrowPivot"]
+texture = ExtResource("16_armb")
+centered = false
+offset = Vector2(-3, -5)
 
 [node name="BeamLight" type="PointLight2D" parent="."]
 enabled = false
@@ -123,6 +134,10 @@ knife = ExtResource("15_knife")
 arm_pivot_path = NodePath("../Visual/ArmPivot")
 arm_sprite_path = NodePath("../Visual/ArmPivot/ArmSprite")
 muzzle_flash_path = NodePath("../MuzzleFlash")
+
+[node name="ThrowComponent" type="Node" parent="."]
+script = ExtResource("17_throw")
+arm_path = NodePath("../Visual/ThrowPivot")
 
 [node name="InteractionComponent" type="Area2D" parent="."]
 collision_layer = 0

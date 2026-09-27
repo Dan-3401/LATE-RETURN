@@ -1,0 +1,263 @@
+[gd_scene load_steps=42 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/camp_hub_level.gd" id="1_camp_hub_lev"]
+[ext_resource type="Resource" path="res://resources/dialogue/sister_pool.tres" id="2_sister_pool"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/backwall.png" id="3_backwall"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/door.png" id="4_door"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/stacked_chairs.png" id="5_stacked_chai"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/supplies.png" id="6_supplies"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/desk_table.png" id="7_desk_table"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/lamp.png" id="8_lamp"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/bedroll.png" id="9_bedroll"]
+[ext_resource type="Script" path="res://scripts/levels/camp_storage.gd" id="10_camp_storage"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/water_storage_0.png" id="11_water_storag"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/water_storage_1.png" id="12_water_storag"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/water_storage_2.png" id="13_water_storag"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/water_storage_3.png" id="14_water_storag"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_0.png" id="15_food_storage"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_1.png" id="16_food_storage"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_2.png" id="17_food_storage"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_3.png" id="18_food_storage"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/candle.png" id="19_candle"]
+[ext_resource type="TileSet" path="res://resources/tilesets/camp_tiles.tres" id="24_camp_tiles"]
+[ext_resource type="Script" path="res://scripts/actors/sister.gd" id="25_sister"]
+[ext_resource type="SpriteFrames" path="res://art/characters/sister/sister_frames.tres" id="26_sister_frame"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/blanket.png" id="27_blanket"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="28_radial_large"]
+[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="29_radial"]
+[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="30_flicker_ligh"]
+[ext_resource type="Texture2D" path="res://art/lights/window_beam.png" id="31_window_beam"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="32_pixel"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="33_interactable"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="36_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="37_game_camera"]
+[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="38_dialogue_pla"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="39_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/region_map.tscn" id="40_region_map"]
+[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="41_confirm_dial"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_20"]
+atlas = ExtResource("19_candle")
+region = Rect2(0, 0, 6, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_21"]
+atlas = ExtResource("19_candle")
+region = Rect2(6, 0, 6, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_22"]
+atlas = ExtResource("19_candle")
+region = Rect2(12, 0, 6, 14)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_23"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_20")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_21")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_22")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_34"]
+size = Vector2(40.0, 40.0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_35"]
+size = Vector2(44.0, 40.0)
+
+[node name="CampHub" type="Node2D"]
+script = ExtResource("1_camp_hub_lev")
+ambience = Array[StringName]([&"amb_camp"])
+ambience_volume_db = -6.0
+sister_pool = ExtResource("2_sister_pool")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.2, 0.2, 0.28, 1.0)
+
+[node name="Room" type="Node2D" parent="."]
+z_index = -20
+
+[node name="BackWall" type="Sprite2D" parent="Room"]
+light_mask = 2
+texture = ExtResource("3_backwall")
+centered = false
+
+[node name="Door" type="Sprite2D" parent="Room"]
+texture = ExtResource("4_door")
+centered = false
+position = Vector2(46.0, 112.0)
+light_mask = 2
+
+[node name="Furniture" type="Node2D" parent="."]
+z_index = -10
+
+[node name="Chairs" type="Sprite2D" parent="Furniture"]
+texture = ExtResource("5_stacked_chai")
+centered = false
+position = Vector2(111.0, 154.0)
+
+[node name="Supplies" type="Sprite2D" parent="Furniture"]
+texture = ExtResource("6_supplies")
+centered = false
+position = Vector2(169.0, 176.0)
+
+[node name="Table" type="Sprite2D" parent="Furniture"]
+texture = ExtResource("7_desk_table")
+centered = false
+position = Vector2(248.0, 172.0)
+
+[node name="Lamp" type="Sprite2D" parent="Furniture"]
+texture = ExtResource("8_lamp")
+centered = false
+position = Vector2(272.0, 174.0)
+
+[node name="Bedroll" type="Sprite2D" parent="Furniture"]
+texture = ExtResource("9_bedroll")
+centered = false
+position = Vector2(392.0, 204.0)
+
+[node name="Storage" type="Node2D" parent="Furniture"]
+position = Vector2(0.0, 0.0)
+script = ExtResource("10_camp_storage")
+water_textures = Array[Texture2D]([ExtResource("11_water_storag"), ExtResource("12_water_storag"), ExtResource("13_water_storag"), ExtResource("14_water_storag")])
+food_textures = Array[Texture2D]([ExtResource("15_food_storage"), ExtResource("16_food_storage"), ExtResource("17_food_storage"), ExtResource("18_food_storage")])
+
+[node name="Water" type="Sprite2D" parent="Furniture/Storage"]
+texture = ExtResource("11_water_storag")
+centered = false
+position = Vector2(502.0, 180.0)
+
+[node name="Food" type="Sprite2D" parent="Furniture/Storage"]
+texture = ExtResource("15_food_storage")
+centered = false
+position = Vector2(561.0, 184.0)
+
+[node name="Candle" type="AnimatedSprite2D" parent="Furniture"]
+position = Vector2(312.0, 183.0)
+sprite_frames = SubResource("SpriteFrames_23")
+autoplay = "default"
+
+[node name="Tiles" type="TileMapLayer" parent="."]
+z_index = -5
+tile_map_data = PackedByteArray(0, 0, 255, 255, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 255, 255, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 255, 255, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 2, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 2, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 3, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 4, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 4, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 5, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 5, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 6, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 6, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 6, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 7, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 7, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 8, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 8, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 9, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 9, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 9, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 10, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 10, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 10, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 11, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 11, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 11, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 12, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 12, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 12, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 13, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 13, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 13, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 14, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 14, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 14, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 15, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 15, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 16, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 16, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 16, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 17, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 17, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 17, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 18, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 18, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 18, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 19, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 19, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 19, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 20, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 20, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 21, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 21, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 22, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 22, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 22, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 23, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 23, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 24, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 24, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 24, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 25, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 25, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 25, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 26, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 26, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 26, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 27, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 27, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 27, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 28, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 28, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 28, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 29, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 29, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 29, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 30, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 30, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 30, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 31, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 31, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 31, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 32, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 32, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 32, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 33, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 33, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 33, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 34, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 34, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 34, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 35, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 35, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 35, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 36, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 36, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 36, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 37, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 37, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 38, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 38, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 38, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 39, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 39, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 39, 0, 16, 0, 0, 0, 1, 0, 2, 0, 0, 0, 40, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 40, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 40, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 41, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 41, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 41, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 255, 255, 254, 255, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 254, 255, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 255, 255, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 255, 255, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 1, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 1, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 4, 0, 0, 0, 1, 0, 3, 0, 0, 0, 40, 0, 4, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 5, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 5, 0, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 6, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 6, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 7, 0, 0, 0, 1, 0, 3, 0, 0, 0, 40, 0, 7, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 8, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 8, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 9, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 9, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 10, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 10, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 11, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 11, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 12, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 12, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 13, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 13, 0, 0, 0, 2, 0, 3, 0, 0, 0)
+tile_set = ExtResource("24_camp_tiles")
+
+[node name="Sister" type="Node2D" parent="."]
+position = Vector2(426.0, 218.0)
+z_index = -2
+script = ExtResource("25_sister")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="Sister"]
+position = Vector2(0.0, -24.0)
+flip_h = true
+sprite_frames = ExtResource("26_sister_frame")
+animation = &"sit_down"
+autoplay = "sit_down"
+
+[node name="Blanket" type="Sprite2D" parent="Sister"]
+texture = ExtResource("27_blanket")
+centered = false
+position = Vector2(-26.0, -10.0)
+flip_h = true
+
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="Lamp" type="PointLight2D" parent="Lights"]
+position = Vector2(278.0, 182.0)
+color = Color(1, 0.72, 0.42, 1.0)
+energy = 1.25
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("28_radial_large")
+texture_scale = 1.1
+
+[node name="Candle" type="PointLight2D" parent="Lights"]
+position = Vector2(312.0, 176.0)
+color = Color(1, 0.6, 0.3, 1.0)
+energy = 0.6
+range_item_cull_mask = 3
+texture = ExtResource("29_radial")
+texture_scale = 0.6
+script = ExtResource("30_flicker_ligh")
+base_energy = 0.6
+min_interval = 0.2
+max_interval = 0.8
+dead_chance = 0.0
+
+[node name="Nightlight" type="PointLight2D" parent="Lights"]
+position = Vector2(452.0, 204.0)
+color = Color(1, 0.7, 0.45, 1.0)
+energy = 0.45
+range_item_cull_mask = 3
+texture = ExtResource("29_radial")
+texture_scale = 0.7
+
+[node name="Window" type="PointLight2D" parent="Lights"]
+position = Vector2(470.0, 110.0)
+color = Color(0.5, 0.6, 0.9, 1.0)
+energy = 0.5
+range_item_cull_mask = 3
+texture = ExtResource("31_window_beam")
+texture_scale = 0.8
+
+[node name="Dust" type="CPUParticles2D" parent="."]
+position = Vector2(300.0, 150.0)
+amount = 18
+lifetime = 10.0
+preprocess = 10.0
+texture = ExtResource("32_pixel")
+emission_shape = 3
+emission_rect_extents = Vector2(120.0, 60.0)
+direction = Vector2(1.0, 0.2)
+spread = 180.0
+gravity = Vector2(0.0, 1.0)
+initial_velocity_min = 1.0
+initial_velocity_max = 3.0
+color = Color(1, 0.9, 0.75, 0.45)
+
+[node name="DoorInteract" type="Area2D" parent="."]
+position = Vector2(68.0, 204.0)
+script = ExtResource("33_interactable")
+prompt_text = "外出"
+prompt_offset = Vector2(0.0, -94.0)
+
+[node name="Shape" type="CollisionShape2D" parent="DoorInteract"]
+shape = SubResource("RectangleShape2D_34")
+
+[node name="SisterInteract" type="Area2D" parent="."]
+position = Vector2(420.0, 204.0)
+script = ExtResource("33_interactable")
+prompt_text = "与妹妹交谈"
+prompt_offset = Vector2(0.0, -44.0)
+
+[node name="Shape" type="CollisionShape2D" parent="SisterInteract"]
+shape = SubResource("RectangleShape2D_35")
+
+[node name="Player" parent="." instance=ExtResource("36_player")]
+position = Vector2(250.0, 224.0)
+
+[node name="GameCamera" type="Camera2D" parent="."]
+position = Vector2(330.0, 135.0)
+limit_left = 0
+limit_top = 0
+limit_right = 640
+limit_bottom = 270
+script = ExtResource("37_game_camera")
+target_path = NodePath("../Player")
+
+[node name="DialoguePlayer" type="Node" parent="."]
+script = ExtResource("38_dialogue_pla")
+
+[node name="HUD" parent="." instance=ExtResource("39_hud")]
+
+[node name="RegionMap" parent="." instance=ExtResource("40_region_map")]
+
+[node name="ConfirmDialog" parent="." instance=ExtResource("41_confirm_dial")]
+

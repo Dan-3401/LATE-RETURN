@@ -3,6 +3,7 @@ extends RefCounted
 ## Fixed-size slot inventory with stacking.
 
 signal changed
+signal item_added(item: ItemData, count: int)
 
 var size: int = 10
 ## Each slot: null or { "item": ItemData, "count": int }
@@ -33,8 +34,41 @@ func add(item: ItemData, count: int = 1) -> int:
 			slots[i] = {"item": item, "count": take}
 			left -= take
 	if left != count:
+		item_added.emit(item, count - left)
 		changed.emit()
 	return left
+
+
+func used_slots() -> int:
+	var n := 0
+	for s in slots:
+		if s != null:
+			n += 1
+	return n
+
+
+## Change the number of slots. Growing appends empty slots. Shrinking first
+## packs items toward the front; unless `force` it never drops items (the
+## caller must check used_slots() first).
+func resize(new_size: int, force: bool = false) -> void:
+	if new_size >= size:
+		slots.resize(new_size)
+		size = new_size
+		changed.emit()
+		return
+	var packed: Array = []
+	for s in slots:
+		if s != null:
+			packed.append(s)
+	if packed.size() > new_size and not force:
+		push_error("Inventory.resize would drop items")
+		return
+	slots.clear()
+	slots.resize(new_size)
+	for i in mini(packed.size(), new_size):
+		slots[i] = packed[i]
+	size = new_size
+	changed.emit()
 
 
 func can_add(item: ItemData, count: int = 1) -> bool:
@@ -95,6 +129,9 @@ func to_data() -> Array:
 
 
 func from_data(data: Array) -> void:
+	if data.size() > size:
+		slots.resize(data.size())
+		size = data.size()
 	for i in size:
 		slots[i] = null
 		if i < data.size() and data[i] != null:

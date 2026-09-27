@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/warehouse_door.gd" id="1_warehouse_do"]
+[ext_resource type="Resource" path="res://resources/items/warehouse_key.tres" id="2_warehouse_ke"]
+[ext_resource type="Texture2D" path="res://art/environment/store/storeroom_door_open.png" id="3_storeroom_do"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="5_interactable"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(30.0, 40.0)
+
+[node name="WarehouseDoor" type="Node2D"]
+script = ExtResource("1_warehouse_do")
+key_item = ExtResource("2_warehouse_ke")
+
+[node name="OpenSprite" type="Sprite2D" parent="."]
+visible = false
+light_mask = 2
+texture = ExtResource("3_storeroom_do")
+centered = false
+offset = Vector2(-18.0, -66.0)
+
+[node name="Interactable" type="Area2D" parent="."]
+position = Vector2(0.0, -20.0)
+script = ExtResource("5_interactable")
+prompt_text = "互动"
+prompt_offset = Vector2(0.0, -54.0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("RectangleShape2D_4")
+

@@ -54,7 +54,7 @@ func _run() -> void:
 	root.add_child(level)
 	current_scene = level
 	await wait(1.0)
-	var player: Player = get_first_node_in_group(&"player")
+	var player = get_first_node_in_group(&"player")
 	check(player != null, "player exists")
 	check(GS.objective.get("active", false), "objective active")
 	var exit_door := level.get_node("ExitDoor")

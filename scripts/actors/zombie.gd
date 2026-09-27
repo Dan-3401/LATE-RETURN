@@ -151,7 +151,7 @@ func _on_saw_hide(spot: Node2D) -> void:
 	var s := machine.state_name()
 	if dead or s in [&"Feed", &"Dead", &"Alert"]:
 		return
-	machine.transition_to(&"Investigate", {"pos": spot.global_position, "hide_spot": spot, "fast": s in [&"Chase", &"Attack"]})
+	machine.transition_to(&"Investigate", {"pos": spot.global_position, "hide_spot": spot, "fast": s in [&"Chase", &"Attack"], "from_chase": true})
 
 
 # --- damage ------------------------------------------------------------------------

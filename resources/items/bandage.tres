@@ -15,3 +15,6 @@ max_stack = 5
 value = 12
 weight = 0.1
 task_tag = &""
+equip_slot = &""
+capacity_bonus = 0
+diary_name = "绷带"

@@ -716,6 +716,39 @@ def blood_decal(seed=14):
     return cv
 
 
+def green_mark(cv, rng, kind):
+    """The hide-spot visual language: natural green — weeds, vines, moss,
+    a green rag or paint — never a glowing outline."""
+    w, h = cv.w, cv.h
+    if kind in ("car", "dumpster"):
+        # weeds growing around the base
+        for _ in range(int(w * 0.8)):
+            gx = rng.randint(1, w - 2)
+            gh = rng.randint(2, 7)
+            for y in range(gh):
+                cv.px(gx + (1 if y > gh * 0.6 and rng.random() < 0.3 else 0), h - 1 - y, c("grass", rng.randint(2, 5)))
+    if kind == "car":
+        # a green rag tied to the door handle
+        cv.poly([(44, 24), (48, 24), (47, 34), (45, 33)], c("green", 3))
+        cv.px(46, 25, c("green", 5))
+        # moss on the sill
+        for x in range(26, 60):
+            if rng.random() < 0.6:
+                cv.px(x, 34, c("grass", rng.randint(3, 5)))
+    if kind == "dumpster":
+        # vine climbing the side and moss on the rim
+        vx = 3
+        for y in range(h - 1, 6, -1):
+            vx = max(1, min(8, vx + rng.choice([-1, 0, 1])))
+            cv.px(vx, y, c("grass", 3))
+            if rng.random() < 0.35:
+                cv.px(vx + 1, y, c("grass", 5))
+        for x in range(4, w - 4):
+            if rng.random() < 0.4:
+                cv.px(x, 11, c("grass", 4))
+    return cv
+
+
 def main():
     tiles().save(f"{OUT}/tiles.png")
     segs = {
@@ -727,9 +760,11 @@ def main():
     car(1, "sedan", "blue").save(f"{OUT}/car_sedan_blue.png")
     car(2, "sedan", "red").save(f"{OUT}/car_sedan_red.png")
     car_door_open(1, "blue").save(f"{OUT}/car_sedan_blue_open.png")
+    green_mark(car_door_open(1, "blue"), random.Random(5), "car").save(f"{OUT}/car_hide_open.png")
+    green_mark(car(1, "sedan", "blue"), random.Random(5), "car").save(f"{OUT}/car_hide_closed.png")
     car(3, "van", "paper").save(f"{OUT}/car_van.png")
-    dumpster(False).save(f"{OUT}/dumpster.png")
-    dumpster(True).save(f"{OUT}/dumpster_open.png")
+    green_mark(dumpster(False), random.Random(8), "dumpster").save(f"{OUT}/dumpster.png")
+    green_mark(dumpster(True), random.Random(8), "dumpster").save(f"{OUT}/dumpster_open.png")
     barrier().save(f"{OUT}/barrier.png")
     make_sheet(fire_barrel_frames()).save(f"{OUT}/fire_barrel.png")
     make_sheet(grass_frames(21)).save(f"{OUT}/grass_a.png")

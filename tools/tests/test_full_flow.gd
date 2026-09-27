@@ -207,14 +207,16 @@ func _run() -> void:
 		if i == 60:
 			await shot("09_dialogue")
 	check("早点回来。" in spoken and "别让我等太久。" in spoken and "嗯。" in spoken, "ending dialogue played (%d lines)" % spoken.size())
-	check(await wait_scene("res://scenes/ui/demo_end.tscn", 30.0), "fade -> Demo End")
-	await wait(12.0)
-	await shot("10_demo_end")
+	check(await wait_scene("res://scenes/ui/diary.tscn", 40.0), "fade -> first diary page (9月28日)")
+	await wait(18.0)
+	await shot("10_diary")
+	check(current_scene.get_node("Paper/Date").text == "9月28日", "diary date")
 	var ev := InputEventKey.new()
 	ev.physical_keycode = KEY_SPACE
 	ev.pressed = true
 	Input.parse_input_event(ev)
-	check(await wait_scene("res://scenes/ui/main_menu.tscn", 10.0), "Demo End -> main menu")
+	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0), "diary -> task update -> day 2 camp hub")
+	check(GS.is_free_phase() and GS.objective.title == "寻找能够治疗哮喘病的药", "Demo 2 starts with the medicine task")
 
 	print("RESULT: %s (%d failures)" % ["OK" if failures.is_empty() else "FAILED", failures.size()])
 	quit(0 if failures.is_empty() else 1)

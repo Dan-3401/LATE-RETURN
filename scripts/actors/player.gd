@@ -26,6 +26,8 @@ const FOOTSTEP_NOISE := {
 @onready var flashlight: FlashlightComponent = $FlashlightComponent
 @onready var weapons: WeaponComponent = $WeaponComponent
 @onready var interaction: InteractionComponent = $InteractionComponent
+@onready var throw: ThrowComponent = $ThrowComponent
+@onready var throw_pivot: Node2D = $Visual/ThrowPivot
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
 var state: State = State.NORMAL
@@ -80,9 +82,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			interaction.try_interact()
 	elif state == State.NORMAL:
 		if event.is_action_pressed(&"toggle_pistol"):
+			throw.set_ready(false)
 			weapons.toggle(weapons.pistol)
 		elif event.is_action_pressed(&"toggle_knife"):
+			throw.set_ready(false)
 			weapons.toggle(weapons.knife)
+		elif event.is_action_pressed(&"throw_ready"):
+			if not throw.is_ready and weapons.is_armed():
+				weapons.equip(null)
+			throw.toggle(self)
+		elif event.is_action_pressed(&"attack") and throw.is_ready:
+			throw.try_throw(self)
 		elif event.is_action_pressed(&"attack"):
 			if weapons.try_attack(self, shoulder_global(), facing):
 				stealth.spike(1.0 if weapons.current.is_ranged else 0.6, 1.0 if weapons.current.is_ranged else 0.3)
@@ -112,7 +122,7 @@ func _physics_process(delta: float) -> void:
 
 	var mouse := get_global_mouse_position()
 	# facing
-	if weapons.is_armed() and active:
+	if (weapons.is_armed() or throw.is_ready) and active:
 		facing = 1 if mouse.x >= global_position.x else -1
 	elif absf(move_x) > 0.1 and state != State.HIDDEN:
 		facing = 1 if move_x > 0 else -1
@@ -144,6 +154,8 @@ func _update_attachments(delta: float, mouse: Vector2) -> void:
 	var sh := RIG.get_point(anim, fr, "shoulder", Vector2(0, -29))
 	arm_pivot.position = sh.round()
 	weapons.update_aim(shoulder_global(), mouse, facing)
+	throw_pivot.position = sh.round()
+	throw.update(self, shoulder_global(), mouse, facing)
 	var chest := RIG.get_point(anim, fr, "chest", Vector2(1, -27))
 	var chest_global := global_position + Vector2(chest.x * facing, chest.y)
 	flashlight.update(delta, chest_global, facing, mouse, weapons.is_armed())
@@ -162,7 +174,7 @@ func get_speech_anchor() -> Vector2:
 func _update_animation() -> void:
 	if _anim_lock != "":
 		return
-	var armed := weapons.is_armed()
+	var armed := weapons.is_armed() or throw.is_ready
 	var anim := "idle"
 	match state:
 		State.DEAD:
@@ -190,10 +202,11 @@ func _update_animation() -> void:
 				anim = "idle"
 			if armed and anim in ["idle", "walk", "sneak", "run", "jump", "fall", "land"]:
 				anim = "armed_" + anim
+	throw_pivot.visible = throw.is_ready and state == State.NORMAL and not anim.begins_with("hurt")
 	if state == State.SEARCHING or state == State.HIDDEN:
 		arm_pivot.visible = false
 	else:
-		arm_pivot.visible = armed and not anim.begins_with("hurt")
+		arm_pivot.visible = weapons.is_armed() and not anim.begins_with("hurt")
 	if body_sprite.animation != anim:
 		body_sprite.play(anim)
 	# walk animations follow actual speed
@@ -332,6 +345,7 @@ func enter_hide(spot: Node2D, hide_pos: Vector2) -> void:
 	global_position = hide_pos
 	visual.visible = false
 	collision.set_deferred(&"disabled", true)
+	throw.set_ready(false)
 	stealth.set_hidden(true, spot)
 	breath.noise_scale = 0.7
 	flashlight.set_on(false, true)
@@ -395,6 +409,7 @@ func _on_died() -> void:
 	GameState.hp = 0.0
 	movement.stop()
 	weapons.equip(null)
+	throw.set_ready(false)
 	breath.enabled = false
 	interaction.clear()
 	interaction.enabled = false
@@ -415,6 +430,7 @@ func set_cutscene(on: bool) -> void:
 		return
 	if on:
 		cancel_search()
+		throw.set_ready(false)
 		movement.stop()
 		breath.set_hold(false)
 		interaction.clear()

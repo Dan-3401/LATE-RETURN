@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ContainerData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/container_data.gd" id="1_s"]
+[ext_resource type="Resource" path="res://resources/loot_tables/warehouse_boxes.tres" id="2_t"]
+
+[resource]
+script = ExtResource("1_s")
+display_name = "清洁用品架"
+prompt = "搜刮"
+search_time = 1.6
+loot_table = ExtResource("2_t")
+empty_lines = PackedStringArray("……空的。", "什么都没有。")
+accepts_guaranteed = true
+search_sound = &"rummage_box"

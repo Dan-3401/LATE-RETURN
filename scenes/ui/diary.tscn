@@ -1,0 +1,77 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/diary_screen.gd" id="1_diary_screen"]
+[ext_resource type="Texture2D" path="res://art/ui/diary_paper.png" id="2_diary_paper"]
+
+[node name="Diary" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_diary_screen")
+
+[node name="Black" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="Paper" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 90.0
+offset_top = 24.0
+offset_right = 390.0
+offset_bottom = 238.0
+texture = ExtResource("2_diary_paper")
+
+[node name="Date" type="Label" parent="Paper"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 12.0
+offset_right = 200.0
+offset_bottom = 34.0
+theme_type_variation = &"DiaryDate"
+text = "9月28日"
+
+[node name="Lines" type="VBoxContainer" parent="Paper"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 40.0
+offset_right = 284.0
+offset_bottom = 206.0
+theme_override_constants/separation = 2
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -19.0
+offset_right = -8.0
+offset_bottom = -5.0
+theme_override_colors/font_color = Color(0.55, 0.53, 0.48, 1)
+text = "按任意键继续"
+horizontal_alignment = 2
+
+[node name="Task" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = 250.0
+offset_bottom = 44.0
+theme_override_constants/separation = 0
+
+[node name="Header" type="Label" parent="Task"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.6, 0.54, 1)
+text = "任务更新"
+
+[node name="Title" type="Label" parent="Task"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.88, 0.76, 1)
+text = "寻找能够治疗哮喘病的药"
+

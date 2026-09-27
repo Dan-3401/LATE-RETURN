@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"wargame"
+display_name = "Wargame 中心"
+description = "过河前的那栋灰色建筑。以前是打真人对战的地方，也许留着些装备。"
+cost_food = 2
+cost_water = 1
+map_position = Vector2(300, 52)
+playable = false
+region_scene = ""

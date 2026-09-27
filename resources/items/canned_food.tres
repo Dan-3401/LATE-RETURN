@@ -15,3 +15,6 @@ max_stack = 10
 value = 10
 weight = 0.4
 task_tag = &"food"
+equip_slot = &""
+capacity_bonus = 0
+diary_name = "食物"

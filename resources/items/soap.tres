@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/soap.png" id="2_i"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"soap"
+display_name = "肥皂"
+description = "一块没拆封的肥皂。她会高兴的。"
+icon = ExtResource("2_i")
+item_type = 1
+stackable = true
+max_stack = 10
+value = 4
+weight = 0.1
+task_tag = &""
+equip_slot = &""
+capacity_bonus = 0
+diary_name = "生活用品"

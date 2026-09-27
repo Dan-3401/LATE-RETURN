@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/interactables/hide_spot.gd" id="1_hide_spot"]
-[ext_resource type="Texture2D" path="res://art/environment/street/car_sedan_blue.png" id="2_car_sedan_bl"]
-[ext_resource type="Texture2D" path="res://art/environment/street/car_sedan_blue_open.png" id="3_car_sedan_bl"]
+[ext_resource type="Texture2D" path="res://art/environment/street/car_hide_closed.png" id="2_car_hide_clo"]
+[ext_resource type="Texture2D" path="res://art/environment/street/car_hide_open.png" id="3_car_hide_ope"]
 [ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="5_interactable"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
@@ -15,10 +15,10 @@ polygon = PackedVector2Array(-50.0, 0.0, -49.0, -10.0, -36.0, -20.0, -22.0, -34.
 [node name="CarHide" type="Node2D"]
 script = ExtResource("1_hide_spot")
 hide_offset = Vector2(-6.0, 0.0)
-occupied_texture = ExtResource("2_car_sedan_bl")
+occupied_texture = ExtResource("2_car_hide_clo")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-texture = ExtResource("3_car_sedan_bl")
+texture = ExtResource("3_car_hide_ope")
 centered = false
 offset = Vector2(-52.0, -42.0)
 

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LocationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"store"
+display_name = "附近的便利店"
+description = "学校旁边的那家便利店。熟悉，离得近，相对安全。"
+cost_food = 1
+cost_water = 1
+map_position = Vector2(112, 98)
+playable = true
+region_scene = "res://scenes/maps/region_store.tscn"

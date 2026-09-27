@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="DialoguePool" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/dialogue_pool.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+pool_text = "妹妹: 今天还出去吗？
+哥哥: 嗯。
+妹妹: 那早点回来。
+---
+妹妹: 外面很冷吗？
+哥哥: 还好。
+妹妹: 你每次都说还好。
+---
+妹妹: 水还有吗？
+哥哥: 还有一些。
+妹妹: 省着点喝吧。
+---
+妹妹: 你今天看起来很累。
+哥哥: 睡一觉就好了。
+妹妹: 你最好真去睡。
+---
+妹妹: 外面安静吗？
+哥哥: 太安静了。
+妹妹: ……那不是好事吧。
+---
+妹妹: 药……我会省着用的。
+哥哥: 不用省。
+哥哥: 我会找到的。
+---
+妹妹: 你带回来的肥皂真好闻。
+哥哥: 便利店里剩的。
+妹妹: 下次……算了，没什么。
+"
