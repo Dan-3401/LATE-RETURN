@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="1_t"]
+[ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="2_e"]
+[ext_resource type="Resource" path="res://resources/items/parts.tres" id="i0"]
+[ext_resource type="Resource" path="res://resources/items/junk.tres" id="i1"]
+[ext_resource type="Resource" path="res://resources/items/bandage.tres" id="i2"]
+[ext_resource type="Resource" path="res://resources/items/canned_food.tres" id="i3"]
+
+[sub_resource type="Resource" id="e0"]
+script = ExtResource("2_e")
+item = ExtResource("i0")
+weight = 2.0
+min_count = 1
+max_count = 2
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2_e")
+item = ExtResource("i1")
+weight = 2.0
+min_count = 1
+max_count = 2
+
+[sub_resource type="Resource" id="e2"]
+script = ExtResource("2_e")
+item = ExtResource("i2")
+weight = 0.6
+min_count = 1
+max_count = 1
+
+[sub_resource type="Resource" id="e3"]
+script = ExtResource("2_e")
+item = ExtResource("i3")
+weight = 0.6
+min_count = 1
+max_count = 1
+
+[resource]
+script = ExtResource("1_t")
+entries = Array[ExtResource("2_e")]([SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3")])
+rolls_min = 1
+rolls_max = 2
+empty_weight = 1.0

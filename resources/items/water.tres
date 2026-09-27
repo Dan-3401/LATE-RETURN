@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/water.png" id="2_i"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"water"
+display_name = "饮用水"
+description = "一瓶还没开封的矿泉水。瓶身上落满了灰。"
+icon = ExtResource("2_i")
+item_type = 0
+stackable = true
+max_stack = 10
+value = 8
+weight = 0.5
+task_tag = &"water"

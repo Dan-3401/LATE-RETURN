@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/interaction_prompt.gd" id="1_s"]
+
+[node name="InteractionPrompt" type="PanelContainer"]
+theme_type_variation = &"PromptPanel"
+script = ExtResource("1_s")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.84, 0.72, 1)
+text = "[F] 搜刮"

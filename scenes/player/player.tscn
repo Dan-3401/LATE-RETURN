@@ -1,0 +1,135 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scripts/actors/player.gd" id="1_player"]
+[ext_resource type="SpriteFrames" path="res://art/characters/player/player_frames.tres" id="2_frames"]
+[ext_resource type="Texture2D" path="res://art/characters/player/arm_pistol.png" id="3_arm"]
+[ext_resource type="Texture2D" path="res://art/lights/flashlight_cone.png" id="4_cone"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_small.png" id="5_radial_s"]
+[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="6_radial"]
+[ext_resource type="Script" path="res://scripts/components/movement_component.gd" id="7_move"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="8_health"]
+[ext_resource type="Script" path="res://scripts/components/breath_component.gd" id="9_breath"]
+[ext_resource type="Script" path="res://scripts/components/stealth_component.gd" id="10_stealth"]
+[ext_resource type="Script" path="res://scripts/components/flashlight_component.gd" id="11_flash"]
+[ext_resource type="Script" path="res://scripts/components/weapon_component.gd" id="12_weapon"]
+[ext_resource type="Script" path="res://scripts/components/interaction_component.gd" id="13_interact"]
+[ext_resource type="Resource" path="res://resources/weapons/pistol.tres" id="14_pistol"]
+[ext_resource type="Resource" path="res://resources/weapons/knife.tres" id="15_knife"]
+
+[sub_resource type="RectangleShape2D" id="shape_body"]
+size = Vector2(10, 38)
+
+[sub_resource type="CircleShape2D" id="shape_interact"]
+radius = 18.0
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+floor_snap_length = 4.0
+script = ExtResource("1_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -19)
+shape = SubResource("shape_body")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Body" type="AnimatedSprite2D" parent="Visual"]
+position = Vector2(0, -24)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="ArmPivot" type="Node2D" parent="Visual"]
+visible = false
+position = Vector2(0, -29)
+
+[node name="ArmSprite" type="Sprite2D" parent="Visual/ArmPivot"]
+texture = ExtResource("3_arm")
+centered = false
+offset = Vector2(-3, -4)
+
+[node name="BeamLight" type="PointLight2D" parent="."]
+enabled = false
+color = Color(1, 0.94, 0.8, 1)
+energy = 1.15
+range_item_cull_mask = 1
+texture_scale = 1.35
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 1)
+shadow_item_cull_mask = 1
+texture = ExtResource("4_cone")
+offset = Vector2(216, 0)
+
+[node name="BeamWallLight" type="PointLight2D" parent="."]
+enabled = false
+color = Color(1, 0.94, 0.8, 1)
+energy = 1.15
+range_item_cull_mask = 2
+texture_scale = 1.35
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 1)
+shadow_item_cull_mask = 3
+texture = ExtResource("4_cone")
+offset = Vector2(216, 0)
+
+[node name="SpillLight" type="PointLight2D" parent="."]
+enabled = false
+color = Color(1, 0.92, 0.78, 1)
+energy = 0.45
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("5_radial_s")
+
+[node name="PresenceLight" type="PointLight2D" parent="."]
+position = Vector2(0, -22)
+range_item_cull_mask = 3
+color = Color(0.62, 0.7, 0.86, 1)
+energy = 0.22
+texture = ExtResource("6_radial")
+texture_scale = 0.55
+
+[node name="MuzzleFlash" type="PointLight2D" parent="."]
+enabled = false
+color = Color(1, 0.8, 0.5, 1)
+energy = 1.8
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_item_cull_mask = 1
+texture = ExtResource("6_radial")
+texture_scale = 2.2
+
+[node name="MovementComponent" type="Node" parent="."]
+script = ExtResource("7_move")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("8_health")
+
+[node name="BreathComponent" type="Node" parent="."]
+script = ExtResource("9_breath")
+
+[node name="StealthComponent" type="Node" parent="."]
+script = ExtResource("10_stealth")
+
+[node name="FlashlightComponent" type="Node" parent="."]
+script = ExtResource("11_flash")
+beam_paths = Array[NodePath]([NodePath("../BeamLight"), NodePath("../BeamWallLight")])
+spill_path = NodePath("../SpillLight")
+
+[node name="WeaponComponent" type="Node" parent="."]
+script = ExtResource("12_weapon")
+pistol = ExtResource("14_pistol")
+knife = ExtResource("15_knife")
+arm_pivot_path = NodePath("../Visual/ArmPivot")
+arm_sprite_path = NodePath("../Visual/ArmPivot/ArmSprite")
+muzzle_flash_path = NodePath("../MuzzleFlash")
+
+[node name="InteractionComponent" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+script = ExtResource("13_interact")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionComponent"]
+position = Vector2(0, -16)
+shape = SubResource("shape_interact")

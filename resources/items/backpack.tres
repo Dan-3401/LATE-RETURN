@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/backpack.png" id="2_i"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"backpack"
+display_name = "旧背包"
+description = "跟着我跑了很多地方。"
+icon = ExtResource("2_i")
+item_type = 6
+stackable = false
+max_stack = 1
+value = 10
+weight = 1.0
+task_tag = &""

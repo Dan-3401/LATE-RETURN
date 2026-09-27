@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_s"]
+[ext_resource type="Resource" path="res://resources/items/pistol.tres" id="2_i"]
+[ext_resource type="Texture2D" path="res://art/characters/player/arm_pistol.png" id="3_a"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"pistol"
+display_name = "手枪"
+item = ExtResource("2_i")
+is_ranged = true
+damage = 100.0
+sneak_multiplier = 1.0
+cooldown = 0.38
+attack_range = 420.0
+noise_radius = 720.0
+hit_noise_radius = 0.0
+attack_sound = &"gunshot"
+arm_texture = ExtResource("3_a")
+arm_pivot = Vector2(3, 4)
+tip = Vector2(21, 2)

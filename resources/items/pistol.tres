@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/pistol.png" id="2_i"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"pistol"
+display_name = "手枪"
+description = "旧式手枪。子弹只剩下这么多了。"
+icon = ExtResource("2_i")
+item_type = 4
+stackable = false
+max_stack = 1
+value = 50
+weight = 1.0
+task_tag = &""

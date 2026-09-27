@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/pickup_item.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/water.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://art/fx/glint.png" id="3_glint"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="4_int"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_small.png" id="5_light"]
+
+[sub_resource type="RectangleShape2D" id="shape_body"]
+size = Vector2(8, 6)
+
+[sub_resource type="CircleShape2D" id="shape_int"]
+radius = 10.0
+
+[node name="Pickup" type="CharacterBody2D"]
+collision_layer = 16
+script = ExtResource("1_s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+shape = SubResource("shape_body")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -8)
+texture = ExtResource("2_icon")
+
+[node name="Glint" type="Sprite2D" parent="."]
+position = Vector2(0, -10)
+texture = ExtResource("3_glint")
+hframes = 3
+
+[node name="Glow" type="PointLight2D" parent="."]
+position = Vector2(0, -8)
+color = Color(1, 0.9, 0.7, 1)
+energy = 0.3
+texture = ExtResource("5_light")
+texture_scale = 0.5
+
+[node name="Interactable" type="Area2D" parent="."]
+position = Vector2(0, -6)
+script = ExtResource("4_int")
+prompt_text = "拾取"
+prompt_offset = Vector2(0, -16)
+focus_priority = 0.3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Interactable"]
+shape = SubResource("shape_int")

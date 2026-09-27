@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/loading_screen.gd" id="1_loading_scre"]
+[ext_resource type="Texture2D" path="res://art/ui/logo_small.png" id="2_logo_small"]
+
+[node name="LoadingScreen" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_loading_scre")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Black" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="Logo" type="TextureRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -76.0
+offset_top = -42.0
+offset_right = -22.0
+offset_bottom = -14.0
+texture = ExtResource("2_logo_small")
+modulate = Color(1, 1, 1, 0.8)
+
+[node name="Dots" type="Label" parent="Root"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -24.0
+offset_right = -4.0
+offset_bottom = -10.0
+theme_override_colors/font_color = Color(0.5, 0.48, 0.44, 1)
+text = "..."
+

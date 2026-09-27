@@ -1,0 +1,7 @@
+.godot/
+*.import.tmp
+/export/
+/build/
+__pycache__/
+*.pyc
+art/_preview/

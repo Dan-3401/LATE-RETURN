@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://art/ui/icons/junk.png" id="2_i"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"junk"
+display_name = "废纸"
+description = "受潮的包装纸。没什么用。"
+icon = ExtResource("2_i")
+item_type = 2
+stackable = true
+max_stack = 20
+value = 0
+weight = 0.05
+task_tag = &""

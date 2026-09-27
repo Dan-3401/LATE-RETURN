@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ContainerData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/container_data.gd" id="1_s"]
+[ext_resource type="Resource" path="res://resources/loot_tables/store_shelf.tres" id="2_t"]
+
+[resource]
+script = ExtResource("1_s")
+display_name = "货架"
+prompt = "搜刮"
+search_time = 2.0
+loot_table = ExtResource("2_t")
+empty_lines = PackedStringArray("……什么都没有。", "被人翻过了。", "空的。")
+accepts_guaranteed = true
+search_sound = &"rummage"

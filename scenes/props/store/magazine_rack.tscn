@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://art/environment/store/magazine_rack.png" id="1_magazine_rac"]
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_2"]
+cull_mode = 2
+polygon = PackedVector2Array(-16.0, -47.0, 16.0, -47.0, 16.0, 0.0, -16.0, 0.0)
+
+[node name="MagazineRack" type="Node2D"]
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_magazine_rac")
+centered = false
+offset = Vector2(-17.0, -48.0)
+
+[node name="Occluder" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_2")
+occluder_light_mask = 2
+
