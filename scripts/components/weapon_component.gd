@@ -1,15 +1,14 @@
 class_name WeaponComponent
 extends Node
-## Pistol / knife handling: equip, aim, attack. Only one weapon can be out,
-## so the two can never be in an attack state at the same time.
+## Ranged / melee weapon mechanics: arm sprite, aim, fire, swing. Driven by
+## WeaponBehavior while a weapon is the active hand item — only one weapon
+## is ever out.
 
 signal equipped_changed(weapon: WeaponData)
 signal attacked(weapon: WeaponData)
 signal fired(from: Vector2, to: Vector2, hit: Node)
 signal dry_fire
 
-@export var pistol: WeaponData
-@export var knife: WeaponData
 @export var arm_pivot_path: NodePath
 @export var arm_sprite_path: NodePath
 @export var muzzle_flash_path: NodePath
@@ -41,17 +40,12 @@ func is_armed() -> bool:
 	return current != null
 
 
-func toggle(weapon: WeaponData) -> void:
-	if busy or not enabled:
-		return
-	if current == weapon:
-		equip(null)
-	else:
-		equip(weapon)
-
-
 func equip(weapon: WeaponData) -> void:
+	if weapon == current:
+		return
 	current = weapon
+	_swing_offset = 0.0
+	_recoil = 0.0
 	if _arm_pivot:
 		_arm_pivot.visible = weapon != null
 	if weapon and _arm_sprite:
@@ -127,26 +121,29 @@ func _flash_muzzle(pos: Vector2) -> void:
 
 
 # --- knife -----------------------------------------------------------------
-func _swing(actor: Node2D, origin: Vector2, facing: int) -> void:
+func _swing(actor: Node2D, origin: Vector2, _facing: int) -> void:
 	busy = true
-	_cooldown = current.cooldown
-	AudioManager.play(current.attack_sound, -3.0)
-	attacked.emit(current)
+	var w := current
+	_cooldown = w.cooldown
+	AudioManager.play(w.attack_sound, -3.0)
+	attacked.emit(w)
 	var t := create_tween()
 	t.tween_property(self, "_swing_offset", -1.1, 0.07)
-	t.tween_callback(_knife_hit.bind(actor, origin))
+	t.tween_callback(_knife_hit.bind(actor, origin, w))
 	# the swoosh is heard after the blow lands (a victim cannot turn in time)
-	t.tween_callback(func(): NoiseSystem.emit_noise(origin, current.noise_radius if current else 34.0, actor, &"knife"))
+	t.tween_callback(func(): NoiseSystem.emit_noise(origin, w.noise_radius, actor, &"knife"))
 	t.tween_property(self, "_swing_offset", 0.7, 0.08)
 	t.tween_property(self, "_swing_offset", 0.0, 0.18)
 	t.tween_callback(func(): busy = false)
 
 
-func _knife_hit(actor: Node2D, origin: Vector2) -> void:
+func _knife_hit(actor: Node2D, origin: Vector2, w: WeaponData) -> void:
+	if not is_instance_valid(actor):
+		return
 	var dir := Vector2.from_angle(aim_angle)
-	var center := origin + dir * (current.attack_range * 0.6)
+	var center := origin + dir * (w.attack_range * 0.6)
 	var shape := CircleShape2D.new()
-	shape.radius = current.attack_range * 0.55
+	shape.radius = w.attack_range * 0.55
 	var q := PhysicsShapeQueryParameters2D.new()
 	q.shape = shape
 	q.transform = Transform2D(0.0, center)
@@ -156,10 +153,10 @@ func _knife_hit(actor: Node2D, origin: Vector2) -> void:
 	for r in results:
 		var n: Node = r.collider
 		if n and n.has_method(&"take_damage"):
-			var dmg := current.damage
+			var dmg := w.damage
 			if n.has_method(&"is_vulnerable_to_sneak_attack") and n.call(&"is_vulnerable_to_sneak_attack", actor):
-				dmg *= current.sneak_multiplier
+				dmg *= w.sneak_multiplier
 			n.call(&"take_damage", dmg, actor, dir)
 			AudioManager.play_at(&"knife_hit", center, -2.0)
-			NoiseSystem.emit_noise(center, current.hit_noise_radius, actor, &"knife_hit")
+			NoiseSystem.emit_noise(center, w.hit_noise_radius, actor, &"knife_hit")
 			break

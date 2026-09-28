@@ -143,7 +143,7 @@ func _run() -> void:
 	var walker = current_scene.get_node("Zombies/Walker")
 	var doorman = current_scene.get_node("Zombies/Doorman")
 	p.global_position = Vector2(walker.global_position.x - 90, 224)
-	p.weapons.equip(p.weapons.pistol)
+	p.hands.select(0)   # hand slot 1 = pistol
 	await wait(0.3)
 	p.weapons.update_aim(p.shoulder_global(), p.shoulder_global() + Vector2(0, -100), 1)
 	p.weapons.try_attack(p, p.shoulder_global(), 1)

@@ -23,7 +23,7 @@ func _ready() -> void:
 	player.set_cutscene(true)
 	player.visible = false
 	player.flashlight.set_on(false, true)
-	player.weapons.equip(null)
+	player.hands.holster()
 	camera.set_override(true)
 	camera.manual_position = Vector2(250, 135)
 	camera.global_position = Vector2(250, 135)

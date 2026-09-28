@@ -37,10 +37,16 @@ func _ready() -> void:
 	location_door.interacted.connect(_on_location_door)
 	if arriving:
 		await wait(1.0)
-		if GameState.throwable() != null:
-			hud.show_hint("2：准备投掷    左键：投出", 5.0)
+		var bottle_slot := -1
+		for i in GameState.HAND_SLOTS.size():
+			var it := GameState.hand_item(i)
+			if it and it.equipment_category == ItemData.EquipmentCategory.THROWABLE:
+				bottle_slot = i
+				break
+		if bottle_slot >= 0:
+			hud.show_hint("%d：拿出空瓶子    左键：投出" % (bottle_slot + 1), 5.0)
 		elif GameState.inventory.count_item(&"empty_bottle") > 0:
-			hud.show_hint("Tab：在背包里装备空瓶子，就能投掷", 5.0)
+			hud.show_hint("Tab：把空瓶子拖到手持栏，就能投掷", 5.0)
 
 
 func _process(delta: float) -> void:

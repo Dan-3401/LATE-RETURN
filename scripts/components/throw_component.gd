@@ -1,7 +1,8 @@
 class_name ThrowComponent
 extends Node
-## Throwables (the empty bottle). Independent from the pistol/knife:
-## ready it, aim (a dotted pixel arc shows the flight), throw.
+## Throw mechanics (the empty bottle), driven by ThrowBehavior while a
+## throwable is the active hand item: aim (a dotted pixel arc shows the
+## flight), throw.
 ## The bottle really flies; the noise happens where it breaks.
 
 signal readied(on: bool)
@@ -33,19 +34,7 @@ func _physics_process(delta: float) -> void:
 	_cd = maxf(_cd - delta, 0.0)
 
 
-func toggle(actor: Node2D) -> void:
-	set_ready(not is_ready, actor)
-
-
-func set_ready(on: bool, actor: Node2D = null) -> void:
-	if on:
-		if GameState.throwable() == null:
-			if actor and actor.has_method(&"say"):
-				if GameState.inventory.count_item(&"empty_bottle") > 0:
-					actor.call(&"say", "得先在背包里把瓶子装备上。")
-				else:
-					actor.call(&"say", "没有能扔的东西了。")
-			return
+func set_ready(on: bool) -> void:
 	if on == is_ready:
 		return
 	is_ready = on
@@ -70,9 +59,6 @@ func solve_velocity(origin: Vector2, target: Vector2) -> Vector2:
 ## Called every frame by the actor while ready.
 func update(actor: Node2D, hand: Vector2, aim_point: Vector2, facing: int) -> void:
 	if not is_ready:
-		return
-	if GameState.throwable() == null:
-		set_ready(false)
 		return
 	_origin = hand
 	_velocity = solve_velocity(hand, aim_point)
@@ -105,22 +91,18 @@ func simulate(actor: Node2D, from: Vector2, v: Vector2) -> PackedVector2Array:
 	return pts
 
 
-func try_throw(actor: Node2D) -> bool:
-	if not is_ready or _cd > 0.0:
-		return false
-	var item := GameState.throwable()
-	if item == null:
-		set_ready(false)
+## Throws one `item` held in the hand slot `slot` (it is used up there).
+func try_throw(actor: Node2D, item: ItemData, slot: String) -> bool:
+	if not is_ready or _cd > 0.0 or GameState.equip_count(slot) <= 0:
 		return false
 	_cd = cooldown
-	GameState.inventory.remove(item.id, 1)
 	var b: Node2D = PROJECTILE.instantiate()
 	actor.get_parent().add_child(b)
 	b.call(&"launch", _origin, _velocity, gravity, actor)
 	AudioManager.play(&"throw", -6.0)
 	thrown.emit(item)
-	if GameState.inventory.count_item(item.id) <= 0:
-		set_ready(false)
+	# last one gone -> the slot empties and the hands are put away
+	GameState.consume_hand(slot, 1)
 	return true
 
 

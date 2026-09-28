@@ -96,6 +96,14 @@ func wait_scene(path: String, timeout: float, old: Node = null) -> bool:
 	return false
 
 
+func bag_index(id: StringName) -> int:
+	for i in GS.inventory.size:
+		var s = GS.inventory.slots[i]
+		if s != null and s.item.id == id:
+			return i
+	return -1
+
+
 func player():
 	return get_first_node_in_group(&"player")
 
@@ -223,22 +231,23 @@ func _run() -> void:
 	# ---------------- bottle decoy ----------------
 	var bottle_item: ItemData = load("res://resources/items/empty_bottle.tres")
 	GS.inventory.add(bottle_item, 2)
-	check(GS.equip_item(bottle_item) == "" and GS.throwable() == bottle_item, "equip empty bottle as throwable")
+	check(GS.move_item({"kind": "bag", "index": bag_index(&"empty_bottle")}, {"kind": "equip", "slot": "hand3"}) == "" and GS.equip_get("hand3") == bottle_item and GS.equip_count("hand3") == 2, "bottles dragged into hand slot 3")
 	var stray = region.get_node("Zombies/Stray")
 	stray.machine.transition_to(&"Idle", {"duration": 99.0})
 	p.global_position = Vector2(2440, 224)
 	p.set_physics_process(false)
 	await wait(0.3)
 	var target: Vector2 = stray.global_position + Vector2(-90, 0)
-	p.throw.set_ready(true, p)
+	p.hands.select(2)
+	check(p.throw.is_ready and not p.weapons.is_armed(), "key 3: throw-ready, no gun out")
 	p.throw.update(p, p.shoulder_global(), target, -1)
 	var arc: PackedVector2Array = p.throw.simulate(p, p.shoulder_global(), p.throw.solve_velocity(p.shoulder_global(), target))
 	check(arc.size() > 5 and absf(arc[-1].x - target.x) < 24.0, "trajectory predicts landing near the aim (%.0f vs %.0f)" % [arc[-1].x if arc.size() else 0.0, target.x])
 	await shot("d09_throw_aim")
 	var breaks: Array = []
 	NS.noise_emitted.connect(func(ev): if ev.kind == &"bottle": breaks.append(ev))
-	check(p.throw.try_throw(p), "bottle thrown")
-	check(GS.inventory.count_item(&"empty_bottle") == 1, "throw consumes one bottle")
+	check(p.hands.primary(), "bottle thrown")
+	check(GS.equip_count("hand3") == 1, "throw consumes one bottle")
 	for i in 40:
 		await wait(0.05)
 		if not breaks.is_empty():
@@ -258,7 +267,7 @@ func _run() -> void:
 		if stray.machine.state_name() == &"Search":
 			break
 	check(stray.machine.state_name() == &"Search", "finds nothing -> Search")
-	p.throw.set_ready(false)
+	p.hands.holster()
 	p.set_physics_process(true)
 
 	# priority: a zombie watching the player ignores a bottle
@@ -295,7 +304,7 @@ func _run() -> void:
 	go.get_node("Root/Center/VBox/Buttons/Restart").emit_signal("pressed")
 	check(await wait_scene("res://scenes/maps/region_store.tscn", 10.0), "restart -> expedition start")
 	check(GS.camp.food == camp_after_pay.food and GS.camp.water == camp_after_pay.water, "no second payment after dying (%d/%d)" % [GS.camp.food, GS.camp.water])
-	check(GS.inventory.count_item(&"empty_bottle") == 0 and GS.throwable() == null, "backpack restored to the expedition start")
+	check(GS.count_carried(&"empty_bottle") == 0 and GS.equip_get("hand3") == null, "backpack and hand slots restored to the expedition start")
 	p = player()
 	check(p.global_position.x > 2400, "restart at the school gate")
 
@@ -373,7 +382,7 @@ func _run() -> void:
 			await wait(0.25)
 	var uniform: ItemData = load("res://resources/items/work_uniform.tres")
 	check(GS.inventory.count_item(&"work_uniform") == 1, "work uniform found in the staff locker")
-	check(GS.equip_item(uniform) == "" and GS.inventory.size == 15, "equipping the uniform: 15 slots")
+	check(GS.quick_equip(bag_index(&"work_uniform")) == "" and GS.inventory.size == 15, "equipping the uniform: 15 slots")
 	# fill up to 13 used slots, then try to take it off
 	var junk_items := ["parts", "junk", "soap", "bandage", "cash", "biscuits", "noodles", "water", "canned_food", "empty_bottle", "knife", "pistol", "backpack"]
 	var k := 0
@@ -381,8 +390,8 @@ func _run() -> void:
 		GS.inventory.add(load("res://resources/items/%s.tres" % junk_items[k]), 1)
 		k += 1
 	var used: int = GS.inventory.used_slots()
-	var err: String = GS.unequip("clothing")
-	check(err == "背包里的东西太多了。" and GS.equipment.clothing == uniform and GS.inventory.used_slots() == used, "cannot take the uniform off with 13 slots used")
+	var err: String = GS.unequip_to_bag("clothing")
+	check(err == "背包里的东西太多了。" and GS.equip_get("clothing") == uniform and GS.inventory.used_slots() == used, "cannot take the uniform off with 13 slots used")
 	# open the backpack screen to look at it
 	await press("inventory")
 	await wait(0.4)
@@ -421,7 +430,7 @@ func _run() -> void:
 	await wait(2.2)
 	await shot("d15_settlement")
 	check(GS.camp.food == camp_before.food + carry_food and GS.camp.water == camp_before.water + carry_water, "supplies handed over (+%d food +%d water)" % [carry_food, carry_water])
-	check(GS.inventory.count_tag(&"food") == 0 and GS.inventory.count_item(&"work_uniform") == 0 and GS.equipment.clothing == uniform, "personal gear stays, supplies go")
+	check(GS.inventory.count_tag(&"food") == 0 and GS.inventory.count_item(&"work_uniform") == 0 and GS.equip_get("clothing") == uniform, "personal gear stays, supplies go")
 	check(GS.expedition_done_today and GS.daily.rare.has(&"work_uniform"), "day marked done; uniform is a rare find")
 	await wait(3.5)
 	hub = current_scene
@@ -457,7 +466,7 @@ func _run() -> void:
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0), "diary -> new day")
 	check(GS.day_index == 2 and GS.date_text() == "9月30日", "new day: 9月30日")
 	check(GS.ammo == 10, "pistol ammo reset to 10 (not stacked)")
-	check(GS.equipment.clothing == uniform and GS.inventory.size == 15, "uniform and capacity kept")
+	check(GS.equip_get("clothing") == uniform and GS.inventory.size == 15, "uniform and capacity kept")
 	check(GS.world_get("warehouse_unlocked", false), "warehouse stays unlocked")
 	check(not GS.expedition_done_today and GS.daily.gains.is_empty(), "daily state reset")
 	await shot("d18_new_day")

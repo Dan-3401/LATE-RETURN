@@ -9,12 +9,26 @@ signal ammo_changed(ammo: int)
 signal inventory_changed
 signal camp_changed
 signal equipment_changed
+signal active_hand_changed(index: int)
 
 const START_AMMO := 10
 const BASE_CAPACITY := 10
-const PISTOL_WEAPON := preload("res://resources/weapons/pistol.tres")
-const KNIFE_WEAPON := preload("res://resources/weapons/knife.tres")
+const PISTOL_ITEM := preload("res://resources/items/pistol.tres")
+const KNIFE_ITEM := preload("res://resources/items/knife.tres")
 const BACKPACK_ITEM := preload("res://resources/items/backpack.tres")
+## The three quick slots (keys 1 / 2 / 3). All of them are HAND slots, so
+## any hand equipment fits into any of them.
+const HAND_SLOTS := ["hand1", "hand2", "hand3"]
+## Equipment slot id -> slot type. Adding a slot = adding a line here.
+const SLOT_TYPES := {
+	"hand1": ItemData.SlotType.HAND,
+	"hand2": ItemData.SlotType.HAND,
+	"hand3": ItemData.SlotType.HAND,
+	"helmet": ItemData.SlotType.HEAD,
+	"armor": ItemData.SlotType.ARMOR,
+	"clothing": ItemData.SlotType.CLOTHING,
+	"backpack": ItemData.SlotType.BACKPACK,
+}
 ## The date of day 0 (the first day, the linear story day).
 const START_DATE := {"year": 2025, "month": 9, "day": 28, "hour": 12, "minute": 0, "second": 0}
 const MAIN_QUEST_TITLE := "寻找能够治疗哮喘病的药"
@@ -26,8 +40,11 @@ const RARE_ITEMS := [&"warehouse_key", &"work_uniform"]
 enum Phase { STORY, FREE }
 
 var inventory := Inventory.new(BASE_CAPACITY)
-## slot -> ItemData or null
+## slot id -> null or {"item": ItemData, "count": int}
 var equipment := {}
+## Selected hand slot (0..2) or -1 = empty hands. Runtime only: the player
+## starts every scene with empty hands.
+var active_hand := -1
 var ammo: int = START_AMMO:
 	set(v):
 		ammo = maxi(v, 0)
@@ -71,15 +88,13 @@ func _ready() -> void:
 func new_game() -> void:
 	inventory.resize(BASE_CAPACITY, true)
 	inventory.clear()
-	equipment = {
-		"helmet": null,
-		"armor": null,
-		"clothing": null,
-		"primary": PISTOL_WEAPON.item,
-		"melee": KNIFE_WEAPON.item,
-		"throwable": null,
-		"backpack": BACKPACK_ITEM,
-	}
+	equipment = {}
+	for slot in SLOT_TYPES:
+		equipment[slot] = null
+	equipment.hand1 = {"item": PISTOL_ITEM, "count": 1}
+	equipment.hand2 = {"item": KNIFE_ITEM, "count": 1}
+	equipment.backpack = {"item": BACKPACK_ITEM, "count": 1}
+	active_hand = -1
 	ammo = START_AMMO
 	hp = max_hp
 	oxygen = 100.0
@@ -165,64 +180,195 @@ func _on_item_added(item: ItemData, _count: int) -> void:
 
 
 # --- Equipment -----------------------------------------------------------------
+## Equipment lives here, never in UI nodes: every slot holds null or
+## {"item": ItemData, "count": int}, exactly like a backpack slot.
+## Moves between the backpack and the equipment slots go through
+## move_item(), which the inventory UI calls for every drag & drop.
+## Item locations are addressed with refs:
+##   {"kind": "bag", "index": int}   or   {"kind": "equip", "slot": String}
+func equip_get(slot: String) -> ItemData:
+	var s = equipment.get(slot)
+	return s.item if s != null else null
+
+
+func equip_count(slot: String) -> int:
+	var s = equipment.get(slot)
+	return int(s.count) if s != null else 0
+
+
+func hand_item(index: int) -> ItemData:
+	if index < 0 or index >= HAND_SLOTS.size():
+		return null
+	return equip_get(HAND_SLOTS[index])
+
+
+## The single compatibility rule for every equipment slot: the slot's type
+## must match the item's slot type (derived from its EquipmentCategory).
+func can_accept(slot: String, item: ItemData) -> bool:
+	return item != null and SLOT_TYPES.has(slot) and item.slot_type() == SLOT_TYPES[slot]
+
+
 func capacity() -> int:
 	var cap := BASE_CAPACITY
 	for k in equipment:
-		var it: ItemData = equipment[k]
-		if it:
-			cap += it.capacity_bonus
+		if equipment[k] != null:
+			cap += equipment[k].item.capacity_bonus
 	return cap
 
 
-## Equip an item from the inventory into its slot. Returns "" or an error line.
-func equip_item(item: ItemData) -> String:
-	if item.equip_slot == &"":
-		return "这个不能装备。"
-	var slot := String(item.equip_slot)
-	var old: ItemData = equipment.get(slot)
-	if item.equip_slot == &"throwable":
-		# throwables stay in the backpack; the slot only selects which one to throw
-		equipment[slot] = item
-		equipment_changed.emit()
-		inventory.changed.emit()
-		return ""
-	if old:
-		var err := unequip(slot)
-		if err != "":
-			return err
-	inventory.remove(item.id, 1)
-	equipment[slot] = item
-	inventory.resize(capacity())
-	equipment_changed.emit()
-	return ""
+func _ref_get(ref: Dictionary):
+	if ref.kind == "bag":
+		var i: int = ref.index
+		return inventory.slots[i] if i >= 0 and i < inventory.size else null
+	return equipment.get(ref.slot)
 
 
-## Unequip a slot back into the backpack. Refuses if it would lose items.
-func unequip(slot: String) -> String:
-	var item: ItemData = equipment.get(slot)
-	if item == null:
-		return ""
-	if slot == "throwable":
-		equipment[slot] = null
-		equipment_changed.emit()
-		inventory.changed.emit()
-		return ""
-	var new_cap := capacity() - item.capacity_bonus
-	# the unequipped item itself needs a slot too
-	if inventory.used_slots() + 1 > new_cap:
+func _ref_set(ref: Dictionary, v) -> void:
+	if ref.kind == "bag":
+		inventory.slots[ref.index] = v
+	else:
+		equipment[ref.slot] = v
+
+
+func _ref_valid(ref: Dictionary) -> bool:
+	if ref.get("kind") == "bag":
+		return int(ref.get("index", -1)) >= 0 and int(ref.index) < inventory.size
+	return ref.get("kind") == "equip" and SLOT_TYPES.has(ref.get("slot", ""))
+
+
+## Move, merge or swap. Returns "" on success or a short reason (the UI
+## uses it for the red/green highlight while dragging). Never loses items:
+## anything that does not fit stays where it was.
+func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
+	if not _ref_valid(src) or not _ref_valid(dst):
+		return "invalid"
+	if src.kind == dst.kind and src.get("index") == dst.get("index") and src.get("slot") == dst.get("slot"):
+		return "same"
+	var a = _ref_get(src)
+	if a == null:
+		return "empty"
+	var b = _ref_get(dst)
+	if dst.kind == "equip" and not can_accept(dst.slot, a.item):
+		return "这个不能装备在这里。"
+	var merge: bool = b != null and b.item.id == a.item.id and a.item.stackable and b.count < a.item.max_stack
+	if b != null and not merge and b.item.id == a.item.id and a.item.stackable:
+		return "已经放满了。"
+	var swap: bool = b != null and not merge
+	if swap and src.kind == "equip" and not can_accept(src.slot, b.item):
+		return "这个不能装备在这里。"
+	# bag size after the move (clothing / backpack change the capacity)
+	var cap_after := capacity()
+	var used_after := inventory.used_slots()
+	if not merge:
+		if src.kind == "equip":
+			cap_after -= a.item.capacity_bonus
+			if swap:
+				cap_after += b.item.capacity_bonus
+		if dst.kind == "equip":
+			cap_after += a.item.capacity_bonus
+			if swap:
+				cap_after -= b.item.capacity_bonus
+		if src.kind == "bag" and dst.kind == "equip" and not swap:
+			used_after -= 1
+		elif src.kind == "equip" and dst.kind == "bag" and not swap:
+			used_after += 1
+	elif src.kind == "bag" and a.count <= a.item.max_stack - b.count:
+		used_after -= 1
+	if used_after > cap_after:
 		return "背包里的东西太多了。"
-	equipment[slot] = null
-	inventory.resize(new_cap)
-	inventory.add(item, 1)
+	if dry_run:
+		return ""
+	if merge:
+		var take: int = mini(a.count, a.item.max_stack - b.count)
+		b.count += take
+		a.count -= take
+		if a.count <= 0:
+			_ref_set(src, null)
+	else:
+		_ref_set(dst, a)
+		_ref_set(src, b)
+	if cap_after != inventory.size:
+		inventory.resize(cap_after)
+	inventory.changed.emit()
 	equipment_changed.emit()
 	return ""
 
 
-func throwable() -> ItemData:
-	var it: ItemData = equipment.get("throwable")
-	if it and inventory.count_item(it.id) <= 0:
-		return null
-	return it
+## Put a backpack item into its equipment slot (the first free hand slot
+## for hand equipment; swapping with the occupant otherwise).
+func quick_equip(bag_index: int) -> String:
+	var s = inventory.slots[bag_index] if bag_index < inventory.size else null
+	if s == null:
+		return "empty"
+	var item: ItemData = s.item
+	if item.slot_type() == ItemData.SlotType.NONE:
+		return "这个不能装备。"
+	var target := ""
+	for slot in SLOT_TYPES:
+		if can_accept(slot, item) and equipment[slot] == null:
+			target = slot
+			break
+	if target == "":
+		for slot in SLOT_TYPES:
+			if can_accept(slot, item):
+				target = slot
+				break
+	if item.is_hand_equipment() and equipment[target] != null:
+		return "手持栏已经满了。"
+	return move_item({"kind": "bag", "index": bag_index}, {"kind": "equip", "slot": target})
+
+
+## Take an equipment slot off into the first free backpack slot.
+func unequip_to_bag(slot: String) -> String:
+	if equipment.get(slot) == null:
+		return ""
+	for i in inventory.size:
+		if inventory.slots[i] == null:
+			return move_item({"kind": "equip", "slot": slot}, {"kind": "bag", "index": i})
+	return "背包里的东西太多了。"
+
+
+## Use up items held in a hand slot (a thrown bottle). An emptied slot is
+## refilled from the same items in the backpack, so a stack of bottles in
+## the bag keeps the throwable in hand.
+func consume_hand(slot: String, n: int = 1) -> void:
+	var s = equipment.get(slot)
+	if s == null:
+		return
+	var item: ItemData = s.item
+	s.count -= n
+	if s.count <= 0:
+		equipment[slot] = null
+		var refill := mini(inventory.count_item(item.id), item.max_stack)
+		if refill > 0:
+			inventory.remove(item.id, refill)
+			equipment[slot] = {"item": item, "count": refill}
+	inventory.changed.emit()
+	equipment_changed.emit()
+
+
+## Everything the player carries (backpack + equipment), by item id.
+func item_counts() -> Dictionary:
+	var counts := {}
+	for s in inventory.slots:
+		if s != null:
+			counts[s.item.id] = counts.get(s.item.id, 0) + s.count
+	for k in equipment:
+		var s = equipment[k]
+		if s != null:
+			counts[s.item.id] = counts.get(s.item.id, 0) + s.count
+	return counts
+
+
+func count_carried(item_id: StringName) -> int:
+	return int(item_counts().get(item_id, 0))
+
+
+func set_active_hand(index: int) -> void:
+	if index == active_hand:
+		return
+	active_hand = index
+	active_hand_changed.emit(index)
 
 
 # --- Camp ----------------------------------------------------------------------
@@ -295,10 +441,7 @@ func begin_expedition(loc: LocationData) -> bool:
 		return false
 	camp_add("food", -loc.cost_food)
 	camp_add("water", -loc.cost_water)
-	var counts := {}
-	for s in inventory.slots:
-		if s != null:
-			counts[s.item.id] = counts.get(s.item.id, 0) + s.count
+	var counts := item_counts()
 	expedition = {
 		"active": true,
 		"location": loc.id,
@@ -319,10 +462,7 @@ func mark_location_visited() -> void:
 
 ## Coming home: supplies go to the camp, today's gains are recorded.
 func end_expedition() -> Dictionary:
-	var counts := {}
-	for s in inventory.slots:
-		if s != null:
-			counts[s.item.id] = counts.get(s.item.id, 0) + s.count
+	var counts := item_counts()
 	for id in counts:
 		var gained: int = counts[id] - int(expedition.get("start_counts", {}).get(id, 0))
 		if gained > 0:
@@ -348,7 +488,8 @@ func world_set(key: String, value) -> void:
 func snapshot() -> Dictionary:
 	var eq := {}
 	for k in equipment:
-		eq[k] = equipment[k].resource_path if equipment[k] else ""
+		var s = equipment[k]
+		eq[k] = {"path": s.item.resource_path, "count": s.count} if s != null else null
 	return {
 		"hp": hp,
 		"oxygen": oxygen,
@@ -395,9 +536,13 @@ func apply_snapshot(d: Dictionary) -> void:
 	ammo = d.ammo
 	inventory.resize(int(d.get("capacity", BASE_CAPACITY)), true)
 	inventory.from_data(d.inventory)
-	for k in d.equipment:
-		var p: String = d.equipment[k]
-		equipment[k] = load(p) if p != "" and ResourceLoader.exists(p) else null
+	for k in SLOT_TYPES:
+		equipment[k] = null
+		var e = d.equipment.get(k)
+		if e is Dictionary and ResourceLoader.exists(String(e.get("path", ""))):
+			var item := load(e.path) as ItemData
+			if item:
+				equipment[k] = {"item": item, "count": maxi(int(e.get("count", 1)), 1)}
 	objective = d.objective.duplicate(true)
 	flags = d.flags.duplicate(true)
 	if d.has("phase"):

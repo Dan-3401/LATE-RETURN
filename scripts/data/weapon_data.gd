@@ -3,7 +3,6 @@ extends Resource
 
 @export var id: StringName
 @export var display_name: String = ""
-@export var item: ItemData
 @export var is_ranged: bool = false
 @export var damage: float = 40.0
 ## Multiplier against an unaware target hit from behind.

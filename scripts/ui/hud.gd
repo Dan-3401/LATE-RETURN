@@ -10,9 +10,7 @@ extends Node
 @onready var hint_label: Label = $Overlay/Hint
 @onready var sneak_icon: TextureRect = $Overlay/Status/Sneak
 @onready var hp_bar: PixelMeter = $Overlay/Status/HP
-@onready var weapon_box: Control = $Overlay/Weapon
-@onready var weapon_label: Label = $Overlay/Weapon/Name
-@onready var ammo_label: Label = $Overlay/Weapon/Ammo
+@onready var quick_bar: QuickBar = $Overlay/QuickBar
 @onready var damage_vignette: TextureRect = $Overlay/DamageVignette
 @onready var hide_shade: TextureRect = $Overlay/HideShade
 @onready var inventory_ui: Node = $InventoryUI
@@ -31,7 +29,6 @@ var _last_objective_done := false
 
 func _ready() -> void:
 	GameState.objective_changed.connect(_refresh_objective)
-	GameState.ammo_changed.connect(func(_a): _refresh_weapon())
 	GameState.camp_changed.connect(_refresh_camp)
 	_refresh_camp()
 	hint_label.modulate.a = 0.0
@@ -45,12 +42,9 @@ func bind_player(p: Player) -> void:
 	player = p
 	if player == null:
 		return
-	player.weapons.equipped_changed.connect(func(_w): _refresh_weapon())
-	player.throw.readied.connect(func(_on): _refresh_weapon())
-	GameState.inventory_changed.connect(_refresh_weapon)
+	quick_bar.player = player
 	player.health.changed.connect(_on_hp_changed)
 	player.health.damaged.connect(func(_a, _s): _flash_damage())
-	_refresh_weapon()
 	hp_bar.ratio = player.health.hp / player.health.max_hp
 	hp_bar.target_alpha = 0.0 if player.health.hp >= player.health.max_hp else 0.8
 
@@ -120,26 +114,6 @@ func show_settlement(got: Dictionary) -> void:
 		p.tween_property(camp_box, "modulate", Color(1, 1, 1, 0.9), 0.4))
 	t.tween_interval(1.6)
 	t.tween_property(settlement, "modulate:a", 0.0, 0.8)
-
-
-func _refresh_weapon() -> void:
-	if player == null:
-		weapon_box.visible = false
-		return
-	if player.throw.is_ready and GameState.throwable():
-		var it := GameState.throwable()
-		weapon_box.visible = true
-		weapon_label.text = it.display_name
-		ammo_label.visible = true
-		ammo_label.text = "×%d" % GameState.inventory.count_item(it.id)
-		return
-	var w := player.weapons.current
-	weapon_box.visible = w != null
-	if w == null:
-		return
-	weapon_label.text = w.display_name
-	ammo_label.visible = w.is_ranged
-	ammo_label.text = "%d" % GameState.ammo
 
 
 func _refresh_objective() -> void:

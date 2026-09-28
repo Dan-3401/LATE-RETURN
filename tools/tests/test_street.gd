@@ -211,7 +211,7 @@ func _run() -> void:
 	walker.machine.transition_to(&"Idle", {"duration": 99.0})
 	walker.facing = 1
 	player.global_position = Vector2(walker.global_position.x - 12, 224)   # behind it
-	player.weapons.equip(player.weapons.knife)
+	player.hands.select(1)   # hand slot 2 = knife
 	player.facing = 1
 	await wait(0.2)
 	player.set_physics_process(false)   # keep the scripted aim (no mouse in tests)
@@ -222,7 +222,7 @@ func _run() -> void:
 	await wait(0.5)
 	check(walker.dead, "knife sneak attack kills unaware zombie (hp=%.0f)" % walker.hp)
 	var drifter2 = z("Drifter")
-	player.weapons.equip(player.weapons.pistol)
+	player.hands.select(0)   # hand slot 1 = pistol
 	player.global_position = Vector2(drifter2.global_position.x - 120, 224)
 	await wait(0.2)
 	var ammo0: int = GS.ammo

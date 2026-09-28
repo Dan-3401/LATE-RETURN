@@ -10,6 +10,7 @@ signal said(text: String)
 enum State { NORMAL, SEARCHING, HIDDEN, CUTSCENE, DEAD }
 
 const RIG := preload("res://art/characters/player/player_rig.tres")
+const HAND_ACTIONS := [&"hand_1", &"hand_2", &"hand_3"]
 const FOOTSTEP_NOISE := {
 	MovementComponent.Mode.SNEAK: 14.0,
 	MovementComponent.Mode.WALK: 72.0,
@@ -27,6 +28,8 @@ const FOOTSTEP_NOISE := {
 @onready var weapons: WeaponComponent = $WeaponComponent
 @onready var interaction: InteractionComponent = $InteractionComponent
 @onready var throw: ThrowComponent = $ThrowComponent
+## The one active hand item (quick slots 1 / 2 / 3).
+@onready var hands: HandEquipmentComponent = $HandEquipmentComponent
 @onready var throw_pivot: Node2D = $Visual/ThrowPivot
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
@@ -53,6 +56,7 @@ func _ready() -> void:
 	weapons.fired.connect(_on_fired)
 	breath.gasp_started.connect(func(): say("哈……哈……", 1.2))
 	body_sprite.animation_finished.connect(_on_anim_finished)
+	hands.setup(self)
 	# pull persistent stats
 	health.max_hp = GameState.max_hp
 	health.set_hp(GameState.hp)
@@ -81,21 +85,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif state == State.NORMAL:
 			interaction.try_interact()
 	elif state == State.NORMAL:
-		if event.is_action_pressed(&"toggle_pistol"):
-			throw.set_ready(false)
-			weapons.toggle(weapons.pistol)
-		elif event.is_action_pressed(&"toggle_knife"):
-			throw.set_ready(false)
-			weapons.toggle(weapons.knife)
-		elif event.is_action_pressed(&"throw_ready"):
-			if not throw.is_ready and weapons.is_armed():
-				weapons.equip(null)
-			throw.toggle(self)
-		elif event.is_action_pressed(&"attack") and throw.is_ready:
-			throw.try_throw(self)
-		elif event.is_action_pressed(&"attack"):
-			if weapons.try_attack(self, shoulder_global(), facing):
-				stealth.spike(1.0 if weapons.current.is_ranged else 0.6, 1.0 if weapons.current.is_ranged else 0.3)
+		for i in HAND_ACTIONS.size():
+			if event.is_action_pressed(HAND_ACTIONS[i]):
+				hands.select(i)
+				return
+		if event.is_action_pressed(&"attack"):
+			hands.primary()
 
 
 func _accepts_input() -> bool:
@@ -122,7 +117,7 @@ func _physics_process(delta: float) -> void:
 
 	var mouse := get_global_mouse_position()
 	# facing
-	if (weapons.is_armed() or throw.is_ready) and active:
+	if hands.is_aiming() and active:
 		facing = 1 if mouse.x >= global_position.x else -1
 	elif absf(move_x) > 0.1 and state != State.HIDDEN:
 		facing = 1 if move_x > 0 else -1
@@ -153,12 +148,11 @@ func _update_attachments(delta: float, mouse: Vector2) -> void:
 	var fr := body_sprite.frame
 	var sh := RIG.get_point(anim, fr, "shoulder", Vector2(0, -29))
 	arm_pivot.position = sh.round()
-	weapons.update_aim(shoulder_global(), mouse, facing)
 	throw_pivot.position = sh.round()
-	throw.update(self, shoulder_global(), mouse, facing)
+	hands.update(delta, shoulder_global(), mouse, facing)
 	var chest := RIG.get_point(anim, fr, "chest", Vector2(1, -27))
 	var chest_global := global_position + Vector2(chest.x * facing, chest.y)
-	flashlight.update(delta, chest_global, facing, mouse, weapons.is_armed())
+	flashlight.update(delta, chest_global, facing, mouse, hands.aims_flashlight())
 
 
 func shoulder_global() -> Vector2:
@@ -174,7 +168,7 @@ func get_speech_anchor() -> Vector2:
 func _update_animation() -> void:
 	if _anim_lock != "":
 		return
-	var armed := weapons.is_armed() or throw.is_ready
+	var armed := hands.is_aiming()
 	var anim := "idle"
 	match state:
 		State.DEAD:
@@ -345,7 +339,7 @@ func enter_hide(spot: Node2D, hide_pos: Vector2) -> void:
 	global_position = hide_pos
 	visual.visible = false
 	collision.set_deferred(&"disabled", true)
-	throw.set_ready(false)
+	hands.holster()
 	stealth.set_hidden(true, spot)
 	breath.noise_scale = 0.7
 	flashlight.set_on(false, true)
@@ -408,8 +402,7 @@ func _on_died() -> void:
 	_set_state(State.DEAD)
 	GameState.hp = 0.0
 	movement.stop()
-	weapons.equip(null)
-	throw.set_ready(false)
+	hands.holster()
 	breath.enabled = false
 	interaction.clear()
 	interaction.enabled = false
@@ -430,7 +423,7 @@ func set_cutscene(on: bool) -> void:
 		return
 	if on:
 		cancel_search()
-		throw.set_ready(false)
+		hands.holster()
 		movement.stop()
 		breath.set_hold(false)
 		interaction.clear()

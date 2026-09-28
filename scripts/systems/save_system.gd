@@ -9,7 +9,8 @@ extends CanvasLayer
 
 signal saved
 
-const VERSION := 1
+## 2: equipment slots hold {path, count}; three hand slots.
+const VERSION := 2
 const DEFAULT_PATH := "user://savegame.dat"
 ## Test scripts (a custom SceneTree) never touch the player's real save;
 ## each test process gets its own file, removed again on exit.
@@ -37,15 +38,14 @@ func _ready() -> void:
 	_label.add_theme_color_override(&"font_color", Color(0.72, 0.68, 0.58))
 	_label.add_theme_color_override(&"font_outline_color", Color(0.03, 0.03, 0.04))
 	_label.add_theme_constant_override(&"outline_size", 3)
-	# offsets from the bottom-right corner, so it follows the stretched viewport
+	# top-right, under the camp resources (the quick bar owns the bottom-right);
+	# anchored so it follows the stretched viewport
 	_label.anchor_left = 1.0
-	_label.anchor_top = 1.0
 	_label.anchor_right = 1.0
-	_label.anchor_bottom = 1.0
 	_label.offset_left = -96.0
-	_label.offset_top = -18.0
-	_label.offset_right = -6.0
-	_label.offset_bottom = -4.0
+	_label.offset_top = 30.0
+	_label.offset_right = -8.0
+	_label.offset_bottom = 44.0
 	_label.modulate.a = 0.0
 	root.add_child(_label)
 

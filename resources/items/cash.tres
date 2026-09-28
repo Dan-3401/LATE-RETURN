@@ -15,6 +15,5 @@ max_stack = 999
 value = 0
 weight = 0.0
 task_tag = &""
-equip_slot = &""
 capacity_bonus = 0
 diary_name = "现金"

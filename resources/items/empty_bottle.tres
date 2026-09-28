@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
 [ext_resource type="Texture2D" path="res://art/ui/icons/empty_bottle.png" id="2_i"]
+[ext_resource type="Script" path="res://scripts/hand/throw_behavior.gd" id="10_beh"]
 
 [resource]
 script = ExtResource("1_s")
 id = &"empty_bottle"
 display_name = "空瓶子"
-description = "空的玻璃瓶。扔出去能摔出很大的声音。\n装备后按 2 准备投掷。"
+description = "空的玻璃瓶。扔出去能摔出很大的声音。\n拖到手持栏 1 / 2 / 3，按对应数字键拿出来投掷。"
 icon = ExtResource("2_i")
 item_type = 8
 stackable = true
@@ -15,6 +16,9 @@ max_stack = 5
 value = 1
 weight = 0.1
 task_tag = &""
-equip_slot = &"throwable"
+equippable = true
+equipment_category = 3
+usable_in_hand = true
+hand_behavior = ExtResource("10_beh")
 capacity_bonus = 0
 diary_name = "空瓶子"

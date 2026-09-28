@@ -1,20 +1,19 @@
 extends CanvasLayer
-## Backpack screen: equipment on the left, the backpack slots on the right,
-## the selected item's description and action (装备 / 卸下) at the bottom.
+## Backpack screen. Left: the three hand slots (1 / 2 / 3) and the gear
+## slots; right: the backpack cells; bottom: the selected item.
+## Drag & drop is the main way to sort things (see ItemSlot). The screen
+## only shows GameState — it never stores where an item is.
 
-const SLOT_SIZE := Vector2(20, 20)
-const EQUIP_SLOTS := [
-	["helmet", "头盔"], ["armor", "护甲"], ["clothing", "服装"],
-	["primary", "主武器"], ["melee", "近战武器"], ["throwable", "投掷物"], ["backpack", "背包"],
-]
+const GEAR_SLOTS := [["helmet", "头盔"], ["armor", "护甲"], ["clothing", "服装"], ["backpack", "背包"]]
 const EMPTY_ICONS := {
 	"helmet": preload("res://art/ui/icons/helmet.png"),
 	"armor": preload("res://art/ui/icons/armor.png"),
 	"clothing": preload("res://art/ui/icons/work_uniform.png"),
-	"throwable": preload("res://art/ui/icons/empty_bottle.png"),
+	"backpack": preload("res://art/ui/icons/backpack.png"),
 }
 
 @onready var root: Control = $Root
+@onready var equip_col: VBoxContainer = $Root/Panel/HBox/Equip
 @onready var equip_list: VBoxContainer = $Root/Panel/HBox/Equip/List
 @onready var grid: GridContainer = $Root/Panel/HBox/Bag/Grid
 @onready var bag_title: Label = $Root/Panel/HBox/Bag/Title
@@ -23,15 +22,19 @@ const EMPTY_ICONS := {
 @onready var action_btn: Button = $Root/Panel/Desc/VBox/Action
 
 var _open := false
-## Current selection: {"kind": "bag"/"equip", "item": ItemData, "slot": String}
-var _sel := {}
+var _selected: ItemSlot = null
+## slot id -> ItemSlot (hand1..3, helmet, armor, clothing, backpack)
+var equip_slots := {}
+var bag_slots: Array[ItemSlot] = []
 
 
 func _ready() -> void:
 	layer = 20
 	root.visible = false
+	_build_equipment()
 	GameState.inventory_changed.connect(_refresh)
 	GameState.equipment_changed.connect(_refresh)
+	GameState.ammo_changed.connect(func(_a): _refresh())
 	action_btn.pressed.connect(_on_action)
 	action_btn.visible = false
 
@@ -61,87 +64,116 @@ func set_open(v: bool) -> void:
 		p.input_enabled = not v
 	SceneManager.set_cursor(SceneManager.CursorMode.ARROW if v else SceneManager.CursorMode.CROSSHAIR)
 	if v:
-		_sel = {}
+		_selected = null
 		_refresh()
 
 
+# --- building ----------------------------------------------------------------------
+func _build_equipment() -> void:
+	for c in equip_list.get_children():
+		c.queue_free()
+	var hand_title := Label.new()
+	hand_title.text = "手持"
+	hand_title.add_theme_color_override(&"font_color", Color(0.62, 0.6, 0.54))
+	equip_list.add_child(hand_title)
+	var hand_row := HBoxContainer.new()
+	hand_row.add_theme_constant_override(&"separation", 3)
+	equip_list.add_child(hand_row)
+	var key_row := HBoxContainer.new()
+	key_row.add_theme_constant_override(&"separation", 3)
+	equip_list.add_child(key_row)
+	for i in GameState.HAND_SLOTS.size():
+		var s := _make_slot({"kind": "equip", "slot": GameState.HAND_SLOTS[i]})
+		hand_row.add_child(s)
+		equip_slots[GameState.HAND_SLOTS[i]] = s
+		var key := Label.new()
+		key.text = str(i + 1)
+		key.custom_minimum_size = Vector2(20, 0)
+		key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		key.add_theme_color_override(&"font_color", Color(0.55, 0.53, 0.48))
+		key_row.add_child(key)
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 4)
+	equip_list.add_child(gap)
+	for e in GEAR_SLOTS:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override(&"separation", 4)
+		var s := _make_slot({"kind": "equip", "slot": e[0]})
+		s.empty_icon = EMPTY_ICONS.get(e[0])
+		row.add_child(s)
+		var l := Label.new()
+		l.text = e[1]
+		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		l.name = "Label"
+		row.add_child(l)
+		equip_list.add_child(row)
+		equip_slots[e[0]] = s
+
+
+func _make_slot(ref: Dictionary) -> ItemSlot:
+	var s := ItemSlot.new()
+	s.ref = ref
+	s.clicked.connect(_on_slot_clicked)
+	s.hovered.connect(_on_slot_hovered)
+	return s
+
+
+func _ensure_bag_slots() -> void:
+	var n := GameState.inventory.size
+	if bag_slots.size() == n:
+		return
+	for s in bag_slots:
+		s.queue_free()
+	bag_slots.clear()
+	for i in n:
+		var s := _make_slot({"kind": "bag", "index": i})
+		grid.add_child(s)
+		bag_slots.append(s)
+	if _selected and _selected.ref.kind == "bag":
+		_selected = null
+
+
+# --- refresh from the real data ------------------------------------------------------
 func _refresh() -> void:
 	if not is_inside_tree():
 		return
-	for c in equip_list.get_children():
-		c.queue_free()
-	for e in EQUIP_SLOTS:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override(&"separation", 4)
-		row.custom_minimum_size = Vector2(0, 20)
-		var item: ItemData = GameState.equipment.get(e[0])
-		var count := 1
-		if e[0] == "throwable" and item:
-			count = GameState.inventory.count_item(item.id)
-		var slot := _make_slot(item, count, EMPTY_ICONS.get(e[0]), {"kind": "equip", "item": item, "slot": e[0]})
-		row.add_child(slot)
-		var l := Label.new()
-		l.text = e[1]
-		l.add_theme_color_override(&"font_color", Color(0.55, 0.53, 0.48) if item == null else Color(0.83, 0.8, 0.72))
-		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(l)
-		if e[0] == "primary" and item != null:
-			var a := Label.new()
-			a.text = "%d发" % GameState.ammo
-			a.add_theme_color_override(&"font_color", Color(0.72, 0.62, 0.42))
-			a.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			row.add_child(a)
-		equip_list.add_child(row)
-	for c in grid.get_children():
-		c.queue_free()
+	_ensure_bag_slots()
+	for slot_id in equip_slots:
+		var s: ItemSlot = equip_slots[slot_id]
+		var it := GameState.equip_get(slot_id)
+		s.selected = s == _selected
+		var txt := ""
+		if it and it.weapon and (it.weapon as WeaponData).is_ranged:
+			txt = str(GameState.ammo)
+		s.set_content(it, GameState.equip_count(slot_id), txt)
+		var row := s.get_parent()
+		if row.has_node("Label"):
+			(row.get_node("Label") as Label).add_theme_color_override(&"font_color",
+				Color(0.55, 0.53, 0.48) if it == null else Color(0.83, 0.8, 0.72))
 	var inv := GameState.inventory
-	for i in inv.size:
-		var s = inv.slots[i]
-		grid.add_child(_make_slot(s.item if s else null, s.count if s else 0, null, {"kind": "bag", "item": s.item if s else null, "slot": str(i)}))
+	for i in bag_slots.size():
+		var st = inv.slots[i]
+		bag_slots[i].selected = bag_slots[i] == _selected
+		bag_slots[i].set_content(st.item if st else null, st.count if st else 0)
 	bag_title.text = "背包  %d / %d" % [inv.used_slots(), inv.size]
-	_show_desc(_sel.get("item"))
+	if _selected and _selected.item == null:
+		_selected = null
+	_show_desc(_selected.item if _selected else null)
 
 
-func _make_slot(item: ItemData, count: int, empty_icon: Texture2D, sel: Dictionary) -> Control:
-	var slot := PanelContainer.new()
-	var selected: bool = not _sel.is_empty() and _sel.kind == sel.kind and _sel.slot == sel.slot and item != null
-	slot.theme_type_variation = &"SlotFocusPanel" if selected else &"SlotPanel"
-	slot.custom_minimum_size = SLOT_SIZE
-	slot.mouse_filter = Control.MOUSE_FILTER_STOP
-	var icon := TextureRect.new()
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if item:
-		icon.texture = item.icon
-	elif empty_icon:
-		icon.texture = empty_icon
-		icon.modulate = Color(1, 1, 1, 0.22)
-	slot.add_child(icon)
-	if item and count > 1:
-		var n := Label.new()
-		n.text = str(count)
-		n.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		n.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		n.add_theme_constant_override(&"line_spacing", -4)
-		n.add_theme_color_override(&"font_outline_color", Color(0.03, 0.03, 0.04))
-		n.add_theme_constant_override(&"outline_size", 3)
-		n.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		slot.add_child(n)
-	slot.mouse_entered.connect(func():
-		if _sel.is_empty():
-			_show_desc(item))
-	slot.mouse_exited.connect(func():
-		if _sel.is_empty():
-			_show_desc(null))
-	slot.gui_input.connect(func(ev: InputEvent):
-		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			if item == null:
-				_sel = {}
-			else:
-				_sel = sel.duplicate()
-				AudioManager.play(&"ui_move", -12.0, 0.0, &"UI")
-			_refresh())
-	return slot
+# --- selection / description -------------------------------------------------------
+func _on_slot_clicked(s: ItemSlot) -> void:
+	if s.item == null:
+		_selected = null
+	else:
+		_selected = s
+		AudioManager.play(&"ui_move", -12.0, 0.0, &"UI")
+	_refresh()
+
+
+func _on_slot_hovered(s: ItemSlot, on: bool) -> void:
+	if _selected == null:
+		_show_desc(s.item if on else null)
 
 
 func _show_desc(item: ItemData) -> void:
@@ -149,35 +181,33 @@ func _show_desc(item: ItemData) -> void:
 	desc_text.remove_theme_color_override(&"font_color")
 	if item == null:
 		desc_name.text = ""
-		desc_text.text = "点击物品查看    Tab 关闭"
+		desc_text.text = "拖动物品整理    点击查看    Tab 关闭"
 		desc_text.modulate.a = 0.5
 		return
 	desc_text.modulate.a = 1.0
 	desc_name.text = item.display_name
 	desc_text.text = item.description
-	if _sel.is_empty() or _sel.item != item:
+	if _selected == null or _selected.item != item:
 		return
-	if _sel.kind == "bag" and item.equip_slot != &"":
-		var already: bool = GameState.equipment.get(String(item.equip_slot)) == item
-		action_btn.text = "已装备" if already else "装备"
-		action_btn.disabled = already
+	if _selected.ref.kind == "bag" and item.slot_type() != ItemData.SlotType.NONE:
+		action_btn.text = "装备"
+		action_btn.disabled = false
 		action_btn.visible = true
-	elif _sel.kind == "equip" and _sel.slot in ["clothing", "throwable"]:
+	elif _selected.ref.kind == "equip":
 		action_btn.text = "卸下"
 		action_btn.disabled = false
 		action_btn.visible = true
 
 
-## Equip / unequip the selected item. Never loses items: unequipping the
-## uniform is refused while the backpack holds more than the base capacity.
+## Button alternative to dragging. Never loses items.
 func _on_action() -> void:
-	if _sel.is_empty():
+	if _selected == null or _selected.item == null:
 		return
 	var err := ""
-	if _sel.kind == "bag":
-		err = GameState.equip_item(_sel.item)
+	if _selected.ref.kind == "bag":
+		err = GameState.quick_equip(_selected.ref.index)
 	else:
-		err = GameState.unequip(_sel.slot)
+		err = GameState.unequip_to_bag(_selected.ref.slot)
 	if err != "":
 		desc_text.text = err
 		desc_text.add_theme_color_override(&"font_color", Color(0.85, 0.35, 0.3))
@@ -187,5 +217,5 @@ func _on_action() -> void:
 			p.say(err)
 		return
 	AudioManager.play(&"equip", -8.0)
-	_sel = {}
+	_selected = null
 	_refresh()

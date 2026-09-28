@@ -1,7 +1,9 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="ItemData" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_s"]
 [ext_resource type="Texture2D" path="res://art/ui/icons/pistol.png" id="2_i"]
+[ext_resource type="Script" path="res://scripts/hand/weapon_behavior.gd" id="10_beh"]
+[ext_resource type="Resource" path="res://resources/weapons/pistol.tres" id="11_wpn"]
 
 [resource]
 script = ExtResource("1_s")
@@ -15,6 +17,10 @@ max_stack = 1
 value = 50
 weight = 1.0
 task_tag = &""
-equip_slot = &""
+equippable = true
+equipment_category = 1
+usable_in_hand = true
+hand_behavior = ExtResource("10_beh")
+weapon = ExtResource("11_wpn")
 capacity_bonus = 0
 diary_name = ""
