@@ -76,10 +76,7 @@ func _process(delta: float) -> void:
 	_t += delta
 	if not confirm.visible:
 		var mp := map_rect.get_local_mouse_position()
-		var h: LocationData = null
-		for l in locations:
-			if mp.distance_to(l.map_position) <= l.marker_radius + 6.0:
-				h = l
+		var h := location_at(mp)
 		if h != hovered:
 			hovered = h
 			if h:
@@ -88,7 +85,9 @@ func _process(delta: float) -> void:
 	marks.queue_redraw()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## Uses _input, not _unhandled_input: the full-screen map controls (dim,
+## paper) are GUI nodes and would otherwise swallow every mouse click.
+func _input(event: InputEvent) -> void:
 	if not is_open:
 		return
 	if event.is_action_pressed(&"pause") or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT):
@@ -99,15 +98,24 @@ func _unhandled_input(event: InputEvent) -> void:
 			close()
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not confirm.visible:
-		if hovered:
+		var loc := location_at(map_rect.get_global_transform_with_canvas().affine_inverse() * event.position)
+		if loc:
 			get_viewport().set_input_as_handled()
-			choose(hovered)
+			hovered = loc
+			choose(loc)
+
+
+func location_at(map_pos: Vector2) -> LocationData:
+	for l in locations:
+		if map_pos.distance_to(l.map_position) <= l.marker_radius + 6.0:
+			return l
+	return null
 
 
 ## Click on a location (also used by tests).
 func choose(loc: LocationData) -> void:
 	if not loc.playable:
-		_say("这里以后再来探索吧。")
+		_say("后面的区域以后再来探索吧......")
 		return
 	if GameState.expedition_done_today:
 		_say("今天已经很晚了，明天再出去吧。")

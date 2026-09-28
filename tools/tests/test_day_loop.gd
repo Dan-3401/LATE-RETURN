@@ -63,6 +63,22 @@ func any_key() -> void:
 	await physics_frame
 
 
+## Left-click a map marker with a real mouse event pushed into the window,
+## so GUI nodes that could swallow the click are part of the test.
+func click_map(map, loc) -> void:
+	var vp_pos: Vector2 = map.map_rect.global_position + loc.map_position
+	var win_pos := vp_pos * (Vector2(root.size) / Vector2(480, 270))
+	for pressed in [true, false]:
+		var ev := InputEventMouseButton.new()
+		ev.button_index = MOUSE_BUTTON_LEFT
+		ev.pressed = pressed
+		ev.position = win_pos
+		ev.global_position = win_pos
+		root.push_input(ev)
+		await wait(0.05)
+	await wait(0.3)
+
+
 func wait_scene(path: String, timeout: float, old: Node = null) -> bool:
 	if old == null:
 		old = current_scene
@@ -178,13 +194,12 @@ func _run() -> void:
 	check(map.info_cost.text.contains("食物 ×3") and map.info_cost.text.contains("水 ×2"), "hover shows cost")
 	await shot("d05_map_hover")
 	var before: Dictionary = GS.camp.duplicate()
-	map.choose(locs[&"hospital"])
-	await wait(0.3)
+	await click_map(map, locs[&"hospital"])   # real left click through the viewport
 	check(GS.camp.food == before.food and GS.camp.water == before.water and current_scene == hub and map.is_open, "locked location: no cost, no travel")
-	check(map.note.text.contains("这里以后再来探索吧。"), "locked location line")
+	check(map.note.text.contains("后面的区域以后再来探索吧......"), "locked location line")
 	await shot("d06_map_locked")
-	map.choose(locs[&"store"])
-	await wait(0.3)
+	await wait(1.0)
+	await click_map(map, locs[&"store"])
 	check(map.confirm.visible, "confirm popup: 前往这里？")
 	await shot("d07_map_confirm")
 	map.go_btn.emit_signal("pressed")

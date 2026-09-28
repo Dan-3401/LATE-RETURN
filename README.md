@@ -48,7 +48,7 @@ After the camp ending the first **diary page (9月28日)** appears, then the tas
 
 学校营地 (Hub: shared food/water, sister, storage) → door **[F] 外出** → hand-marked
 **region map** (附近的便利店 playable; Wargame 中心 / 市中心医院 / 地铁站 shown with
-their cost but "这里以后再来探索吧。") → pay food/water on departure → **region**
+their cost but "后面的区域以后再来探索吧......") → pay food/water on departure → **region**
 (the street between the school and the store; an **expedition checkpoint** is taken
 here) → enter at least one **location** (the store, and with the key its back
 **warehouse**) → the gate home opens → food/water are handed to the camp
