@@ -192,8 +192,8 @@ func test_searchables() -> void:
 	check(said[-1] == "被人搜过了。", "emptied by someone else: 被人搜过了。 (%s)" % said[-1])
 	# day 2 behaves the same
 	GS.end_expedition()
-	GS.camp_add("food", 5)
-	GS.camp_add("water", 5)
+	GS.stash(item("canned_food"), 5)
+	GS.stash(item("water"), 5)
 	GS.new_day()
 	GS.begin_expedition(load("res://resources/locations/store.tres"))
 	GS.spawn_point = &"location_entry"

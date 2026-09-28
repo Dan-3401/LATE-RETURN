@@ -19,6 +19,7 @@ extends Node
 @onready var camp_water: Label = $Overlay/Camp/HBox/Water
 @onready var settlement: Control = $Overlay/Settlement
 @onready var settlement_rows: Label = $Overlay/Settlement/VBox/Rows
+@onready var settlement_rare: Label = $Overlay/Settlement/VBox/Rare
 @onready var pause_menu: Node = $PauseMenu
 
 var player: Player
@@ -83,24 +84,52 @@ func _refresh_camp() -> void:
 	camp_box.visible = GameState.is_free_phase()
 	if _camp_hold:
 		return
-	camp_food.text = str(GameState.camp.food)
-	camp_water.text = str(GameState.camp.water)
+	# counted from the real items in the camp storage
+	camp_food.text = str(GameState.camp_food())
+	camp_water.text = str(GameState.camp_water())
 
 
-## Short "获得物资 食物 +3 水 +2" note; the camp numbers tick up afterwards.
+const SETTLEMENT_MAX_ROWS := 7
+
+
+## Short "本次带回：" list (everything that went into the storage, rare
+## finds highlighted); the camp numbers tick up afterwards.
 func show_settlement(got: Dictionary) -> void:
-	var rows := PackedStringArray()
-	if int(got.get("food", 0)) > 0:
-		rows.append("食物 +%d" % got.food)
-	if int(got.get("water", 0)) > 0:
-		rows.append("水   +%d" % got.water)
-	if rows.is_empty():
+	var items: Dictionary = got.get("items", {})
+	var rows: Array = []
+	var rare_rows: Array = []
+	var food_in := 0
+	var water_in := 0
+	for id in items:
+		var it: ItemData = DiaryWriter.item(id)
+		var n: int = items[id]
+		if it == null:
+			continue
+		if it.task_tag == &"food":
+			food_in += n
+		elif it.task_tag == &"water":
+			water_in += n
+		var line := "%s ×%d" % [it.display_name, n]
+		if id in GameState.RARE_ITEMS:
+			rare_rows.append(line)
+		else:
+			rows.append(line)
+	var room := SETTLEMENT_MAX_ROWS - rare_rows.size()
+	if rows.size() > room:
+		var extra := rows.size() - (room - 1)
+		rows = rows.slice(0, room - 1)
+		rows.append("…… 另有 %d 种" % extra)
+	if rows.is_empty() and rare_rows.is_empty():
 		rows.append("这次什么也没带回来")
-		settlement_rows.add_theme_color_override(&"font_color", Color(0.65, 0.63, 0.57))
 	settlement_rows.text = "\n".join(rows)
+	settlement_rows.visible = not rows.is_empty()
+	# rare finds get their own, warmer line on top
+	settlement_rare.text = "\n".join(rare_rows)
+	settlement_rare.visible = not rare_rows.is_empty()
+	settlement.reset_size()
 	_camp_hold = true
-	camp_food.text = str(GameState.camp.food - int(got.get("food", 0)))
-	camp_water.text = str(GameState.camp.water - int(got.get("water", 0)))
+	camp_food.text = str(GameState.camp_food() - food_in)
+	camp_water.text = str(GameState.camp_water() - water_in)
 	var t := create_tween()
 	t.tween_property(settlement, "modulate:a", 1.0, 0.4)
 	t.tween_interval(1.4)
@@ -112,7 +141,7 @@ func show_settlement(got: Dictionary) -> void:
 		camp_box.scale = Vector2(1.0, 1.0)
 		p.tween_property(camp_box, "modulate", Color(1.4, 1.35, 1.1, 1), 0.12)
 		p.tween_property(camp_box, "modulate", Color(1, 1, 1, 0.9), 0.4))
-	t.tween_interval(1.6)
+	t.tween_interval(2.4)
 	t.tween_property(settlement, "modulate:a", 0.0, 0.8)
 
 

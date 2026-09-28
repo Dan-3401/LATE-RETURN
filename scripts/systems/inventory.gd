@@ -96,6 +96,39 @@ func remove(item_id: StringName, count: int = 1) -> int:
 	return count - left
 
 
+## Removes up to `count` items with this task tag (e.g. 1 food for a trip),
+## taking from the last slots first. Returns how many were removed.
+func remove_tag(tag: StringName, count: int = 1) -> int:
+	var left := count
+	for i in range(size - 1, -1, -1):
+		var s = slots[i]
+		if s != null and s.item.task_tag == tag and left > 0:
+			var take := mini(left, s.count)
+			s.count -= take
+			left -= take
+			if s.count <= 0:
+				slots[i] = null
+	if left != count:
+		changed.emit()
+	return count - left
+
+
+func first_free() -> int:
+	for i in size:
+		if slots[i] == null:
+			return i
+	return -1
+
+
+## item id -> total count
+func counts() -> Dictionary:
+	var out := {}
+	for s in slots:
+		if s != null:
+			out[s.item.id] = int(out.get(s.item.id, 0)) + s.count
+	return out
+
+
 func count_item(item_id: StringName) -> int:
 	var n := 0
 	for s in slots:

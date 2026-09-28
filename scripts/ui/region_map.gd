@@ -51,7 +51,7 @@ func open() -> void:
 	note.modulate.a = 0.0
 	hovered = null
 	_show_info(null)
-	res_label.text = "食物 %d    水 %d" % [GameState.camp.food, GameState.camp.water]
+	_refresh_resources()
 	SceneManager.set_cursor(SceneManager.CursorMode.ARROW)
 	AudioManager.play(&"page", -8.0)
 	root.modulate.a = 0.0
@@ -120,8 +120,12 @@ func choose(loc: LocationData) -> void:
 	if GameState.expedition_done_today:
 		_say("今天已经很晚了，明天再出去吧。")
 		return
-	if not GameState.can_afford({"food": loc.cost_food, "water": loc.cost_water}):
-		_say("现在过去的话，带的东西不够。")
+	var missing := GameState.missing_for({"food": loc.cost_food, "water": loc.cost_water})
+	if not missing.is_empty():
+		_say(lack_line(missing))
+		return
+	if GameState.has_pending():
+		_say("带回来的东西还没整理好。")
 		return
 	_selected = loc
 	confirm_cost.text = "食物 ×%d  /  水 ×%d" % [loc.cost_food, loc.cost_water]
@@ -142,9 +146,9 @@ func _depart() -> void:
 	_selected = null
 	confirm.visible = false
 	if not GameState.begin_expedition(loc):
-		_say("现在过去的话，带的东西不够。")
+		_say(lack_line(GameState.missing_for({"food": loc.cost_food, "water": loc.cost_water})))
 		return
-	res_label.text = "食物 %d    水 %d" % [GameState.camp.food, GameState.camp.water]
+	_refresh_resources()
 	is_open = false
 	departed.emit(loc)
 
@@ -160,11 +164,27 @@ func _show_info(l: LocationData) -> void:
 	info_cost.text = "消耗  食物 ×%d  水 ×%d" % [l.cost_food, l.cost_water]
 	info_desc.text = l.description
 	var lack := PackedStringArray()
-	if GameState.camp.food < l.cost_food:
+	if GameState.camp_food() < l.cost_food:
 		lack.append("食物不足。")
-	if GameState.camp.water < l.cost_water:
+	if GameState.camp_water() < l.cost_water:
 		lack.append("水不足。")
 	info_warn.text = " ".join(lack)
+
+
+## The brother's line when the storage cannot pay the trip.
+static func lack_line(missing: Array) -> String:
+	if missing.has("food") and missing.has("water"):
+		return "食物和水都不够了。"
+	if missing.has("water"):
+		return "水不够了。"
+	if missing.has("food"):
+		return "食物不够了。"
+	return "现在过去的话，带的东西不够。"
+
+
+## Counted from the real items in the camp storage.
+func _refresh_resources() -> void:
+	res_label.text = "食物 %d    水 %d" % [GameState.camp_food(), GameState.camp_water()]
 
 
 func _say(text: String) -> void:

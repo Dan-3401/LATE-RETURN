@@ -61,8 +61,17 @@ var debug_enabled: bool = OS.is_debug_build()
 # --- day / camp / expedition ---------------------------------------------------
 var phase: Phase = Phase.STORY
 var day_index := 0
-var camp := {"food": 0, "water": 0}
-## Current expedition: {active, location, region, location_visited, seed, start_counts}
+## Camp storage (营地仓库): the ONLY source of truth for everything kept at
+## the camp — food and water included (the HUD and the travel costs count
+## the real items here; there is no separate food / water counter).
+const STORAGE_CAPACITY := 40
+var storage := Inventory.new(STORAGE_CAPACITY)
+## Brought home but did not fit into the storage (待整理物资). Kept until the
+## player makes room; never deleted.
+var pending := Inventory.new(0)
+## Current expedition: {active, location, region, location_visited, seed,
+## acquired: {item_id: count picked up during this outing},
+## carried_out: {item_id: count he left the camp with}}
 var expedition := {}
 var expedition_done_today := false
 ## What the player brought home today: {"gains": {item_id: count}, "rare": [item_id]}
@@ -73,7 +82,7 @@ var obtained_ever := {}
 var world := {}
 ## Where the next scene should place the player (e.g. &"store_door").
 var spawn_point: StringName = &""
-## Pending settlement to show when the camp loads: {"food": n, "water": n}
+## Settlement to show when the camp loads: {"items": {id: n}, "overflow": bool}
 var pending_settlement := {}
 ## Diary page to show next: {"date": String, "lines": PackedStringArray, "next": StringName}
 var pending_diary := {}
@@ -82,6 +91,8 @@ var pending_diary := {}
 func _ready() -> void:
 	inventory.changed.connect(_on_inventory_changed)
 	inventory.item_added.connect(_on_item_added)
+	storage.changed.connect(func(): camp_changed.emit())
+	pending.changed.connect(func(): camp_changed.emit())
 	new_game()
 
 
@@ -103,7 +114,9 @@ func new_game() -> void:
 	objective = {"id": &"", "title": "", "required": {}, "active": false, "complete": false}
 	phase = Phase.STORY
 	day_index = 0
-	camp = {"food": 0, "water": 0}
+	storage.resize(STORAGE_CAPACITY, true)
+	storage.clear()
+	pending.resize(0, true)
 	expedition = {}
 	expedition_done_today = false
 	daily = {"gains": {}, "rare": []}
@@ -172,7 +185,12 @@ func _on_inventory_changed() -> void:
 	objective_changed.emit()
 
 
-func _on_item_added(item: ItemData, _count: int) -> void:
+func _on_item_added(item: ItemData, count: int) -> void:
+	# everything picked up during an outing is an Expedition Acquired Item
+	if expedition.get("active", false):
+		var acq: Dictionary = expedition.get("acquired", {})
+		acq[item.id] = int(acq.get(item.id, 0)) + count
+		expedition["acquired"] = acq
 	if item.id in RARE_ITEMS and not obtained_ever.has(item.id):
 		obtained_ever[item.id] = true
 		if not item.id in daily.rare:
@@ -216,34 +234,76 @@ func capacity() -> int:
 	return cap
 
 
+## Slot containers a ref can point into: the backpack, the camp storage and
+## the "待整理" overflow area. Equipment slots are the other kind.
+func _container(kind: String) -> Inventory:
+	match kind:
+		"bag": return inventory
+		"storage": return storage
+		"pending": return pending
+	return null
+
+
 func _ref_get(ref: Dictionary):
-	if ref.kind == "bag":
+	var inv := _container(ref.kind)
+	if inv:
 		var i: int = ref.index
-		return inventory.slots[i] if i >= 0 and i < inventory.size else null
+		return inv.slots[i] if i >= 0 and i < inv.size else null
 	return equipment.get(ref.slot)
 
 
 func _ref_set(ref: Dictionary, v) -> void:
-	if ref.kind == "bag":
-		inventory.slots[ref.index] = v
+	var inv := _container(ref.kind)
+	if inv:
+		inv.slots[ref.index] = v
 	else:
 		equipment[ref.slot] = v
 
 
 func _ref_valid(ref: Dictionary) -> bool:
-	if ref.get("kind") == "bag":
-		return int(ref.get("index", -1)) >= 0 and int(ref.index) < inventory.size
+	var inv := _container(String(ref.get("kind", "")))
+	if inv:
+		return int(ref.get("index", -1)) >= 0 and int(ref.index) < inv.size
 	return ref.get("kind") == "equip" and SLOT_TYPES.has(ref.get("slot", ""))
+
+
+## Items the player may throw away (never keys or story items).
+func can_discard(item: ItemData) -> bool:
+	return item != null and not item.item_type in [ItemData.ItemType.KEY, ItemData.ItemType.QUEST]
+
+
+## Throw a whole stack away (the storage screen's 丢弃 slot). Only from the
+## backpack, the storage or the overflow area.
+func discard(ref: Dictionary, dry_run := false) -> String:
+	if not _ref_valid(ref) or _container(ref.kind) == null:
+		return "invalid"
+	var s = _ref_get(ref)
+	if s == null:
+		return "empty"
+	if not can_discard(s.item):
+		return "这个不能丢。"
+	if dry_run:
+		return ""
+	_ref_set(ref, null)
+	_container(ref.kind).changed.emit()
+	if ref.kind == "pending":
+		_compact_pending()
+	return ""
 
 
 ## Move, merge or swap. Returns "" on success or a short reason (the UI
 ## uses it for the red/green highlight while dragging). Never loses items:
 ## anything that does not fit stays where it was.
 func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
+	if dst.get("kind") == "discard":
+		return discard(src, dry_run)
 	if not _ref_valid(src) or not _ref_valid(dst):
 		return "invalid"
 	if src.kind == dst.kind and src.get("index") == dst.get("index") and src.get("slot") == dst.get("slot"):
 		return "same"
+	# the overflow area only empties; nothing is put back into it
+	if dst.kind == "pending":
+		return "invalid"
 	var a = _ref_get(src)
 	if a == null:
 		return "empty"
@@ -256,6 +316,8 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 	var swap: bool = b != null and not merge
 	if swap and src.kind == "equip" and not can_accept(src.slot, b.item):
 		return "这个不能装备在这里。"
+	if swap and src.kind == "pending":
+		return "invalid"   # swapping would put something into the overflow area
 	# bag size after the move (clothing / backpack change the capacity)
 	var cap_after := capacity()
 	var used_after := inventory.used_slots()
@@ -268,11 +330,11 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 			cap_after += a.item.capacity_bonus
 			if swap:
 				cap_after -= b.item.capacity_bonus
-		if src.kind == "bag" and dst.kind == "equip" and not swap:
+		if src.kind == "bag" and dst.kind != "bag" and not swap:
 			used_after -= 1
-		elif src.kind == "equip" and dst.kind == "bag" and not swap:
+		elif dst.kind == "bag" and src.kind != "bag" and not swap:
 			used_after += 1
-	elif src.kind == "bag" and a.count <= a.item.max_stack - b.count:
+	elif src.kind == "bag" and dst.kind != "bag" and a.count <= a.item.max_stack - b.count:
 		used_after -= 1
 	if used_after > cap_after:
 		return "背包里的东西太多了。"
@@ -289,6 +351,11 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 		_ref_set(src, b)
 	if cap_after != inventory.size:
 		inventory.resize(cap_after)
+	for k in [src.kind, dst.kind]:
+		if _container(k) and _container(k) != inventory:
+			_container(k).changed.emit()
+	if src.kind == "pending":
+		_compact_pending()
 	inventory.changed.emit()
 	equipment_changed.emit()
 	return ""
@@ -371,44 +438,80 @@ func set_active_hand(index: int) -> void:
 	active_hand_changed.emit(index)
 
 
-# --- Camp ----------------------------------------------------------------------
-func camp_add(res: String, amount: int) -> void:
-	camp[res] = maxi(int(camp.get(res, 0)) + amount, 0)
-	camp_changed.emit()
+# --- Camp storage ----------------------------------------------------------------
+## Food / water at the camp = the real items in the storage (task tags).
+func camp_count(tag: StringName) -> int:
+	return storage.count_tag(tag)
+
+
+func camp_food() -> int:
+	return camp_count(&"food")
+
+
+func camp_water() -> int:
+	return camp_count(&"water")
+
+
+## Read-only view {"food": n, "water": n} computed from the storage (not a
+## second copy of the data).
+func camp_view() -> Dictionary:
+	return {"food": camp_food(), "water": camp_water()}
 
 
 func can_afford(cost: Dictionary) -> bool:
+	return missing_for(cost).is_empty()
+
+
+## Which resources the storage cannot pay: ["food", "water"] subsets.
+func missing_for(cost: Dictionary) -> Array[String]:
+	var out: Array[String] = []
 	for k in cost:
-		if int(camp.get(k, 0)) < int(cost[k]):
-			return false
-	return true
+		if camp_count(StringName(k)) < int(cost[k]):
+			out.append(String(k))
+	return out
 
 
-## Hand food/water over to the camp. Returns {"food": n, "water": n}.
-func deposit_supplies() -> Dictionary:
-	var got := {"food": 0, "water": 0}
-	for s in inventory.slots:
-		if s != null and s.item.task_tag in CAMP_TAGS:
-			got[String(s.item.task_tag)] += s.count
-	for tag in CAMP_TAGS:
-		var n: int = got[String(tag)]
-		if n > 0:
-			for i in inventory.size:
-				var s = inventory.slots[i]
-				if s != null and s.item.task_tag == tag:
-					inventory.slots[i] = null
-			camp_add(String(tag), n)
-	inventory.changed.emit()
-	return got
+## Put items into the storage; whatever does not fit goes to the overflow
+## area (grown as needed). Returns how many ended up in the overflow.
+func stash(item: ItemData, count: int) -> int:
+	var left := storage.add(item, count)
+	if left > 0:
+		var per: int = item.max_stack if item.stackable else 1
+		var free := 0
+		for s in pending.slots:
+			if s == null:
+				free += 1
+		var need := ceili(float(left) / per) - free
+		if need > 0:
+			pending.resize(pending.size + need)
+		pending.add(item, left)
+	return left
+
+
+func has_pending() -> bool:
+	return pending.used_slots() > 0
+
+
+## Drop empty overflow slots so the area shrinks as it is sorted out.
+func _compact_pending() -> void:
+	pending.resize(pending.used_slots(), false)
 
 
 # --- Phases & days ------------------------------------------------------------------
 ## After the first diary: day 2 begins and the game opens up.
 func start_free_phase() -> void:
 	phase = Phase.FREE
-	# whatever was carried home on the first day goes into the camp
-	camp = {"food": 2, "water": 1}
-	deposit_supplies()
+	# what the siblings already had at the camp...
+	storage.clear()
+	stash(preload("res://resources/items/canned_food.tres"), 2)
+	stash(preload("res://resources/items/water.tres"), 1)
+	# ...and everything the brother carried home on the first day
+	for i in inventory.size:
+		var s = inventory.slots[i]
+		if s != null:
+			inventory.slots[i] = null
+			stash(s.item, s.count)
+	inventory.changed.emit()
 	pending_settlement = {}
 	start_objective(&"medicine", MAIN_QUEST_TITLE, {})
 	_begin_day(day_index + 1)
@@ -437,18 +540,20 @@ func new_day() -> void:
 ## Pays the cost and prepares the persistent world for this outing.
 func begin_expedition(loc: LocationData) -> bool:
 	var cost := {"food": loc.cost_food, "water": loc.cost_water}
-	if not can_afford(cost) or expedition_done_today or not loc.playable:
+	if not can_afford(cost) or expedition_done_today or not loc.playable or has_pending():
 		return false
-	camp_add("food", -loc.cost_food)
-	camp_add("water", -loc.cost_water)
-	var counts := item_counts()
+	# the cost is real food and water taken out of the storage
+	storage.remove_tag(&"food", loc.cost_food)
+	storage.remove_tag(&"water", loc.cost_water)
 	expedition = {
 		"active": true,
 		"location": loc.id,
 		"region": loc.region_scene,
 		"location_visited": false,
 		"seed": randi(),
-		"start_counts": counts,
+		"acquired": {},
+		# what he carried out: settlement never takes these
+		"carried_out": item_counts(),
 	}
 	loot_seed = expedition.seed
 	spawn_point = &"region_start"
@@ -460,19 +565,79 @@ func mark_location_visited() -> void:
 		expedition.location_visited = true
 
 
-## Coming home: supplies go to the camp, today's gains are recorded.
+## Coming home (Expedition Settlement): every item picked up on this outing
+## goes into the camp storage — food, water, junk, money, materials, gear
+## (a new uniform that was put on is taken off first). What the player
+## carried out stays with him. Anything the storage cannot hold goes to the
+## overflow area; nothing is ever deleted.
+## Returns {"items": {item_id: count}, "overflow": bool}.
 func end_expedition() -> Dictionary:
-	var counts := item_counts()
-	for id in counts:
-		var gained: int = counts[id] - int(expedition.get("start_counts", {}).get(id, 0))
-		if gained > 0:
-			daily.gains[id] = int(daily.gains.get(id, 0)) + gained
-	var got := deposit_supplies()
+	var acquired: Dictionary = expedition.get("acquired", {})
+	var carried_out: Dictionary = expedition.get("carried_out", {})
+	var brought := {}
+	for id in acquired:
+		# only what was picked up AND is more than he left with (a found item
+		# that was used / dropped on the way never costs him his own gear)
+		var extra := count_carried(id) - int(carried_out.get(id, 0))
+		var want := mini(int(acquired[id]), maxi(extra, 0))
+		var got := _take_carried(id, want)
+		if got > 0:
+			brought[id] = got
+			daily.gains[id] = int(daily.gains.get(id, 0)) + got
+	_fit_backpack()
 	expedition = {}
 	expedition_done_today = true
 	checkpoint = {}
-	pending_settlement = got
-	return got
+	pending_settlement = {"items": brought, "overflow": has_pending()}
+	inventory.changed.emit()
+	equipment_changed.emit()
+	return pending_settlement
+
+
+## Move up to `n` of an item from the player (backpack first, then hand
+## slots, then gear) into the storage. Returns how many were moved.
+func _take_carried(id: StringName, n: int) -> int:
+	var moved := 0
+	var item: ItemData = null
+	for i in range(inventory.size - 1, -1, -1):
+		var s = inventory.slots[i]
+		if moved >= n:
+			break
+		if s != null and s.item.id == id:
+			item = s.item
+			var take := mini(n - moved, s.count)
+			s.count -= take
+			moved += take
+			if s.count <= 0:
+				inventory.slots[i] = null
+	for slot in SLOT_TYPES:
+		if moved >= n:
+			break
+		var e = equipment[slot]
+		if e != null and e.item.id == id:
+			item = e.item
+			var take := mini(n - moved, int(e.count))
+			e.count -= take
+			moved += take
+			if e.count <= 0:
+				equipment[slot] = null
+	if moved > 0:
+		stash(item, moved)
+	return moved
+
+
+## After gear was taken off the bag may be smaller: whatever no longer fits
+## goes to the storage (never dropped).
+func _fit_backpack() -> void:
+	var cap := capacity()
+	while inventory.used_slots() > cap:
+		for i in range(inventory.size - 1, -1, -1):
+			var s = inventory.slots[i]
+			if s != null:
+				inventory.slots[i] = null
+				stash(s.item, s.count)
+				break
+	inventory.resize(cap)
 
 
 # --- World state ------------------------------------------------------------------
@@ -501,7 +666,8 @@ func snapshot() -> Dictionary:
 		"flags": flags.duplicate(true),
 		"phase": phase,
 		"day_index": day_index,
-		"camp": camp.duplicate(true),
+		"storage": storage.to_data(),
+		"pending": pending.to_data(),
 		"expedition": expedition.duplicate(true),
 		"daily": daily.duplicate(true),
 		"obtained_ever": obtained_ever.duplicate(true),
@@ -548,7 +714,11 @@ func apply_snapshot(d: Dictionary) -> void:
 	if d.has("phase"):
 		phase = d.phase
 		day_index = d.day_index
-		camp = d.camp.duplicate(true)
+		storage.resize(STORAGE_CAPACITY, true)
+		storage.from_data(d.get("storage", []))
+		var pend: Array = d.get("pending", [])
+		pending.resize(pend.size(), true)
+		pending.from_data(pend)
 		expedition = d.expedition.duplicate(true)
 		daily = d.daily.duplicate(true)
 		obtained_ever = d.obtained_ever.duplicate(true)

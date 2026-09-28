@@ -10,7 +10,8 @@ extends CanvasLayer
 signal saved
 
 ## 2: equipment slots hold {path, count}; three hand slots.
-const VERSION := 2
+## 3: camp storage (40 slots) + overflow replace the food / water counters.
+const VERSION := 3
 const DEFAULT_PATH := "user://savegame.dat"
 ## Test scripts (a custom SceneTree) never touch the player's real save;
 ## each test process gets its own file, removed again on exit.

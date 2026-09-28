@@ -461,10 +461,56 @@ def food_storage(level):
     return cv
 
 
+def storage_shelf():
+    """The siblings' storage shelf: planks on bricks, plastic bins, cardboard
+    boxes, a toolbox, a coil of rope, a spare backpack hanging off the side
+    and odds and ends they brought home."""
+    rng = random.Random(44)
+    w, h = 58, 74
+    cv = Canvas(w, h)
+    # uprights (stacked bricks) and three plank shelves
+    for bx in (2, w - 9):
+        for y in range(0, h, 6):
+            cv.rect(bx, y, 7, 5, c("rust", 2 + (y // 6) % 2))
+            cv.hline(bx, y + 5, 7, c("rust", 1))
+    for ly in (22, 46, h - 3):
+        cv.rect(0, ly, w, 3, c("wood", 4))
+        cv.hline(0, ly, w, c("wood", 6))
+    # top: two plastic bins (translucent blue-grey) with things inside
+    for bx in (10, 30):
+        cv.rect(bx, 8, 18, 14, c("cold", 3))
+        cv.hline(bx, 8, 18, c("cold", 5))
+        cv.rect(bx + 1, 10, 16, 3, c("cold", 2))
+        for k in range(3):
+            cv.rect(bx + 2 + k * 5, 11, 3, 2, c(rng.choice(["yellow", "red", "paper"]), 4))
+    # middle: cardboard boxes, one open, a toolbox
+    cv.rect(10, 30, 16, 16, c("wood", 3))
+    cv.hline(10, 30, 16, c("wood", 5))
+    cv.rect(16, 30, 4, 16, c("paper", 4))  # tape
+    cv.rect(28, 36, 16, 10, c("red", 2))
+    cv.hline(28, 36, 16, c("red", 4))
+    cv.rect(33, 33, 6, 3, c("metal", 3))   # toolbox handle
+    # bottom: rope coil, a wrench, loose cans / soap
+    cv.ellipse(18, h - 8, 6, 4, c("wood", 5))
+    cv.ellipse(18, h - 8, 3, 2, c("wood", 2))
+    cv.line(28, h - 6, 38, h - 10, c("metal", 5))
+    cv.rect(38, h - 12, 3, 3, c("metal", 5))
+    cv.rect(42, h - 10, 5, 7, c("metal", 5))
+    cv.rect(42, h - 8, 5, 2, c("red", 3))
+    # spare backpack hanging from the side
+    cv.rect(w - 6, 26, 6, 16, c("jacket", 3))
+    cv.rect(w - 6, 26, 6, 3, c("jacket", 5))
+    cv.px(w - 4, 24, c("ink", 1))
+    cv.px(w - 4, 25, c("ink", 1))
+    cv.outline(c("ink", 0))
+    return cv
+
+
 def storage_main():
     for lv in range(4):
         water_storage(lv).save(f"{OUT}/water_storage_{lv}.png")
         food_storage(lv).save(f"{OUT}/food_storage_{lv}.png")
+    storage_shelf().save(f"{OUT}/storage_shelf.png")
 
 
 if __name__ == "__main__":

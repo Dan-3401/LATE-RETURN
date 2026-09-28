@@ -142,13 +142,13 @@ func _run() -> void:
 	await wait(0.5)
 	info = SS.read_info()
 	check(info.place == "学校营地" and info.date == "9月29日", "camp hub autosaved (%s)" % str(info))
-	var camp_saved: Dictionary = GS.camp.duplicate()
-	GS.camp_add("food", 50)
+	var camp_saved: Dictionary = GS.camp_view()
+	GS.stash(load("res://resources/items/canned_food.tres"), 5)
 	GS.inventory.add(load("res://resources/items/junk.tres"), 1)
 	GS.new_game()
 	var scene: String = SS.load_game()
 	check(scene == "res://scenes/maps/camp_hub.tscn", "load returns the camp hub")
-	check(GS.is_free_phase() and GS.day_index == 1 and GS.camp == camp_saved, "state restored (camp %s)" % str(GS.camp))
+	check(GS.is_free_phase() and GS.day_index == 1 and GS.camp_view() == camp_saved, "state restored (camp %s)" % str(GS.camp_view()))
 	check(GS.objective.title == "寻找能够治疗哮喘病的药" and GS.inventory.count_item(&"junk") == 0, "objective restored, unsaved changes gone")
 
 	# --- 3. continue from the main menu -----------------------------------------------
@@ -161,13 +161,13 @@ func _run() -> void:
 	await shot("s02_menu_continue")
 	menu.continue_btn.emit_signal("pressed")
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0, menu), "继续游戏 -> camp hub")
-	check(GS.day_index == 1 and GS.camp == camp_saved and GS.is_free_phase(), "continued game has the saved state")
+	check(GS.day_index == 1 and GS.camp_view() == camp_saved and GS.is_free_phase(), "continued game has the saved state")
 
 	# --- 4. expedition checkpoint: resume without paying twice --------------------------
 	var hub = current_scene
 	var store_loc = load("res://resources/locations/store.tres")
 	check(GS.begin_expedition(store_loc), "expedition started")
-	var camp_after_pay: Dictionary = GS.camp.duplicate()
+	var camp_after_pay: Dictionary = GS.camp_view()
 	var old := current_scene
 	SM.change_scene(store_loc.region_scene, 0.2)
 	check(await wait_scene(store_loc.region_scene, 20.0, old), "region loaded")
@@ -176,13 +176,13 @@ func _run() -> void:
 	GS.inventory.add(load("res://resources/items/water.tres"), 3)   # picked up after the save
 	GS.new_game()
 	scene = SS.load_game()
-	check(scene == store_loc.region_scene and GS.camp == camp_after_pay, "resume at the expedition start, cost paid once (%s)" % str(GS.camp))
+	check(scene == store_loc.region_scene and GS.camp_view() == camp_after_pay, "resume at the expedition start, cost paid once (%s)" % str(GS.camp_view()))
 	check(GS.expedition.get("active", false) and GS.inventory.count_item(&"water") == 0, "expedition active, no duplicated loot")
 	old = current_scene
 	SM.change_scene(scene, 0.2)
 	check(await wait_scene(scene, 20.0, old), "resumed region")
 	var region = current_scene
-	check(absf(player().global_position.x - region.start_x) < 4.0 and GS.camp == camp_after_pay, "player at the region start, no second charge")
+	check(absf(player().global_position.x - region.start_x) < 4.0 and GS.camp_view() == camp_after_pay, "player at the region start, no second charge")
 
 	# --- 5. come home: the hub saves the finished outing ---------------------------------
 	GS.mark_location_visited()

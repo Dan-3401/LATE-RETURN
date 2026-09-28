@@ -67,11 +67,15 @@ def build(hub=False):
         ftex = [sc.ext_res("Texture2D", f"res://{ART}food_storage_{i}.png") for i in range(4)]
         sw, sh = png_size(ART + "water_storage_0.png")
         fw, fh = png_size(ART + "food_storage_0.png")
-        sc.node("Water", "Sprite2D", "Furniture/Storage", {"texture": wtex[0], "centered": False, "position": V2(530 - sw // 2, FLOOR_Y - sh)})
-        sc.node("Food", "Sprite2D", "Furniture/Storage", {"texture": ftex[0], "centered": False, "position": V2(586 - fw // 2, FLOOR_Y - fh)})
+        sc.node("Water", "Sprite2D", "Furniture/Storage", {"texture": wtex[0], "centered": False, "position": V2(500 - sw // 2, FLOOR_Y - sh)})
+        sc.node("Food", "Sprite2D", "Furniture/Storage", {"texture": ftex[0], "centered": False, "position": V2(552 - fw // 2, FLOOR_Y - fh)})
         sc.nodes[-3] = (sc.nodes[-3][0], dict(sc.nodes[-3][1], **{
             "water_textures": Raw("Array[Texture2D]([" + ", ".join(wtex) + "])"),
             "food_textures": Raw("Array[Texture2D]([" + ", ".join(ftex) + "])")}))
+        # the storage shelf (bins, boxes, tools, a spare backpack)
+        kw, kh = png_size(ART + "storage_shelf.png")
+        sc.node("Shelf", "Sprite2D", "Furniture/Storage", {"texture": sc.ext_res("Texture2D", f"res://{ART}storage_shelf.png"),
+                                                           "centered": False, "position": V2(610 - kw // 2, FLOOR_Y - kh)})
     # candle (animated)
     atlas = sc.ext_res("Texture2D", "res://" + ART + "candle.png")
     subs = [sc.sub_res("AtlasTexture", {"atlas": atlas, "region": Raw(f"Rect2({f * 6}, 0, 6, 14)")}) for f in range(3)]
@@ -137,6 +141,9 @@ def build(hub=False):
         sc.node("Shape", "CollisionShape2D", "DoorInteract", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(40, 40)})})
         sc.node("SisterInteract", "Area2D", ".", {"position": V2(420, FLOOR_Y - 20), "script": itc, "prompt_text": "与妹妹交谈", "prompt_offset": V2(0, -44)})
         sc.node("Shape", "CollisionShape2D", "SisterInteract", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(44, 40)})})
+        # the storage corner opens the storage screen
+        sc.node("StorageInteract", "Area2D", ".", {"position": V2(560, FLOOR_Y - 20), "script": itc, "prompt_text": "互动", "prompt_offset": V2(0, -84)})
+        sc.node("Shape", "CollisionShape2D", "StorageInteract", {"shape": sc.sub_res("RectangleShape2D", {"size": V2(140, 40)})})
     # player (enters from the door)
     sc.node("Player", None, ".", {"position": V2(60 if not hub else 250, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
     sc.node("GameCamera", "Camera2D", ".", {"position": V2(330, 135), "limit_left": 0, "limit_top": 0, "limit_right": W, "limit_bottom": 270,
@@ -153,6 +160,7 @@ def build(hub=False):
     if hub:
         sc.node("RegionMap", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/region_map.tscn"))
         sc.node("ConfirmDialog", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/confirm_dialog.tscn"))
+        sc.node("StorageUI", "CanvasLayer", ".", {"script": sc.ext_res("Script", "res://scripts/ui/storage_ui.gd")})
         sc.save("scenes/maps/camp_hub.tscn")
         return
     sc.node("Letterbox", "CanvasLayer", ".", {"layer": 8})

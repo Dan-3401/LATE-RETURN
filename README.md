@@ -93,6 +93,29 @@ zombies or anything interactable. Gameplay exposure (lamp pools vs.
 shadows) is placed by hand and kept separate from the rendered light. See
 `docs/rendering_layers.md` for the layer / z_index convention.
 
+## Camp storage (营地仓库)
+
+The camp storage (40 slots, normal stacking rules) is the **only** source of
+truth for camp supplies — there is no separate food / water counter. The
+top-right food / water numbers, the storage corner's look (stock stages) and
+the trip costs all read the real items in it; paying for a trip removes real
+food and water from it.
+
+* **Settlement:** every item picked up during an outing (recorded as it is
+  picked up) goes into the storage when you come home — water, food, junk,
+  money, materials, gear; a newly found uniform that was put on is taken off
+  first. What you carried out (pistol, knife, bottles...) stays with you.
+  A short "本次带回：" note lists it all, rare finds apart.
+* **Full storage:** what does not fit waits under **待整理物资**; the storage
+  screen opens by itself ("仓库已经放不下了。") and going out / ending the
+  day waits until it is sorted. Nothing is ever deleted — except what you
+  drop on **丢弃** yourself (never keys or story items).
+* **Storage screen:** [F] 互动 at the storage corner. Storage, backpack and
+  the three hand slots side by side, same drag & drop as the backpack
+  screen (stack, swap, validation) — also for preparing a loadout.
+* Persistent: saves, checkpoints (the expedition checkpoint keeps the
+  already-paid storage: no refund, no double charge), scene changes, days.
+
 ## Hide spots as tactical nodes
 
 Inside a hide spot (green language: weeds, vines, moss, a green rag) the
@@ -171,6 +194,7 @@ godot --path . -s res://tools/tests/test_hand_equipment.gd -- /tmp/shots   # han
 godot --path . -s res://tools/tests/test_visual_layers.gd  -- /tmp/shots   # lighting, foreground
 godot --path . -s res://tools/tests/test_round_hide.gd     -- /tmp/shots   # searchables, corpses, traversal, skip, hide gameplay
 godot --path . -s res://tools/tests/test_settings.gd       -- /tmp/shots   # settings (run on a >= 2560x1440 screen)
+godot --path . -s res://tools/tests/test_storage.gd        -- /tmp/shots   # camp storage
 godot --path . -s res://tools/tests/shoot_scenes.gd    -- /tmp/shots   # screenshots of every map (no checks)
 ```
 

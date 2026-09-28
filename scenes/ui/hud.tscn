@@ -111,10 +111,10 @@ modulate = Color(1, 1, 1, 0)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -50.0
-offset_top = 40.0
-offset_right = 50.0
-offset_bottom = 90.0
+offset_left = -64.0
+offset_top = 36.0
+offset_right = 64.0
+offset_bottom = 60.0
 grow_horizontal = 2
 mouse_filter = 2
 
@@ -125,13 +125,17 @@ theme_override_constants/separation = -1
 [node name="Title" type="Label" parent="Overlay/Settlement/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.93, 0.88, 0.76, 1)
-text = "获得物资"
+text = "本次带回："
+horizontal_alignment = 1
+
+[node name="Rare" type="Label" parent="Overlay/Settlement/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.42, 1)
 horizontal_alignment = 1
 
 [node name="Rows" type="Label" parent="Overlay/Settlement/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.8, 0.6, 1)
-text = "食物 +0"
+theme_override_colors/font_color = Color(0.8, 0.78, 0.7, 1)
 horizontal_alignment = 1
 
 [node name="Hint" type="Label" parent="Overlay"]

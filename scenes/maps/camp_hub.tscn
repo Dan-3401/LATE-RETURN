@@ -1,4 +1,4 @@
-[gd_scene load_steps=52 format=3]
+[gd_scene load_steps=55 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/camp_hub_level.gd" id="1_camp_hub_lev"]
 [ext_resource type="Resource" path="res://resources/dialogue/sister_pool.tres" id="2_sister_pool"]
@@ -18,71 +18,76 @@
 [ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_1.png" id="16_food_storage"]
 [ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_2.png" id="17_food_storage"]
 [ext_resource type="Texture2D" path="res://art/environment/camp/food_storage_3.png" id="18_food_storage"]
-[ext_resource type="Texture2D" path="res://art/environment/camp/candle.png" id="19_candle"]
-[ext_resource type="TileSet" path="res://resources/tilesets/camp_tiles.tres" id="24_camp_tiles"]
-[ext_resource type="Script" path="res://scripts/actors/sister.gd" id="25_sister"]
-[ext_resource type="SpriteFrames" path="res://art/characters/sister/sister_frames.tres" id="26_sister_frame"]
-[ext_resource type="Texture2D" path="res://art/environment/camp/blanket.png" id="27_blanket"]
-[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="28_radial_large"]
-[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="29_radial"]
-[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="30_flicker_ligh"]
-[ext_resource type="Texture2D" path="res://art/lights/window_beam.png" id="31_window_beam"]
-[ext_resource type="Texture2D" path="res://art/lights/soft_wide.png" id="32_soft_wide"]
-[ext_resource type="Texture2D" path="res://art/lights/floor_spill.png" id="33_floor_spill"]
-[ext_resource type="Texture2D" path="res://art/lights/door_slit.png" id="34_door_slit"]
-[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="35_halo"]
-[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="37_pixel"]
-[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="38_interactable"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="41_player"]
-[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="42_game_camera"]
-[ext_resource type="Script" path="res://scripts/effects/foreground_fader.gd" id="43_foreground_f"]
-[ext_resource type="Texture2D" path="res://art/environment/foreground/door_frame.png" id="44_door_frame"]
-[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_curtain.png" id="45_camp_curtain"]
-[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_laundry.png" id="46_camp_laundry"]
-[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_chair_blur.png" id="47_camp_chair_b"]
-[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="48_dialogue_pla"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="49_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/region_map.tscn" id="50_region_map"]
-[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="51_confirm_dial"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_20"]
-atlas = ExtResource("19_candle")
-region = Rect2(0, 0, 6, 14)
+[ext_resource type="Texture2D" path="res://art/environment/camp/storage_shelf.png" id="19_storage_shel"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/candle.png" id="20_candle"]
+[ext_resource type="TileSet" path="res://resources/tilesets/camp_tiles.tres" id="25_camp_tiles"]
+[ext_resource type="Script" path="res://scripts/actors/sister.gd" id="26_sister"]
+[ext_resource type="SpriteFrames" path="res://art/characters/sister/sister_frames.tres" id="27_sister_frame"]
+[ext_resource type="Texture2D" path="res://art/environment/camp/blanket.png" id="28_blanket"]
+[ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="29_radial_large"]
+[ext_resource type="Texture2D" path="res://art/lights/radial.png" id="30_radial"]
+[ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="31_flicker_ligh"]
+[ext_resource type="Texture2D" path="res://art/lights/window_beam.png" id="32_window_beam"]
+[ext_resource type="Texture2D" path="res://art/lights/soft_wide.png" id="33_soft_wide"]
+[ext_resource type="Texture2D" path="res://art/lights/floor_spill.png" id="34_floor_spill"]
+[ext_resource type="Texture2D" path="res://art/lights/door_slit.png" id="35_door_slit"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="36_halo"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="38_pixel"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="39_interactable"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="43_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="44_game_camera"]
+[ext_resource type="Script" path="res://scripts/effects/foreground_fader.gd" id="45_foreground_f"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/door_frame.png" id="46_door_frame"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_curtain.png" id="47_camp_curtain"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_laundry.png" id="48_camp_laundry"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_chair_blur.png" id="49_camp_chair_b"]
+[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="50_dialogue_pla"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="51_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/region_map.tscn" id="52_region_map"]
+[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="53_confirm_dial"]
+[ext_resource type="Script" path="res://scripts/ui/storage_ui.gd" id="54_storage_ui"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_21"]
-atlas = ExtResource("19_candle")
-region = Rect2(6, 0, 6, 14)
+atlas = ExtResource("20_candle")
+region = Rect2(0, 0, 6, 14)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_22"]
-atlas = ExtResource("19_candle")
+atlas = ExtResource("20_candle")
+region = Rect2(6, 0, 6, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_23"]
+atlas = ExtResource("20_candle")
 region = Rect2(12, 0, 6, 14)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_23"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_24"]
 animations = [{
 "frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_20")
-}, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_21")
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_22")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_23")
 }],
 "loop": true,
 "name": &"default",
 "speed": 6.0
 }]
 
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_36"]
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_37"]
 blend_mode = 1
 light_mode = 1
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_39"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_40"]
 size = Vector2(40.0, 40.0)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_40"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_41"]
 size = Vector2(44.0, 40.0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_42"]
+size = Vector2(140.0, 40.0)
 
 [node name="CampHub" type="Node2D"]
 script = ExtResource("1_camp_hub_lev")
@@ -144,37 +149,42 @@ food_textures = Array[Texture2D]([ExtResource("15_food_storage"), ExtResource("1
 [node name="Water" type="Sprite2D" parent="Furniture/Storage"]
 texture = ExtResource("11_water_storag")
 centered = false
-position = Vector2(502.0, 180.0)
+position = Vector2(472.0, 180.0)
 
 [node name="Food" type="Sprite2D" parent="Furniture/Storage"]
 texture = ExtResource("15_food_storage")
 centered = false
-position = Vector2(561.0, 184.0)
+position = Vector2(527.0, 184.0)
+
+[node name="Shelf" type="Sprite2D" parent="Furniture/Storage"]
+texture = ExtResource("19_storage_shel")
+centered = false
+position = Vector2(581.0, 150.0)
 
 [node name="Candle" type="AnimatedSprite2D" parent="Furniture"]
 position = Vector2(312.0, 183.0)
-sprite_frames = SubResource("SpriteFrames_23")
+sprite_frames = SubResource("SpriteFrames_24")
 autoplay = "default"
 
 [node name="Tiles" type="TileMapLayer" parent="."]
 z_index = -5
 tile_map_data = PackedByteArray(0, 0, 255, 255, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 255, 255, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 255, 255, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 2, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 2, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 3, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 3, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 4, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 4, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 5, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 5, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 5, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 6, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 6, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 6, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 7, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 7, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 8, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 8, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 9, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 9, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 9, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 10, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 10, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 10, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 11, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 11, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 11, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 12, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 12, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 12, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 13, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 13, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 13, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 14, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 14, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 14, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 15, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 15, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 16, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 16, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 16, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 17, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 17, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 17, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 18, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 18, 0, 15, 0, 0, 0, 7, 0, 1, 0, 0, 0, 18, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 19, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 19, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 19, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 20, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 20, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 21, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 21, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 22, 0, 14, 0, 0, 0, 6, 0, 0, 0, 0, 0, 22, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 22, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 23, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 23, 0, 16, 0, 0, 0, 3, 0, 2, 0, 0, 0, 24, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 24, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 24, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 25, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 25, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 25, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 26, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 26, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 26, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 27, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 27, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 27, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 28, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 28, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 28, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 29, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 29, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 29, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 30, 0, 14, 0, 0, 0, 4, 0, 0, 0, 0, 0, 30, 0, 15, 0, 0, 0, 1, 0, 1, 0, 0, 0, 30, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 31, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 31, 0, 15, 0, 0, 0, 4, 0, 1, 0, 0, 0, 31, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 32, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 32, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 32, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 33, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 33, 0, 15, 0, 0, 0, 2, 0, 1, 0, 0, 0, 33, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 34, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 34, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 34, 0, 16, 0, 0, 0, 0, 0, 2, 0, 0, 0, 35, 0, 14, 0, 0, 0, 3, 0, 0, 0, 0, 0, 35, 0, 15, 0, 0, 0, 5, 0, 1, 0, 0, 0, 35, 0, 16, 0, 0, 0, 4, 0, 2, 0, 0, 0, 36, 0, 14, 0, 0, 0, 7, 0, 0, 0, 0, 0, 36, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 36, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 37, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 37, 0, 16, 0, 0, 0, 7, 0, 2, 0, 0, 0, 38, 0, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 38, 0, 15, 0, 0, 0, 3, 0, 1, 0, 0, 0, 38, 0, 16, 0, 0, 0, 2, 0, 2, 0, 0, 0, 39, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 39, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 39, 0, 16, 0, 0, 0, 1, 0, 2, 0, 0, 0, 40, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 40, 0, 15, 0, 0, 0, 6, 0, 1, 0, 0, 0, 40, 0, 16, 0, 0, 0, 5, 0, 2, 0, 0, 0, 41, 0, 14, 0, 0, 0, 2, 0, 0, 0, 0, 0, 41, 0, 15, 0, 0, 0, 0, 0, 1, 0, 0, 0, 41, 0, 16, 0, 0, 0, 6, 0, 2, 0, 0, 0, 255, 255, 254, 255, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 254, 255, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 255, 255, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 255, 255, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 1, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 1, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 2, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 4, 0, 0, 0, 1, 0, 3, 0, 0, 0, 40, 0, 4, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 5, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 5, 0, 0, 0, 1, 0, 3, 0, 0, 0, 255, 255, 6, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 6, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 7, 0, 0, 0, 1, 0, 3, 0, 0, 0, 40, 0, 7, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 8, 0, 0, 0, 3, 0, 3, 0, 0, 0, 40, 0, 8, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 9, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 9, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 10, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 10, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 11, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 11, 0, 0, 0, 2, 0, 3, 0, 0, 0, 255, 255, 12, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 12, 0, 0, 0, 3, 0, 3, 0, 0, 0, 255, 255, 13, 0, 0, 0, 2, 0, 3, 0, 0, 0, 40, 0, 13, 0, 0, 0, 2, 0, 3, 0, 0, 0)
-tile_set = ExtResource("24_camp_tiles")
+tile_set = ExtResource("25_camp_tiles")
 
 [node name="Sister" type="Node2D" parent="."]
 position = Vector2(426.0, 218.0)
 z_index = -2
-script = ExtResource("25_sister")
+script = ExtResource("26_sister")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Sister"]
 position = Vector2(0.0, -24.0)
 flip_h = true
-sprite_frames = ExtResource("26_sister_frame")
+sprite_frames = ExtResource("27_sister_frame")
 animation = &"sit_down"
 autoplay = "sit_down"
 
 [node name="Blanket" type="Sprite2D" parent="Sister"]
-texture = ExtResource("27_blanket")
+texture = ExtResource("28_blanket")
 centered = false
 position = Vector2(-26.0, -10.0)
 flip_h = true
@@ -188,7 +198,7 @@ energy = 1.25
 range_item_cull_mask = 3
 shadow_enabled = true
 shadow_item_cull_mask = 1
-texture = ExtResource("28_radial_large")
+texture = ExtResource("29_radial_large")
 texture_scale = 1.1
 
 [node name="Candle" type="PointLight2D" parent="Lights"]
@@ -196,9 +206,9 @@ position = Vector2(312.0, 176.0)
 color = Color(1, 0.6, 0.3, 1.0)
 energy = 0.6
 range_item_cull_mask = 3
-texture = ExtResource("29_radial")
+texture = ExtResource("30_radial")
 texture_scale = 0.6
-script = ExtResource("30_flicker_ligh")
+script = ExtResource("31_flicker_ligh")
 base_energy = 0.6
 min_interval = 0.2
 max_interval = 0.8
@@ -209,7 +219,7 @@ position = Vector2(452.0, 204.0)
 color = Color(1, 0.7, 0.45, 1.0)
 energy = 0.45
 range_item_cull_mask = 3
-texture = ExtResource("29_radial")
+texture = ExtResource("30_radial")
 texture_scale = 0.7
 
 [node name="Window" type="PointLight2D" parent="Lights"]
@@ -217,7 +227,7 @@ position = Vector2(470.0, 110.0)
 color = Color(0.5, 0.6, 0.9, 1.0)
 energy = 0.5
 range_item_cull_mask = 3
-texture = ExtResource("31_window_beam")
+texture = ExtResource("32_window_beam")
 texture_scale = 0.8
 
 [node name="RoomFill" type="PointLight2D" parent="Lights"]
@@ -225,7 +235,7 @@ position = Vector2(320.0, 120.0)
 color = Color(0.45, 0.5, 0.72, 1.0)
 energy = 0.2
 range_item_cull_mask = 3
-texture = ExtResource("32_soft_wide")
+texture = ExtResource("33_soft_wide")
 texture_scale = 3.0
 
 [node name="WindowFloor" type="PointLight2D" parent="Lights"]
@@ -233,7 +243,7 @@ position = Vector2(500.0, 220.0)
 color = Color(0.5, 0.6, 0.92, 1.0)
 energy = 0.4
 range_item_cull_mask = 3
-texture = ExtResource("33_floor_spill")
+texture = ExtResource("34_floor_spill")
 texture_scale = 1.3
 
 [node name="DoorCrack" type="PointLight2D" parent="Lights"]
@@ -241,33 +251,33 @@ position = Vector2(68.0, 172.0)
 color = Color(0.45, 0.55, 0.86, 1.0)
 energy = 0.32
 range_item_cull_mask = 3
-texture = ExtResource("34_door_slit")
+texture = ExtResource("35_door_slit")
 texture_scale = 1.2
 
 [node name="LampGlow" type="Sprite2D" parent="Lights"]
 position = Vector2(278.0, 180.0)
 z_index = 5
-texture = ExtResource("35_halo")
+texture = ExtResource("36_halo")
 texture_filter = 2
-material = SubResource("CanvasItemMaterial_36")
+material = SubResource("CanvasItemMaterial_37")
 modulate = Color(1, 0.72, 0.42, 0.3)
 scale = Vector2(1.5, 1.5)
 
 [node name="CandleGlow" type="Sprite2D" parent="Lights"]
 position = Vector2(312.0, 176.0)
 z_index = 5
-texture = ExtResource("35_halo")
+texture = ExtResource("36_halo")
 texture_filter = 2
-material = SubResource("CanvasItemMaterial_36")
+material = SubResource("CanvasItemMaterial_37")
 modulate = Color(1, 0.6, 0.3, 0.32)
 scale = Vector2(0.6, 0.6)
 
 [node name="NightGlow" type="Sprite2D" parent="Lights"]
 position = Vector2(452.0, 204.0)
 z_index = 5
-texture = ExtResource("35_halo")
+texture = ExtResource("36_halo")
 texture_filter = 2
-material = SubResource("CanvasItemMaterial_36")
+material = SubResource("CanvasItemMaterial_37")
 modulate = Color(1, 0.7, 0.45, 0.2)
 scale = Vector2(0.7, 0.7)
 
@@ -276,7 +286,7 @@ position = Vector2(300.0, 150.0)
 amount = 18
 lifetime = 10.0
 preprocess = 10.0
-texture = ExtResource("37_pixel")
+texture = ExtResource("38_pixel")
 emission_shape = 3
 emission_rect_extents = Vector2(120.0, 60.0)
 direction = Vector2(1.0, 0.2)
@@ -288,23 +298,32 @@ color = Color(1, 0.9, 0.75, 0.45)
 
 [node name="DoorInteract" type="Area2D" parent="."]
 position = Vector2(68.0, 204.0)
-script = ExtResource("38_interactable")
+script = ExtResource("39_interactable")
 prompt_text = "外出"
 prompt_offset = Vector2(0.0, -94.0)
 
 [node name="Shape" type="CollisionShape2D" parent="DoorInteract"]
-shape = SubResource("RectangleShape2D_39")
+shape = SubResource("RectangleShape2D_40")
 
 [node name="SisterInteract" type="Area2D" parent="."]
 position = Vector2(420.0, 204.0)
-script = ExtResource("38_interactable")
+script = ExtResource("39_interactable")
 prompt_text = "与妹妹交谈"
 prompt_offset = Vector2(0.0, -44.0)
 
 [node name="Shape" type="CollisionShape2D" parent="SisterInteract"]
-shape = SubResource("RectangleShape2D_40")
+shape = SubResource("RectangleShape2D_41")
 
-[node name="Player" parent="." instance=ExtResource("41_player")]
+[node name="StorageInteract" type="Area2D" parent="."]
+position = Vector2(560.0, 204.0)
+script = ExtResource("39_interactable")
+prompt_text = "互动"
+prompt_offset = Vector2(0.0, -84.0)
+
+[node name="Shape" type="CollisionShape2D" parent="StorageInteract"]
+shape = SubResource("RectangleShape2D_42")
+
+[node name="Player" parent="." instance=ExtResource("43_player")]
 position = Vector2(250.0, 224.0)
 
 [node name="GameCamera" type="Camera2D" parent="."]
@@ -313,52 +332,55 @@ limit_left = 0
 limit_top = 0
 limit_right = 640
 limit_bottom = 270
-script = ExtResource("42_game_camera")
+script = ExtResource("44_game_camera")
 target_path = NodePath("../Player")
 
 [node name="Foreground" type="Parallax2D" parent="."]
 scroll_scale = Vector2(1.25, 1.0)
 z_index = 20
-script = ExtResource("43_foreground_f")
+script = ExtResource("45_foreground_f")
 
 [node name="DoorFrame" type="Sprite2D" parent="Foreground"]
 position = Vector2(-6.0, 0.0)
-texture = ExtResource("44_door_frame")
+texture = ExtResource("46_door_frame")
 centered = false
 flip_h = false
 
 [node name="Curtain" type="Sprite2D" parent="Foreground"]
 position = Vector2(648.0, 0.0)
-texture = ExtResource("45_camp_curtain")
+texture = ExtResource("47_camp_curtain")
 centered = false
 flip_h = false
 
 [node name="Laundry" type="Sprite2D" parent="Foreground"]
 position = Vector2(225.0, 0.0)
-texture = ExtResource("46_camp_laundry")
+texture = ExtResource("48_camp_laundry")
 centered = false
 flip_h = false
 
 [node name="ForegroundBlur" type="Parallax2D" parent="."]
 scroll_scale = Vector2(1.6, 1.0)
 z_index = 22
-script = ExtResource("43_foreground_f")
+script = ExtResource("45_foreground_f")
 texture_filter = 2
 visible_alpha = 0.9
 faded_alpha = 0.22
 
 [node name="Chair" type="Sprite2D" parent="ForegroundBlur"]
 position = Vector2(522.0, 86.0)
-texture = ExtResource("47_camp_chair_b")
+texture = ExtResource("49_camp_chair_b")
 centered = false
 flip_h = false
 
 [node name="DialoguePlayer" type="Node" parent="."]
-script = ExtResource("48_dialogue_pla")
+script = ExtResource("50_dialogue_pla")
 
-[node name="HUD" parent="." instance=ExtResource("49_hud")]
+[node name="HUD" parent="." instance=ExtResource("51_hud")]
 
-[node name="RegionMap" parent="." instance=ExtResource("50_region_map")]
+[node name="RegionMap" parent="." instance=ExtResource("52_region_map")]
 
-[node name="ConfirmDialog" parent="." instance=ExtResource("51_confirm_dial")]
+[node name="ConfirmDialog" parent="." instance=ExtResource("53_confirm_dial")]
+
+[node name="StorageUI" type="CanvasLayer" parent="."]
+script = ExtResource("54_storage_ui")
 

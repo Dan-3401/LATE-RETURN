@@ -13,6 +13,11 @@ const DIARY := "res://scenes/ui/diary.tscn"
 @onready var confirm: ConfirmDialog = $ConfirmDialog
 @onready var dialogue_player: DialoguePlayer = $DialoguePlayer
 @onready var lamp_light: PointLight2D = $Lights/Lamp
+@onready var storage_interact: Interactable = $StorageInteract
+@onready var storage_ui: StorageUI = $StorageUI
+
+const FULL_LINE := "仓库已经放不下了。"
+const SORT_FIRST := "带回来的东西还没整理好。"
 
 var _last_talk := -1
 var _busy := false
@@ -24,6 +29,9 @@ func _ready() -> void:
 	dialogue_player.speakers = {"妹妹": sister, "哥哥": player}
 	door_interact.interacted.connect(_on_door)
 	sister_interact.interacted.connect(_on_sister)
+	storage_interact.interacted.connect(func(_a): open_storage())
+	# sorting the storage is a safe point too
+	storage_ui.closed.connect(func(): SaveSystem.save_here(scene_file_path, "学校营地"))
 	region_map.closed.connect(_on_map_closed)
 	region_map.departed.connect(_on_departed)
 	_refresh_sister_prompt()
@@ -41,7 +49,13 @@ func _ready() -> void:
 		hud.show_settlement(got)
 		await wait(1.5)
 		_refresh_sister_prompt()
-		hud.show_hint("靠近妹妹  G：结束本日", 5.0)
+		if GameState.has_pending():
+			# the storage is full: sort things out now, nothing is thrown away
+			await wait(1.8)
+			say(player, FULL_LINE)
+			open_storage(FULL_LINE)
+		else:
+			hud.show_hint("靠近妹妹  G：结束本日", 5.0)
 	elif not GameState.expedition_done_today:
 		await wait(1.2)
 		hud.show_hint("走到门口  F：外出", 5.0)
@@ -52,8 +66,14 @@ func _refresh_sister_prompt() -> void:
 	sister_interact.refresh_prompt()
 
 
+func open_storage(message := "") -> void:
+	if _busy or storage_ui.is_open() or region_map.is_open or confirm.is_open:
+		return
+	storage_ui.open(message)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if _busy or region_map.is_open or confirm.is_open:
+	if _busy or region_map.is_open or confirm.is_open or storage_ui.is_open():
 		return
 	if event.is_action_pressed(&"end_day"):
 		if player.interaction.focused == sister_interact and GameState.expedition_done_today:
@@ -67,6 +87,10 @@ func _on_door(_a: Node2D) -> void:
 		return
 	if GameState.expedition_done_today:
 		say(player, "今天已经很晚了，明天再出去吧。")
+		return
+	if GameState.has_pending():
+		say(player, SORT_FIRST)
+		open_storage(FULL_LINE)
 		return
 	player.set_cutscene(true)
 	region_map.open()
@@ -99,6 +123,10 @@ func _on_sister(_a: Node2D) -> void:
 
 
 func _ask_end_day() -> void:
+	if GameState.has_pending():
+		say(player, SORT_FIRST)
+		open_storage(FULL_LINE)
+		return
 	_busy = true
 	player.set_cutscene(true)
 	var yes := await confirm.ask("结束今天吗？")

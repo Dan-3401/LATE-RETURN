@@ -55,7 +55,8 @@ func _on_interacted(actor: Node2D) -> void:
 		AudioManager.play_at(&"lock_rattle", global_position + Vector2(0, -30), -2.0)
 		NoiseSystem.emit_noise(global_position + Vector2(0, -30), 60.0, actor, &"rattle")
 		t.tween_interval(0.8)
+		var key_at_camp: bool = key_item != null and GameState.storage.count_item(key_item.id) > 0
 		t.tween_callback(func():
 			if actor.has_method(&"say"):
-				actor.call(&"say", "用蛮力的话，会引来很多丧尸吧……"))
+				actor.call(&"say", "钥匙还放在营地的仓库里……" if key_at_camp else "用蛮力的话，会引来很多丧尸吧……"))
 	t.tween_callback(func(): _busy = false)
