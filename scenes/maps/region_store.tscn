@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=3]
+[gd_scene load_steps=57 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/region_level.gd" id="1_region_level"]
 [ext_resource type="Texture2D" path="res://art/environment/city/sky.png" id="2_sky"]
@@ -37,17 +37,38 @@
 [ext_resource type="PackedScene" path="res://scenes/items/pickup.tscn" id="37_pickup"]
 [ext_resource type="Resource" path="res://resources/items/empty_bottle.tres" id="38_empty_bottle"]
 [ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="39_radial_large"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="40_player"]
-[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="41_game_camera"]
-[ext_resource type="Texture2D" path="res://art/environment/street/fg_pole.png" id="42_fg_pole"]
-[ext_resource type="Texture2D" path="res://art/environment/street/fg_grass.png" id="43_fg_grass"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="44_hud"]
+[ext_resource type="Texture2D" path="res://art/lights/sky_wash.png" id="40_sky_wash"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="41_halo"]
+[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="43_light_zone"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="47_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="48_game_camera"]
+[ext_resource type="Script" path="res://scripts/effects/foreground_fader.gd" id="49_foreground_f"]
+[ext_resource type="Texture2D" path="res://art/environment/street/fg_pole.png" id="50_fg_pole"]
+[ext_resource type="Texture2D" path="res://art/environment/street/fg_grass.png" id="51_fg_grass"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/street_sign.png" id="52_street_sign"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/street_fence.png" id="53_street_fence"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/street_branch_blur.png" id="54_street_branc"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/street_car_blur.png" id="55_street_car_b"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="56_hud"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_35"]
 size = Vector2(60.0, 40.0)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_36"]
 size = Vector2(44.0, 40.0)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_42"]
+blend_mode = 0
+light_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_44"]
+size = Vector2(110.0, 40.0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_45"]
+size = Vector2(110.0, 40.0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_46"]
+size = Vector2(60.0, 40.0)
 
 [node name="StoreDistrict" type="Node2D"]
 script = ExtResource("1_region_level")
@@ -371,9 +392,11 @@ count = 1
 
 [node name="Moon" type="DirectionalLight2D" parent="Lights"]
 color = Color(0.55, 0.64, 0.9, 1.0)
-energy = 0.35
+energy = 0.26
 shadow_enabled = true
 shadow_item_cull_mask = 1
+shadow_filter = 1
+shadow_filter_smooth = 2.0
 rotation = 0.35
 max_distance = 600.0
 
@@ -401,7 +424,114 @@ range_item_cull_mask = 3
 texture = ExtResource("39_radial_large")
 texture_scale = 0.5
 
-[node name="Player" parent="." instance=ExtResource("40_player")]
+[node name="Sky0" type="PointLight2D" parent="Lights"]
+position = Vector2(160.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.3
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky1" type="PointLight2D" parent="Lights"]
+position = Vector2(470.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.26
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky2" type="PointLight2D" parent="Lights"]
+position = Vector2(930.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.3
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky3" type="PointLight2D" parent="Lights"]
+position = Vector2(1240.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.22
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky4" type="PointLight2D" parent="Lights"]
+position = Vector2(1560.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.32
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky5" type="PointLight2D" parent="Lights"]
+position = Vector2(1900.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.26
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="Sky6" type="PointLight2D" parent="Lights"]
+position = Vector2(2440.0, 150.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.3
+range_item_cull_mask = 3
+texture = ExtResource("40_sky_wash")
+texture_scale = 1.2
+
+[node name="AlleyShade0" type="Sprite2D" parent="."]
+position = Vector2(715.0, 168.0)
+z_index = -15
+texture = ExtResource("41_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_42")
+modulate = Color(0.0, 0.0, 0.02, 0.5)
+scale = Vector2(1.7578, 1.7)
+
+[node name="AlleyShadow0" type="Area2D" parent="."]
+position = Vector2(715.0, 204.0)
+script = ExtResource("43_light_zone")
+exposure = -0.6
+
+[node name="Shape" type="CollisionShape2D" parent="AlleyShadow0"]
+shape = SubResource("RectangleShape2D_44")
+
+[node name="AlleyShade1" type="Sprite2D" parent="."]
+position = Vector2(2155.0, 168.0)
+z_index = -15
+texture = ExtResource("41_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_42")
+modulate = Color(0.0, 0.0, 0.02, 0.5)
+scale = Vector2(1.7578, 1.7)
+
+[node name="AlleyShadow1" type="Area2D" parent="."]
+position = Vector2(2155.0, 204.0)
+script = ExtResource("43_light_zone")
+exposure = -0.6
+
+[node name="Shape" type="CollisionShape2D" parent="AlleyShadow1"]
+shape = SubResource("RectangleShape2D_45")
+
+[node name="BusStopShade" type="Sprite2D" parent="."]
+position = Vector2(1300.0, 196.0)
+z_index = -15
+texture = ExtResource("41_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_42")
+modulate = Color(0.0, 0.0, 0.02, 0.35)
+scale = Vector2(1.1, 0.7)
+
+[node name="BusStopShadow" type="Area2D" parent="."]
+position = Vector2(1300.0, 204.0)
+script = ExtResource("43_light_zone")
+exposure = -0.4
+
+[node name="Shape" type="CollisionShape2D" parent="BusStopShadow"]
+shape = SubResource("RectangleShape2D_46")
+
+[node name="Player" parent="." instance=ExtResource("47_player")]
 position = Vector2(2480.0, 224.0)
 
 [node name="GameCamera" type="Camera2D" parent="."]
@@ -410,68 +540,125 @@ limit_left = 0
 limit_top = 0
 limit_right = 2650
 limit_bottom = 270
-script = ExtResource("41_game_camera")
+script = ExtResource("48_game_camera")
 target_path = NodePath("../Player")
 look_ahead = 56.0
 
 [node name="Foreground" type="Parallax2D" parent="."]
 scroll_scale = Vector2(1.3, 1.0)
 z_index = 20
+script = ExtResource("49_foreground_f")
 
 [node name="Pole0" type="Sprite2D" parent="Foreground"]
 position = Vector2(420.0, 0.0)
-texture = ExtResource("42_fg_pole")
+texture = ExtResource("50_fg_pole")
 centered = false
 
 [node name="Pole1" type="Sprite2D" parent="Foreground"]
 position = Vector2(1150.0, 0.0)
-texture = ExtResource("42_fg_pole")
+texture = ExtResource("50_fg_pole")
 centered = false
 
 [node name="Pole2" type="Sprite2D" parent="Foreground"]
 position = Vector2(1900.0, 0.0)
-texture = ExtResource("42_fg_pole")
+texture = ExtResource("50_fg_pole")
 centered = false
 
 [node name="Pole3" type="Sprite2D" parent="Foreground"]
 position = Vector2(2700.0, 0.0)
-texture = ExtResource("42_fg_pole")
+texture = ExtResource("50_fg_pole")
 centered = false
 
 [node name="Pole4" type="Sprite2D" parent="Foreground"]
 position = Vector2(3300.0, 0.0)
-texture = ExtResource("42_fg_pole")
+texture = ExtResource("50_fg_pole")
 centered = false
 
 [node name="FgGrass0" type="Sprite2D" parent="Foreground"]
 position = Vector2(80.0, 270.0)
-texture = ExtResource("43_fg_grass")
+texture = ExtResource("51_fg_grass")
 centered = false
 offset = Vector2(0.0, -40.0)
 
 [node name="FgGrass1" type="Sprite2D" parent="Foreground"]
 position = Vector2(760.0, 270.0)
-texture = ExtResource("43_fg_grass")
+texture = ExtResource("51_fg_grass")
 centered = false
 offset = Vector2(0.0, -40.0)
 
 [node name="FgGrass2" type="Sprite2D" parent="Foreground"]
 position = Vector2(1480.0, 270.0)
-texture = ExtResource("43_fg_grass")
+texture = ExtResource("51_fg_grass")
 centered = false
 offset = Vector2(0.0, -40.0)
 
 [node name="FgGrass3" type="Sprite2D" parent="Foreground"]
 position = Vector2(2240.0, 270.0)
-texture = ExtResource("43_fg_grass")
+texture = ExtResource("51_fg_grass")
 centered = false
 offset = Vector2(0.0, -40.0)
 
 [node name="FgGrass4" type="Sprite2D" parent="Foreground"]
 position = Vector2(3000.0, 270.0)
-texture = ExtResource("43_fg_grass")
+texture = ExtResource("51_fg_grass")
 centered = false
 offset = Vector2(0.0, -40.0)
 
-[node name="HUD" parent="." instance=ExtResource("44_hud")]
+[node name="Sign" type="Sprite2D" parent="Foreground"]
+position = Vector2(1270.0, 0.0)
+texture = ExtResource("52_street_sign")
+centered = false
+flip_h = false
+
+[node name="Fence" type="Sprite2D" parent="Foreground"]
+position = Vector2(1775.0, 186.0)
+texture = ExtResource("53_street_fence")
+centered = false
+flip_h = false
+
+[node name="Fence2" type="Sprite2D" parent="Foreground"]
+position = Vector2(2865.0, 186.0)
+texture = ExtResource("53_street_fence")
+centered = false
+flip_h = true
+
+[node name="ForegroundBlur" type="Parallax2D" parent="."]
+scroll_scale = Vector2(1.6, 1.0)
+z_index = 22
+script = ExtResource("49_foreground_f")
+texture_filter = 2
+visible_alpha = 0.9
+faded_alpha = 0.22
+
+[node name="Branch" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(700.0, 0.0)
+texture = ExtResource("54_street_branc")
+centered = false
+flip_h = false
+
+[node name="Branch2" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(1780.0, 0.0)
+texture = ExtResource("54_street_branc")
+centered = false
+flip_h = true
+
+[node name="Branch3" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(3460.0, 0.0)
+texture = ExtResource("54_street_branc")
+centered = false
+flip_h = false
+
+[node name="Car" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(1280.0, 142.0)
+texture = ExtResource("55_street_car_b")
+centered = false
+flip_h = false
+
+[node name="Car2" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(2970.0, 142.0)
+texture = ExtResource("55_street_car_b")
+centered = false
+flip_h = true
+
+[node name="HUD" parent="." instance=ExtResource("56_hud")]
 

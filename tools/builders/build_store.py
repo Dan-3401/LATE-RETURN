@@ -5,6 +5,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from tscn import Scene, V2, V2i, PV2, SN, NP, Raw, Col, tile_map_data, png_size, fmt  # noqa: E402
+import layers as Z  # noqa: E402
+import lighting as L  # noqa: E402
+import foreground as F  # noqa: E402
 import props  # noqa: E402
 
 ART = "art/environment/store/"
@@ -86,7 +89,7 @@ def build_store():
     sc.node("CanvasModulate", "CanvasModulate", ".", {"color": Col(0.17, 0.19, 0.25)})
 
     # --- back wall (light_mask 2: receives furniture shadows)
-    sc.node("Background", "Node2D", ".", {"z_index": -20})
+    sc.node("Background", "Node2D", ".", {"z_index": Z.BACKGROUND})
     sc.node("BackWall", "Sprite2D", "Background", {
         "light_mask": 2,
         "texture": sc.ext_res("Texture2D", "res://" + ART + "backwall.png"),
@@ -109,13 +112,13 @@ def build_store():
         cells.append((-1, y, 0, rng.randrange(4), 3, 0))
         cells.append((cols, y, 0, rng.randrange(4), 3, 0))
     sc.node("Tiles", "TileMapLayer", ".", {
-        "z_index": -5,
+        "z_index": Z.TILES,
         "tile_map_data": tile_map_data(cells),
         "tile_set": sc.ext_res("TileSet", "res://resources/tilesets/store_tiles.tres"),
     })
 
     # --- props (z -10: behind player)
-    sc.node("Props", "Node2D", ".", {"z_index": -10, "y_sort_enabled": False})
+    sc.node("Props", "Node2D", ".", {"z_index": Z.PROPS, "y_sort_enabled": False})
     placements = [
         ("Cooler1", "res://scenes/interactables/store/cooler.tscn", 130),
         ("Cooler2", "res://scenes/interactables/store/cooler.tscn", 192),
@@ -131,7 +134,7 @@ def build_store():
         sc.node(name, None, "Props", {"position": V2(x, FLOOR_Y)}, instance=sc.ext_res("PackedScene", path))
 
     # floor clutter in front of the furniture but behind the player
-    sc.node("Clutter", "Node2D", ".", {"z_index": -4})
+    sc.node("Clutter", "Node2D", ".", {"z_index": Z.DECALS})
     clutter = [
         ("WetSign", "trash_wet_sign", 232), ("TrashPile", "trash_pile", 250), ("Basket", "trash_basket", 438),
         ("FallenShelf", "fallen_shelf", 568), ("Papers", "trash_papers", 614), ("Bottles", "trash_bottles", 700),
@@ -141,10 +144,10 @@ def build_store():
         sc.node(name, None, "Clutter", {"position": V2(x, FLOOR_Y)}, instance=sc.ext_res("PackedScene", f"res://scenes/props/store/{scene}.tscn"))
 
     # --- back warehouse door (painted on the wall at x 40..76)
-    sc.node("WarehouseDoor", None, ".", {"position": V2(58, FLOOR_Y), "z_index": -19},
+    sc.node("WarehouseDoor", None, ".", {"position": V2(58, FLOOR_Y), "z_index": Z.BACKGROUND_DETAIL},
             instance=sc.ext_res("PackedScene", "res://scenes/interactables/store/warehouse_door.tscn"))
     # --- exit
-    sc.node("ExitDoor", None, ".", {"position": V2(966, FLOOR_Y), "z_index": -9}, instance=sc.ext_res("PackedScene", "res://scenes/interactables/store/exit_door.tscn"))
+    sc.node("ExitDoor", None, ".", {"position": V2(966, FLOOR_Y), "z_index": Z.PROPS_FRONT}, instance=sc.ext_res("PackedScene", "res://scenes/interactables/store/exit_door.tscn"))
 
     # --- ambient lights
     sc.node("Lights", "Node2D", ".", {})
@@ -174,10 +177,30 @@ def build_store():
         "position": V2(46, 190), "color": Col(0.4, 0.45, 0.6), "energy": 0.25,
         "range_item_cull_mask": 3, "texture": radial, "texture_scale": 0.6,
     })
+    # layered light: cold ambient from the window and the glass door (the
+    # store gets darker the further you are from them), the moon beam
+    # pooling on the floor, one warm lantern someone left behind
+    L.light(sc, "Lights", "WindowAmbient", (440, 110), (0.42, 0.52, 0.82), 0.3, "soft_wide.png", 2.2)
+    L.light(sc, "Lights", "DoorAmbient", (950, 140), (0.45, 0.55, 0.86), 0.28, "soft_wide.png", 2.0)
+    L.light(sc, "Lights", "BeamFloor", (500, FLOOR_Y - 4), (0.55, 0.66, 0.95), 0.45, "floor_spill.png", 1.2)
+    lw, lh = png_size("art/environment/camp/lamp.png")
+    sc.node("LanternSprite", "Sprite2D", "Clutter", {"texture": sc.ext_res("Texture2D", "res://art/environment/camp/lamp.png"),
+                                                     "centered": False, "position": V2(592 - lw // 2, FLOOR_Y - lh)})
+    L.light(sc, "Lights", "Lantern", (592, FLOOR_Y - lh + 6), (1, 0.7, 0.4), 0.7, "radial.png", 0.75, shadow=True, extra={
+        "script": sc.ext_res("Script", "res://scripts/effects/flicker_light.gd"),
+        "base_energy": 0.7, "min_interval": 0.4, "max_interval": 1.6, "dead_chance": 0.0})
+    L.glow(sc, "Lights", "LanternGlow", (592, FLOOR_Y - lh + 6), (1, 0.72, 0.42), 0.55, 0.32)
+    L.glow(sc, "Lights", "WindowGlow2", (430, 74), (0.55, 0.65, 0.95), 1.1, 0.16)
+    L.glow(sc, "Lights", "ExitSignHalo", (966, 51), (0.35, 0.95, 0.5), 0.45, 0.22)
+    L.glow(sc, "Lights", "TubeHalo", (832, 44), (0.8, 0.88, 1.0), 0.7, 0.14)
+    # gameplay exposure: standing in the moon beam is conspicuous, the
+    # storeroom corner is deep shadow
+    L.exposure_zone(sc, ".", "BeamExposure", (480, FLOOR_Y - 20), (80, 40), 0.4)
+    L.exposure_zone(sc, ".", "CornerShadow", (40, FLOOR_Y - 20), (70, 40), -0.5)
 
     # --- dust motes drifting in the moon beam
     sc.node("Dust", "CPUParticles2D", ".", {
-        "position": V2(460, 150), "z_index": 5, "amount": 26, "lifetime": 9.0, "preprocess": 9.0,
+        "position": V2(460, 150), "z_index": Z.WORLD_FX, "amount": 26, "lifetime": 9.0, "preprocess": 9.0,
         "texture": sc.ext_res("Texture2D", "res://art/fx/pixel.png"),
         "emission_shape": 3, "emission_rect_extents": V2(80, 70),
         "direction": V2(1, 0.3), "spread": 180.0, "gravity": V2(0, 1.5),
@@ -195,11 +218,18 @@ def build_store():
     })
 
     # --- foreground silhouettes (parallax, in front of everything)
-    sc.node("Foreground", "Parallax2D", ".", {"scroll_scale": V2(1.25, 1.0), "z_index": 20})
+    F.layer(sc, "Foreground", 1.25)
     sc.node("FgDebris", "Sprite2D", "Foreground", {"position": V2(260, 270), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_debris.png"), "centered": False, "offset": V2(0, -44)})
     sc.node("FgShelf", "Sprite2D", "Foreground", {"position": V2(1180, 150), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_shelf.png"), "centered": False})
     sc.node("FgCables", "Sprite2D", "Foreground", {"position": V2(560, 0), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_cables.png"), "centered": False})
     sc.node("FgDebris2", "Sprite2D", "Foreground", {"position": V2(1100, 270), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_debris.png"), "centered": False, "offset": V2(0, -44), "flip_h": True})
+    # plastic strip curtain and a broken ad board hanging near the lens
+    F.piece(sc, "Foreground", "Curtain", "store_curtain.png", F.at(330, 500, 1.25), "top")
+    F.piece(sc, "Foreground", "AdBoard", "store_ad.png", F.at(200, 180, 1.25), "top")
+    # very near, blurred shelf edges sliding past faster
+    F.layer(sc, "ForegroundBlur", 1.6, blur=True)
+    F.piece(sc, "ForegroundBlur", "ShelfNear", "store_shelf_blur.png", F.at(-40, 120, 1.6), "bottom")
+    F.piece(sc, "ForegroundBlur", "ShelfNear2", "store_shelf_blur.png", F.at(400, 420, 1.6), "bottom", flip=True)
 
     # --- systems
     items = ["water", "canned_food", "biscuits", "noodles"]

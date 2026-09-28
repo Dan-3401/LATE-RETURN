@@ -25,12 +25,10 @@ The main scene is `scenes/ui/main_menu.tscn`. The game renders at 480×270 and s
 | F | Interact / search / pick up / hide / leave |
 | Tab | Backpack |
 | H | Flashlight |
-| 1 | Draw / holster pistol |
-| V | Draw / holster knife |
-| 2 | Ready / put away the equipped throwable (empty bottle) — left mouse throws |
+| 1 / 2 / 3 | Select hand slot 1 / 2 / 3 (pressing the selected one again = empty hands) |
 | G | (camp, next to the sister, after an outing) End the day |
 | Mouse | Aim |
-| Left mouse | Attack / shoot |
+| Left mouse | Use the held item: shoot, swing, throw |
 | Right mouse (hold) | Hold breath |
 | Esc | Pause |
 | F3 | Debug overlay (debug builds only: FPS, player state, presence, noise, zombie states, vision cones, last seen/heard positions) |
@@ -64,6 +62,36 @@ bag would overflow), empty bottle throwable (pixel arc preview, real flight,
 BOTTLE noise at the impact point, zombies sprint to it but never prefer it over a
 player they see), longer widening zombie searches after seeing someone hide,
 green environmental language on every hide spot, sister small-talk pool.
+
+## Hand equipment & backpack
+
+Three **hand slots** (keys 1 / 2 / 3) form a quick bar — not three held items.
+Any item whose `ItemData` says it is hand equipment (`equippable`,
+`usable_in_hand`, `equipment_category` = pistol / melee / throwable /
+tool) fits any of the three; money, food, water, keys and quest items never
+do. The default loadout is 1 pistol, 2 knife, 3 empty. Only the selected
+slot's item is active: it runs its `HandBehavior` (`scripts/hand/`:
+pistol aim/fire and knife swing = `weapon_behavior.gd`, bottle throw-aim =
+`throw_behavior.gd`); switching always puts the old item away first. A new
+kind of hand item is a new `.tres` (+ a behaviour script) — the Player does
+not change.
+
+The backpack screen (Tab) is sorted by **drag & drop**: backpack ↔ backpack
+(move / merge stacks / swap), backpack ↔ hand and gear slots, slot ↔ slot.
+While dragging, a target shows a green (fits), red (does not fit) or
+neutral (backpack cell) frame; a refused drop leaves the item where it
+was. All of it is `GameState.move_item()` on the real data, so scene
+changes, checkpoints, saves and new days keep every item in place.
+
+## Lighting & foreground
+
+Pixel-art sprites stay Nearest; light, glows and the nearest foreground are
+allowed to be soft. Every map layers several lights (cold ambient, warm
+local sources, sky wash, flashlight) and has a near-camera Foreground plus
+a blurred ForegroundBlur layer that fades while it covers the player,
+zombies or anything interactable. Gameplay exposure (lamp pools vs.
+shadows) is placed by hand and kept separate from the rendered light. See
+`docs/rendering_layers.md` for the layer / z_index convention.
 
 ## Saving
 
@@ -102,7 +130,7 @@ tools/
   audio/     procedural sound generator
   builders/  Python scene builders for the maps and prop scenes
   tests/     automated tests (see below)
-docs/        art_asset_requirements.md, design notes
+docs/        art_asset_requirements.md, rendering_layers.md, design notes
 ```
 
 Data is resource driven: new items, weapons, loot tables, containers, zombie archetypes or dialogue are new `.tres` files; no gameplay code changes needed.
@@ -117,6 +145,9 @@ godot --path . -s res://tools/tests/test_street.gd     -- /tmp/shots   # AI, ste
 godot --path . -s res://tools/tests/test_full_flow.gd  -- /tmp/shots   # menu → first diary
 godot --path . -s res://tools/tests/test_day_loop.gd   -- /tmp/shots   # Demo 2 day loop
 godot --path . -s res://tools/tests/test_save.gd       -- /tmp/shots   # autosave / continue
+godot --path . -s res://tools/tests/test_hand_equipment.gd -- /tmp/shots   # hand slots, drag & drop
+godot --path . -s res://tools/tests/test_visual_layers.gd  -- /tmp/shots   # lighting, foreground
+godot --path . -s res://tools/tests/shoot_scenes.gd    -- /tmp/shots   # screenshots of every map (no checks)
 ```
 
 Each prints `PASS/FAIL` lines and `RESULT: OK` on success.

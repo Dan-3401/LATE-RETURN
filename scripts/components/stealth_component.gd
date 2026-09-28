@@ -15,13 +15,16 @@ enum Motion { IDLE, SNEAK, WALK, RUN, AIR }
 @export var grass_factor := 0.4
 @export var grass_factor_running := 0.85
 @export var flashlight_bonus := 0.22
+## Presence added at full exposure (bright light zone).
 @export var light_zone_bonus := 0.35
+## Presence removed at full shadow (exposure -1).
+@export var shadow_bonus := 0.12
 
 var presence := 0.5
 var motion: Motion = Motion.IDLE
 var grass_count := 0
-var light_count := 0
 var hidden := false
+var _zones: Array[Node] = []
 var hide_spot: Node = null
 var flashlight_on := false
 var _spike := 0.0
@@ -32,8 +35,31 @@ func in_grass() -> bool:
 	return grass_count > 0
 
 
+func add_exposure_zone(z: Node) -> void:
+	if not z in _zones:
+		_zones.append(z)
+
+
+func remove_exposure_zone(z: Node) -> void:
+	_zones.erase(z)
+
+
+## Gameplay Exposure Value in [-1, 1]: the brightest zone wins; shadow
+## only counts where no light zone overlaps.
+func exposure() -> float:
+	var hi := 0.0
+	var lo := 0.0
+	for z in _zones:
+		if not is_instance_valid(z):
+			continue
+		var e: float = z.exposure
+		hi = maxf(hi, e)
+		lo = minf(lo, e)
+	return hi if hi > 0.0 else lo
+
+
 func in_light() -> bool:
-	return light_count > 0
+	return exposure() > 0.0
 
 
 func set_hidden(value: bool, spot: Node = null) -> void:
@@ -63,8 +89,11 @@ func update(delta: float, new_motion: Motion, is_flashlight_on: bool) -> void:
 			target *= grass_factor_running if motion == Motion.RUN else grass_factor
 		if flashlight_on:
 			target += flashlight_bonus
-		if in_light():
-			target += light_zone_bonus
+		var ex := exposure()
+		if ex > 0.0:
+			target += light_zone_bonus * ex
+		elif ex < 0.0:
+			target = maxf(target + shadow_bonus * ex, 0.05)
 		if _spike_time > 0.0:
 			target = maxf(target, _spike)
 	_spike_time = maxf(_spike_time - delta, 0.0)

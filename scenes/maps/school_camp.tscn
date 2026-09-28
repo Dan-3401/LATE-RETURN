@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/camp_level.gd" id="1_camp_level"]
 [ext_resource type="Resource" path="res://resources/dialogue/ending.tres" id="2_ending"]
@@ -18,11 +18,20 @@
 [ext_resource type="Texture2D" path="res://art/lights/radial.png" id="20_radial"]
 [ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="21_flicker_ligh"]
 [ext_resource type="Texture2D" path="res://art/lights/window_beam.png" id="22_window_beam"]
-[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="23_pixel"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="24_player"]
-[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="25_game_camera"]
-[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="26_dialogue_pla"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="27_hud"]
+[ext_resource type="Texture2D" path="res://art/lights/soft_wide.png" id="23_soft_wide"]
+[ext_resource type="Texture2D" path="res://art/lights/floor_spill.png" id="24_floor_spill"]
+[ext_resource type="Texture2D" path="res://art/lights/door_slit.png" id="25_door_slit"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="26_halo"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="28_pixel"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="29_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="30_game_camera"]
+[ext_resource type="Script" path="res://scripts/effects/foreground_fader.gd" id="31_foreground_f"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/door_frame.png" id="32_door_frame"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_curtain.png" id="33_camp_curtain"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_laundry.png" id="34_camp_laundry"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_chair_blur.png" id="35_camp_chair_b"]
+[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="36_dialogue_pla"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="37_hud"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_11"]
 atlas = ExtResource("10_candle")
@@ -52,6 +61,10 @@ animations = [{
 "name": &"default",
 "speed": 6.0
 }]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_27"]
+blend_mode = 1
+light_mode = 1
 
 [node name="SchoolCamp" type="Node2D"]
 script = ExtResource("1_camp_level")
@@ -174,12 +187,63 @@ range_item_cull_mask = 3
 texture = ExtResource("22_window_beam")
 texture_scale = 0.8
 
+[node name="RoomFill" type="PointLight2D" parent="Lights"]
+position = Vector2(320.0, 120.0)
+color = Color(0.45, 0.5, 0.72, 1.0)
+energy = 0.2
+range_item_cull_mask = 3
+texture = ExtResource("23_soft_wide")
+texture_scale = 3.0
+
+[node name="WindowFloor" type="PointLight2D" parent="Lights"]
+position = Vector2(500.0, 220.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.4
+range_item_cull_mask = 3
+texture = ExtResource("24_floor_spill")
+texture_scale = 1.3
+
+[node name="DoorCrack" type="PointLight2D" parent="Lights"]
+position = Vector2(68.0, 172.0)
+color = Color(0.45, 0.55, 0.86, 1.0)
+energy = 0.32
+range_item_cull_mask = 3
+texture = ExtResource("25_door_slit")
+texture_scale = 1.2
+
+[node name="LampGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(278.0, 180.0)
+z_index = 5
+texture = ExtResource("26_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_27")
+modulate = Color(1, 0.72, 0.42, 0.3)
+scale = Vector2(1.5, 1.5)
+
+[node name="CandleGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(312.0, 176.0)
+z_index = 5
+texture = ExtResource("26_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_27")
+modulate = Color(1, 0.6, 0.3, 0.32)
+scale = Vector2(0.6, 0.6)
+
+[node name="NightGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(452.0, 204.0)
+z_index = 5
+texture = ExtResource("26_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_27")
+modulate = Color(1, 0.7, 0.45, 0.2)
+scale = Vector2(0.7, 0.7)
+
 [node name="Dust" type="CPUParticles2D" parent="."]
 position = Vector2(300.0, 150.0)
 amount = 18
 lifetime = 10.0
 preprocess = 10.0
-texture = ExtResource("23_pixel")
+texture = ExtResource("28_pixel")
 emission_shape = 3
 emission_rect_extents = Vector2(120.0, 60.0)
 direction = Vector2(1.0, 0.2)
@@ -189,7 +253,7 @@ initial_velocity_min = 1.0
 initial_velocity_max = 3.0
 color = Color(1, 0.9, 0.75, 0.45)
 
-[node name="Player" parent="." instance=ExtResource("24_player")]
+[node name="Player" parent="." instance=ExtResource("29_player")]
 position = Vector2(60.0, 224.0)
 
 [node name="GameCamera" type="Camera2D" parent="."]
@@ -198,13 +262,50 @@ limit_left = 0
 limit_top = 0
 limit_right = 640
 limit_bottom = 270
-script = ExtResource("25_game_camera")
+script = ExtResource("30_game_camera")
 target_path = NodePath("../Player")
 
-[node name="DialoguePlayer" type="Node" parent="."]
-script = ExtResource("26_dialogue_pla")
+[node name="Foreground" type="Parallax2D" parent="."]
+scroll_scale = Vector2(1.25, 1.0)
+z_index = 20
+script = ExtResource("31_foreground_f")
 
-[node name="HUD" parent="." instance=ExtResource("27_hud")]
+[node name="DoorFrame" type="Sprite2D" parent="Foreground"]
+position = Vector2(-6.0, 0.0)
+texture = ExtResource("32_door_frame")
+centered = false
+flip_h = false
+
+[node name="Curtain" type="Sprite2D" parent="Foreground"]
+position = Vector2(648.0, 0.0)
+texture = ExtResource("33_camp_curtain")
+centered = false
+flip_h = false
+
+[node name="Laundry" type="Sprite2D" parent="Foreground"]
+position = Vector2(225.0, 0.0)
+texture = ExtResource("34_camp_laundry")
+centered = false
+flip_h = false
+
+[node name="ForegroundBlur" type="Parallax2D" parent="."]
+scroll_scale = Vector2(1.6, 1.0)
+z_index = 22
+script = ExtResource("31_foreground_f")
+texture_filter = 2
+visible_alpha = 0.9
+faded_alpha = 0.22
+
+[node name="Chair" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(522.0, 86.0)
+texture = ExtResource("35_camp_chair_b")
+centered = false
+flip_h = false
+
+[node name="DialoguePlayer" type="Node" parent="."]
+script = ExtResource("36_dialogue_pla")
+
+[node name="HUD" parent="." instance=ExtResource("37_hud")]
 
 [node name="Letterbox" type="CanvasLayer" parent="."]
 layer = 8

@@ -5,6 +5,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from tscn import Scene, V2, PV2, SN, NP, Raw, Col, tile_map_data, png_size  # noqa: E402
+import layers as Z  # noqa: E402
+import lighting as L  # noqa: E402
+import foreground as F  # noqa: E402
 import props  # noqa: E402
 from build_store import build_tileset  # noqa: E402
 
@@ -42,7 +45,7 @@ def build():
         "ambience_volume_db": -8.0,
     })
     sc.node("CanvasModulate", "CanvasModulate", ".", {"color": Col(0.1, 0.1, 0.14)})
-    sc.node("Background", "Node2D", ".", {"z_index": -20})
+    sc.node("Background", "Node2D", ".", {"z_index": Z.BACKGROUND})
     sc.node("Wall", "Sprite2D", "Background", {"light_mask": 2, "texture": sc.ext_res("Texture2D", "res://" + ART + "warehouse_wall.png"), "centered": False})
     # door back into the shop (painted like the storeroom door, standing open)
     dw, dh = png_size(ART + "storeroom_door_open.png")
@@ -55,9 +58,9 @@ def build():
     for y in range(-2, FLOOR_Y // 16):
         cells.append((-1, y, 0, rng.randrange(4), 3, 0))
         cells.append((W // 16, y, 0, rng.randrange(4), 3, 0))
-    sc.node("Tiles", "TileMapLayer", ".", {"z_index": -5, "tile_map_data": tile_map_data(cells),
+    sc.node("Tiles", "TileMapLayer", ".", {"z_index": Z.TILES, "tile_map_data": tile_map_data(cells),
                                            "tile_set": sc.ext_res("TileSet", "res://resources/tilesets/warehouse_tiles.tres")})
-    sc.node("Props", "Node2D", ".", {"z_index": -10})
+    sc.node("Props", "Node2D", ".", {"z_index": Z.PROPS})
     I = "res://scenes/interactables/warehouse/"
     for name, path, x in [
         ("BoxesA", I + "storage_boxes.tscn", 120), ("CleaningShelf", I + "cleaning_shelf.tscn", 176),
@@ -65,7 +68,7 @@ def build():
         ("HideLocker", I + "hide_locker.tscn", 404), ("BoxesB", I + "storage_boxes.tscn", 462),
     ]:
         sc.node(name, None, "Props", {"position": V2(x, FLOOR_Y)}, instance=sc.ext_res("PackedScene", path))
-    sc.node("Clutter", "Node2D", ".", {"z_index": -4})
+    sc.node("Clutter", "Node2D", ".", {"z_index": Z.DECALS})
     for name, path, x in [
         ("Mop", "res://scenes/props/warehouse/mop_bucket.tscn", 220), ("Fallen", "res://scenes/props/store/fallen_shelf.tscn", 250),
         ("Papers", "res://scenes/props/store/trash_papers.tscn", 150), ("Pile", "res://scenes/props/store/trash_pile.tscn", 372),
@@ -80,6 +83,16 @@ def build():
                                                "shadow_enabled": True, "shadow_item_cull_mask": 1, "texture": sc.ext_res("Texture2D", "res://art/lights/radial_large.png"),
                                                "texture_scale": 0.7, "script": sc.ext_res("Script", "res://scripts/effects/flicker_light.gd"),
                                                "base_energy": 0.3, "min_interval": 1.2, "max_interval": 4.0, "dead_chance": 0.6})
+    # layered light (still a dark room): a barely-there fill, the door's cold
+    # light spilling on the floor, a red emergency lamp over the lockers
+    L.light(sc, "Lights", "Fill", (256, 120), (0.4, 0.45, 0.62), 0.14, "soft_wide.png", 2.6)
+    L.light(sc, "Lights", "DoorSpill", (60, FLOOR_Y - 4), (0.45, 0.52, 0.72), 0.45, "floor_spill.png", 0.9)
+    L.light(sc, "Lights", "Emergency", (452, 58), (1, 0.32, 0.26), 0.4, "radial.png", 0.7)
+    sc.node("EmergencyLamp", "Sprite2D", "Lights", {"position": V2(452, 58), "texture": sc.ext_res("Texture2D", "res://art/fx/pixel.png"),
+                                                    "scale": V2(4, 2), "modulate": Col(1, 0.35, 0.3, 1), "z_index": Z.WORLD_FX})
+    L.glow(sc, "Lights", "EmergencyGlow", (452, 58), (1, 0.3, 0.25), 0.5, 0.3)
+    L.glow(sc, "Lights", "BulbGlow", (330, 40), (1, 0.8, 0.5), 0.6, 0.18)
+    L.exposure_zone(sc, ".", "Dark", (300, FLOOR_Y - 20), (360, 40), -0.4)
     sc.node("Dust", "CPUParticles2D", ".", {"position": V2(250, 150), "amount": 16, "lifetime": 10.0, "preprocess": 10.0,
                                             "texture": sc.ext_res("Texture2D", "res://art/fx/pixel.png"), "emission_shape": 3,
                                             "emission_rect_extents": V2(220, 60), "direction": V2(1, 0.2), "spread": 180.0,
@@ -91,6 +104,12 @@ def build():
     sc.node("Player", None, ".", {"position": V2(72, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
     sc.node("GameCamera", "Camera2D", ".", {"position": V2(240, 135), "limit_left": 0, "limit_top": 0, "limit_right": W, "limit_bottom": 270,
                                             "script": sc.ext_res("Script", "res://scripts/systems/game_camera.gd"), "target_path": NP("../Player")})
+    # near-camera: a hanging chain, boxes stacked right at the lens
+    F.layer(sc, "Foreground", 1.25)
+    F.piece(sc, "Foreground", "Chain", "chain.png", F.at(200, 0, 1.25), "top")
+    F.piece(sc, "Foreground", "Chain2", "chain.png", F.at(330, 30, 1.25), "top", y=-30)
+    F.layer(sc, "ForegroundBlur", 1.6, blur=True)
+    F.piece(sc, "ForegroundBlur", "Boxes", "boxes_blur.png", F.at(300, 30, 1.6))
     items = sc.ext_res("Script", "res://scripts/data/item_data.gd")
     sc.node("LootDirector", "Node", ".", {
         "script": sc.ext_res("Script", "res://scripts/systems/loot_director.gd"),

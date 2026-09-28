@@ -21,7 +21,8 @@ Regenerate everything with:
 python3 tools/art/gen_player.py && python3 tools/art/gen_zombie.py && \
 python3 tools/art/gen_store.py && python3 tools/art/gen_street.py && \
 python3 tools/art/gen_city.py && python3 tools/art/gen_camp.py && \
-python3 tools/art/gen_ui.py && python3 tools/art/gen_fx.py && python3 tools/art/gen_lights.py
+python3 tools/art/gen_ui.py && python3 tools/art/gen_fx.py && python3 tools/art/gen_lights.py && \
+python3 tools/art/gen_foreground.py
 python3 tools/audio/gen_audio.py
 python3 tools/builders/build_store.py && python3 tools/builders/build_street.py && \
 python3 tools/builders/build_camp.py && python3 tools/builders/build_actors.py
@@ -84,6 +85,13 @@ python3 tools/builders/build_camp.py && python3 tools/builders/build_actors.py
 | Icons | `ui/icons/warehouse_key.png`, `work_uniform.png`, `soap.png` | 16×16 |
 | Handwriting font | `fonts/lxgw-wenkai-subset.ttf` | re-run `tools/fonts/build_hand_font.py` after adding diary text |
 | Sounds | `bottle_break`, `throw`, `lock_rattle`, `key_jingle`, `lock_open`, `page` | synthesised placeholders |
+
+## Lighting & foreground (see docs/rendering_layers.md)
+
+| Asset | Path | Notes |
+|---|---|---|
+| Smooth light textures | `art/lights/*.png` (`tools/art/gen_lights.py`) | cone, radial ×3, `soft_wide`, `sky_wash`, `floor_spill`, `halo` (alpha glow), window beam, door slit — soft gradients are allowed for light |
+| Foreground pieces | `art/environment/foreground/*.png` (`tools/art/gen_foreground.py`) | sharp: store curtain / ad board, street sign / fence, camp curtain / laundry / door frame, chain. `*_blur.png`: pre-blurred ×2 pieces for the ForegroundBlur layer (LINEAR). Dark silhouettes, no green. |
 
 ## UI
 

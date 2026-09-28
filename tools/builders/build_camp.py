@@ -5,6 +5,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from tscn import Scene, V2, PV2, SN, NP, Raw, Col, tile_map_data, png_size  # noqa: E402
+import layers as Z  # noqa: E402
+import lighting as L  # noqa: E402
+import foreground as F  # noqa: E402
 from build_store import build_tileset  # noqa: E402
 
 ART = "art/environment/camp/"
@@ -44,13 +47,13 @@ def build(hub=False):
             "dialogue": sc.ext_res("Resource", "res://resources/dialogue/ending.tres"),
         })
     sc.node("CanvasModulate", "CanvasModulate", ".", {"color": Col(0.2, 0.2, 0.28)})
-    sc.node("Room", "Node2D", ".", {"z_index": -20})
+    sc.node("Room", "Node2D", ".", {"z_index": Z.BACKGROUND})
     sc.node("BackWall", "Sprite2D", "Room", {"light_mask": 2, "texture": sc.ext_res("Texture2D", "res://" + ART + "backwall.png"), "centered": False})
     # door frame is painted at x 46..90; door sprite on top
     dw, dh = png_size(ART + "door.png")
     sc.node("Door", "Sprite2D", "Room", {"texture": sc.ext_res("Texture2D", "res://" + ART + "door.png"), "centered": False, "position": V2(46, 112), "light_mask": 2})
     # furniture
-    sc.node("Furniture", "Node2D", ".", {"z_index": -10})
+    sc.node("Furniture", "Node2D", ".", {"z_index": Z.PROPS})
     spr(sc, "Furniture", "Chairs", ART + "stacked_chairs.png", 136)
     spr(sc, "Furniture", "Supplies", ART + "supplies.png", 214)
     spr(sc, "Furniture", "Table", ART + "desk_table.png", 290)
@@ -83,10 +86,10 @@ def build(hub=False):
     for y in range(-2, FLOOR_Y // 16):
         cells.append((-1, y, 0, rng.randrange(4), 3, 0))
         cells.append((W // 16, y, 0, rng.randrange(4), 3, 0))
-    sc.node("Tiles", "TileMapLayer", ".", {"z_index": -5, "tile_map_data": tile_map_data(cells),
+    sc.node("Tiles", "TileMapLayer", ".", {"z_index": Z.TILES, "tile_map_data": tile_map_data(cells),
                                            "tile_set": sc.ext_res("TileSet", "res://resources/tilesets/camp_tiles.tres")})
     # the sister (facing left, toward the door)
-    sc.node("Sister", "Node2D", ".", {"position": V2(426, FLOOR_Y - 6), "z_index": -2,
+    sc.node("Sister", "Node2D", ".", {"position": V2(426, FLOOR_Y - 6), "z_index": Z.CHARACTERS_BACK,
                                       "script": sc.ext_res("Script", "res://scripts/actors/sister.gd")})
     sc.node("Sprite", "AnimatedSprite2D", "Sister", {
         "position": V2(0, -24), "flip_h": True,
@@ -112,6 +115,15 @@ def build(hub=False):
     sc.node("Window", "PointLight2D", "Lights", {"position": V2(470, 110), "color": Col(0.5, 0.6, 0.9), "energy": 0.5,
                                                  "range_item_cull_mask": 3, "texture": sc.ext_res("Texture2D", "res://art/lights/window_beam.png"),
                                                  "texture_scale": 0.8})
+    # layered light: a weak cold fill for the whole room, the window light
+    # pooling on the floor, cold air-light through the door crack, and soft
+    # warm glows around the lamp, the candle and the nightlight
+    L.light(sc, "Lights", "RoomFill", (320, 120), (0.45, 0.5, 0.72), 0.2, "soft_wide.png", 3.0)
+    L.light(sc, "Lights", "WindowFloor", (500, FLOOR_Y - 4), (0.5, 0.6, 0.92), 0.4, "floor_spill.png", 1.3)
+    L.light(sc, "Lights", "DoorCrack", (68, FLOOR_Y - 52), (0.45, 0.55, 0.86), 0.32, "door_slit.png", 1.2)
+    L.glow(sc, "Lights", "LampGlow", (278, FLOOR_Y - 44), (1, 0.72, 0.42), 1.5, 0.3)
+    L.glow(sc, "Lights", "CandleGlow", (312, FLOOR_Y - 48), (1, 0.6, 0.3), 0.6, 0.32)
+    L.glow(sc, "Lights", "NightGlow", (452, FLOOR_Y - 20), (1, 0.7, 0.45), 0.7, 0.2)
     # dust
     sc.node("Dust", "CPUParticles2D", ".", {"position": V2(300, 150), "amount": 18, "lifetime": 10.0, "preprocess": 10.0,
                                             "texture": sc.ext_res("Texture2D", "res://art/fx/pixel.png"), "emission_shape": 3,
@@ -129,6 +141,13 @@ def build(hub=False):
     sc.node("Player", None, ".", {"position": V2(60 if not hub else 250, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
     sc.node("GameCamera", "Camera2D", ".", {"position": V2(330, 135), "limit_left": 0, "limit_top": 0, "limit_right": W, "limit_bottom": 270,
                                             "script": sc.ext_res("Script", "res://scripts/systems/game_camera.gd"), "target_path": NP("../Player")})
+    # near-camera layers: the door frame edge, the window curtain, washing on a line; a chair right at the lens
+    F.layer(sc, "Foreground", 1.25)
+    F.piece(sc, "Foreground", "DoorFrame", "door_frame.png", F.at(-6, 0, 1.25))
+    F.piece(sc, "Foreground", "Curtain", "camp_curtain.png", F.at(448, 160, 1.25), "top")
+    F.piece(sc, "Foreground", "Laundry", "camp_laundry.png", F.at(150, 60, 1.25), "top")
+    F.layer(sc, "ForegroundBlur", 1.6, blur=True)
+    F.piece(sc, "ForegroundBlur", "Chair", "camp_chair_blur.png", F.at(330, 120, 1.6))
     sc.node("DialoguePlayer", "Node", ".", {"script": sc.ext_res("Script", "res://scripts/systems/dialogue_player.gd")})
     sc.node("HUD", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/hud.tscn"))
     if hub:

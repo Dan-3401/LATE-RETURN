@@ -33,7 +33,7 @@ func _process(_delta: float) -> void:
 	if p:
 		lines.append("Player %s  %s" % [Player.State.keys()[p.state], MovementComponent.Mode.keys()[p.movement.mode]])
 		lines.append("HP %.0f  O2 %.0f%s" % [p.health.hp, p.breath.oxygen, "  HOLD" if p.breath.holding else ("  GASP" if p.breath.gasping else "")])
-		lines.append("Presence %.2f  grass:%d light:%d hidden:%s" % [p.stealth.presence, p.stealth.grass_count, p.stealth.light_count, p.stealth.hidden])
+		lines.append("Presence %.2f  grass:%d exposure:%.2f hidden:%s" % [p.stealth.presence, p.stealth.grass_count, p.stealth.exposure(), p.stealth.hidden])
 	var recent := NoiseSystem.recent
 	if not recent.is_empty():
 		var ev: Dictionary = recent[-1]

@@ -22,6 +22,7 @@ var _focused := false
 
 
 func _ready() -> void:
+	add_to_group(&"interactable")
 	collision_layer = 1 << 3
 	collision_mask = 0
 	monitoring = false

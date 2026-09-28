@@ -1,12 +1,17 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Texture2D" path="res://art/environment/city/street_lamp.png" id="1_street_lamp"]
 [ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="2_radial_large"]
 [ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="3_flicker_ligh"]
 [ext_resource type="Texture2D" path="res://art/lights/radial.png" id="4_radial"]
-[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="5_light_zone"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="5_halo"]
+[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="7_light_zone"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_6"]
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_6"]
+blend_mode = 1
+light_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8"]
 size = Vector2(96.0, 40.0)
 
 [node name="StreetLamp" type="Node2D"]
@@ -40,10 +45,20 @@ range_item_cull_mask = 3
 texture = ExtResource("4_radial")
 texture_scale = 1.1
 
+[node name="Halo" type="Sprite2D" parent="."]
+position = Vector2(14.0, -108.0)
+z_index = 5
+texture = ExtResource("5_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_6")
+modulate = Color(1, 0.85, 0.6, 0.26)
+scale = Vector2(0.8, 0.8)
+
 [node name="LightZone" type="Area2D" parent="."]
-script = ExtResource("5_light_zone")
+script = ExtResource("7_light_zone")
+exposure = 0.9
 
 [node name="Shape" type="CollisionShape2D" parent="LightZone"]
 position = Vector2(14.0, -20.0)
-shape = SubResource("RectangleShape2D_6")
+shape = SubResource("RectangleShape2D_8")
 

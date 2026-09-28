@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Texture2D" path="res://art/environment/street/fire_barrel.png" id="1_fire_barrel"]
 [ext_resource type="Texture2D" path="res://art/lights/radial_large.png" id="7_radial_large"]
 [ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="8_flicker_ligh"]
-[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="9_light_zone"]
-[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="11_pixel"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="9_halo"]
+[ext_resource type="Script" path="res://scripts/interactables/light_zone.gd" id="11_light_zone"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="13_pixel"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2"]
 atlas = ExtResource("1_fire_barrel")
@@ -42,7 +43,11 @@ animations = [{
 "speed": 8.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_10"]
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_10"]
+blend_mode = 1
+light_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_12"]
 size = Vector2(110.0, 40.0)
 
 [node name="FireBarrel" type="Node2D"]
@@ -67,18 +72,28 @@ min_interval = 0.3
 max_interval = 1.2
 dead_chance = 0.0
 
+[node name="Halo" type="Sprite2D" parent="."]
+position = Vector2(0.0, -26.0)
+z_index = 5
+texture = ExtResource("9_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_10")
+modulate = Color(1, 0.62, 0.3, 0.3)
+scale = Vector2(0.9, 0.9)
+
 [node name="LightZone" type="Area2D" parent="."]
-script = ExtResource("9_light_zone")
+script = ExtResource("11_light_zone")
+exposure = 1.0
 
 [node name="Shape" type="CollisionShape2D" parent="LightZone"]
 position = Vector2(0.0, -20.0)
-shape = SubResource("RectangleShape2D_10")
+shape = SubResource("RectangleShape2D_12")
 
 [node name="Embers" type="CPUParticles2D" parent="."]
 position = Vector2(0.0, -38.0)
 amount = 6
 lifetime = 1.6
-texture = ExtResource("11_pixel")
+texture = ExtResource("13_pixel")
 direction = Vector2(0.0, -1.0)
 spread = 25.0
 gravity = Vector2(0.0, -10.0)

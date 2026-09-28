@@ -5,6 +5,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from tscn import Scene, V2, PV2, SN, NP, Raw, Col, tile_map_data, png_size  # noqa: E402
+import layers as Z  # noqa: E402
+import lighting as L  # noqa: E402
+import foreground as F  # noqa: E402
 import props  # noqa: E402
 from build_store import build_tileset  # noqa: E402
 
@@ -52,7 +55,7 @@ def grass_scene(out, tex, frames=4, width=None, count=1):
     fw //= frames
     total = width or fw * count
     sc.node(os.path.splitext(os.path.basename(out))[0].title().replace("_", ""), "Area2D", None, {
-        "z_index": 2,
+        "z_index": Z.WORLD_FRONT,
         "script": sc.ext_res("Script", "res://scripts/interactables/grass_area.gd"),
     })
     # sprite frames resource inline
@@ -107,7 +110,8 @@ def build_props():
         "script": sc.ext_res("Script", "res://scripts/effects/flicker_light.gd"),
         "base_energy": 1.0, "min_interval": 0.3, "max_interval": 1.2, "dead_chance": 0.0,
     })
-    sc.node("LightZone", "Area2D", ".", {"script": sc.ext_res("Script", "res://scripts/interactables/light_zone.gd")})
+    L.glow(sc, ".", "Halo", (0, -26), (1, 0.62, 0.3), 0.9, 0.3)
+    sc.node("LightZone", "Area2D", ".", {"script": sc.ext_res("Script", "res://scripts/interactables/light_zone.gd"), "exposure": 1.0})
     sc.node("Shape", "CollisionShape2D", "LightZone", {"position": V2(0, -20), "shape": sc.sub_res("RectangleShape2D", {"size": V2(110, 40)})})
     sc.node("Embers", "CPUParticles2D", ".", {
         "position": V2(0, -38), "amount": 6, "lifetime": 1.6, "texture": sc.ext_res("Texture2D", "res://art/fx/pixel.png"),
@@ -130,7 +134,8 @@ def build_props():
         "position": V2(14, -20), "color": Col(1, 0.85, 0.6), "energy": 0.5, "range_item_cull_mask": 3,
         "texture": sc.ext_res("Texture2D", "res://art/lights/radial.png"), "texture_scale": 1.1,
     })
-    sc.node("LightZone", "Area2D", ".", {"script": sc.ext_res("Script", "res://scripts/interactables/light_zone.gd")})
+    L.glow(sc, ".", "Halo", (14, -108), (1, 0.85, 0.6), 0.8, 0.26)
+    sc.node("LightZone", "Area2D", ".", {"script": sc.ext_res("Script", "res://scripts/interactables/light_zone.gd"), "exposure": 0.9})
     sc.node("Shape", "CollisionShape2D", "LightZone", {"position": V2(14, -20), "shape": sc.sub_res("RectangleShape2D", {"size": V2(96, 40)})})
     sc.save("scenes/props/street/street_lamp.tscn")
 
@@ -164,7 +169,7 @@ def build_street(region=False):
     sc.node("Buildings", "Sprite2D", "Backdrop/Mid", {"position": V2(0, 62), "texture": sc.ext_res("Texture2D", "res://" + CITY + "buildings_mid.png"), "centered": False, "modulate": Col(0.75, 0.78, 0.9, 1)})
 
     # --- facades (main back plane)
-    sc.node("Facades", "Node2D", ".", {"z_index": -20})
+    sc.node("Facades", "Node2D", ".", {"z_index": Z.BACKGROUND})
     segs = [("seg_store", False), ("seg_shops", False), ("seg_alley", False), ("seg_apartment", False), ("seg_burnt", False),
             ("seg_lot", False), ("seg_shops", True), ("seg_alley", True), ("seg_school", False)]
     x = 0
@@ -190,16 +195,16 @@ def build_street(region=False):
         cells.append((-1, y, 0, rng.randrange(4), 3, 0))
         cells.append((cols, y, 0, rng.randrange(4), 3, 0))
     sc.node("Tiles", "TileMapLayer", ".", {
-        "z_index": -5, "tile_map_data": tile_map_data(cells),
+        "z_index": Z.TILES, "tile_map_data": tile_map_data(cells),
         "tile_set": sc.ext_res("TileSet", "res://resources/tilesets/street_tiles.tres"),
     })
     # ground decals
-    sc.node("Decals", "Node2D", ".", {"z_index": -4})
+    sc.node("Decals", "Node2D", ".", {"z_index": Z.DECALS})
     for i, dx in enumerate([540, 1240, 1790, 2210]):
         sc.node(f"Blood{i}", "Sprite2D", "Decals", {"position": V2(dx, 236 + (i % 2) * 8), "texture": sc.ext_res("Texture2D", "res://" + ART + "blood_decal.png"), "flip_h": i % 2 == 1})
 
     # --- props
-    sc.node("Props", "Node2D", ".", {"z_index": -10})
+    sc.node("Props", "Node2D", ".", {"z_index": Z.PROPS})
     P = "res://scenes/props/street/"
     I = "res://scenes/interactables/street/"
     placements = [
@@ -230,8 +235,8 @@ def build_street(region=False):
         sc.node(name, None, "Props", {"position": V2(px, FLOOR_Y)}, instance=sc.ext_res("PackedScene", path))
 
     # --- zombies
-    sc.node("Zombies", "Node2D", ".", {"z_index": -1})
-    Z = sc.ext_res("PackedScene", "res://scenes/enemies/zombie.tscn")
+    sc.node("Zombies", "Node2D", ".", {"z_index": Z.ENEMIES})
+    zombie_scene = sc.ext_res("PackedScene", "res://scenes/enemies/zombie.tscn")
     fr = {v: sc.ext_res("SpriteFrames", f"res://art/characters/zombie_{v}/zombie_{v}_frames.tres") for v in "abc"}
     zombies = [
         # name, x, variant, behavior(0 patrol,1 wander,2 linger), left, right, facing
@@ -253,7 +258,7 @@ def build_street(region=False):
             ("Stray", 2210, "a", 2, -20, 30, 1),
         ]
     for name, zx, v, beh, l, r, f in zombies:
-        n = sc.node(name, None, "Zombies", {"position": V2(zx, FLOOR_Y), "frames": fr[v], "start_facing": f}, instance=Z)
+        n = sc.node(name, None, "Zombies", {"position": V2(zx, FLOOR_Y), "frames": fr[v], "start_facing": f}, instance=zombie_scene)
         sc.node("PatrolComponent", None, f"Zombies/{name}", {"behavior": beh, "left": float(l), "right": float(r)})
 
     if region:
@@ -280,12 +285,23 @@ def build_street(region=False):
     # --- ambient light (moon)
     sc.node("Lights", "Node2D", ".", {})
     sc.node("Moon", "DirectionalLight2D", "Lights", {
-        "color": Col(0.55, 0.64, 0.9), "energy": 0.35, "shadow_enabled": True, "shadow_item_cull_mask": 1,
+        "color": Col(0.55, 0.64, 0.9), "energy": 0.26, "shadow_enabled": True, "shadow_item_cull_mask": 1,
+        "shadow_filter": 1, "shadow_filter_smooth": 2.0,
         "rotation": 0.35, "max_distance": 600.0,
     })
     radial_l = sc.ext_res("Texture2D", "res://art/lights/radial_large.png")
     for i, (lx, ly, col, e) in enumerate([(1016, 90, (1, 0.72, 0.4), 0.35), (2400, 80, (1, 0.72, 0.4), 0.3), (1170, 200, (0.4, 0.5, 0.8), 0.2)]):
         sc.node(f"Ambient{i}", "PointLight2D", "Lights", {"position": V2(lx, ly), "color": Col(*col), "energy": e, "range_item_cull_mask": 3, "texture": radial_l, "texture_scale": 0.5})
+    # layered light: soft sky / moon wash over the open stretches of street
+    # (varying like thin clouds); the two alleys get none and a shade patch
+    for i, (sx, e) in enumerate([(160, 0.3), (470, 0.26), (930, 0.3), (1240, 0.22), (1560, 0.32), (1900, 0.26), (2440, 0.3)]):
+        L.light(sc, "Lights", f"Sky{i}", (sx, 150), (0.5, 0.6, 0.92), e, "sky_wash.png", 1.2)
+    for i, (cx, w) in enumerate([(715, 150), (2155, 150)]):
+        L.shade(sc, ".", f"AlleyShade{i}", (cx, 168), (w / 128 * 1.5, 1.7), 0.5)
+        L.exposure_zone(sc, ".", f"AlleyShadow{i}", (cx, FLOOR_Y - 20), (w - 40, 40), -0.6)
+    # under the bus stop roof
+    L.shade(sc, ".", "BusStopShade", (1300, 196), (1.1, 0.7), 0.35)
+    L.exposure_zone(sc, ".", "BusStopShadow", (1300, FLOOR_Y - 20), (60, 40), -0.4)
 
     # --- player & camera
     sc.node("Player", None, ".", {"position": V2(2480 if region else 146, FLOOR_Y)}, instance=sc.ext_res("PackedScene", "res://scenes/player/player.tscn"))
@@ -295,11 +311,21 @@ def build_street(region=False):
         "look_ahead": 56.0,
     })
     # --- foreground
-    sc.node("Foreground", "Parallax2D", ".", {"scroll_scale": V2(1.3, 1.0), "z_index": 20})
+    F.layer(sc, "Foreground", 1.3)
     for i, fx in enumerate([420, 1150, 1900, 2700, 3300]):
         sc.node(f"Pole{i}", "Sprite2D", "Foreground", {"position": V2(fx, 0), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_pole.png"), "centered": False})
     for i, fx in enumerate([80, 760, 1480, 2240, 3000]):
         sc.node(f"FgGrass{i}", "Sprite2D", "Foreground", {"position": V2(fx, 270), "texture": sc.ext_res("Texture2D", "res://" + ART + "fg_grass.png"), "centered": False, "offset": V2(0, -40)})
+    F.piece(sc, "Foreground", "Sign", "street_sign.png", F.at(360, 700, 1.3))
+    F.piece(sc, "Foreground", "Fence", "street_fence.png", F.at(20, 1350, 1.3))
+    F.piece(sc, "Foreground", "Fence2", "street_fence.png", F.at(330, 1950, 1.3), flip=True)
+    # almost at the lens: a hanging branch, a wrecked car's corner
+    F.layer(sc, "ForegroundBlur", 1.6, blur=True)
+    F.piece(sc, "ForegroundBlur", "Branch", "street_branch_blur.png", F.at(300, 250, 1.6), "top")
+    F.piece(sc, "ForegroundBlur", "Branch2", "street_branch_blur.png", F.at(-60, 1150, 1.6), "top", flip=True)
+    F.piece(sc, "ForegroundBlur", "Branch3", "street_branch_blur.png", F.at(260, 2000, 1.6), "top")
+    F.piece(sc, "ForegroundBlur", "Car", "street_car_blur.png", F.at(-80, 850, 1.6))
+    F.piece(sc, "ForegroundBlur", "Car2", "street_car_blur.png", F.at(330, 1650, 1.6), flip=True)
 
     sc.node("HUD", None, ".", {}, instance=sc.ext_res("PackedScene", "res://scenes/ui/hud.tscn"))
     sc.save("scenes/maps/region_store.tscn" if region else "scenes/maps/street.tscn")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3]
+[gd_scene load_steps=52 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/camp_hub_level.gd" id="1_camp_hub_lev"]
 [ext_resource type="Resource" path="res://resources/dialogue/sister_pool.tres" id="2_sister_pool"]
@@ -27,14 +27,23 @@
 [ext_resource type="Texture2D" path="res://art/lights/radial.png" id="29_radial"]
 [ext_resource type="Script" path="res://scripts/effects/flicker_light.gd" id="30_flicker_ligh"]
 [ext_resource type="Texture2D" path="res://art/lights/window_beam.png" id="31_window_beam"]
-[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="32_pixel"]
-[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="33_interactable"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="36_player"]
-[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="37_game_camera"]
-[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="38_dialogue_pla"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="39_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/region_map.tscn" id="40_region_map"]
-[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="41_confirm_dial"]
+[ext_resource type="Texture2D" path="res://art/lights/soft_wide.png" id="32_soft_wide"]
+[ext_resource type="Texture2D" path="res://art/lights/floor_spill.png" id="33_floor_spill"]
+[ext_resource type="Texture2D" path="res://art/lights/door_slit.png" id="34_door_slit"]
+[ext_resource type="Texture2D" path="res://art/lights/halo.png" id="35_halo"]
+[ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="37_pixel"]
+[ext_resource type="Script" path="res://scripts/interactables/interactable.gd" id="38_interactable"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="41_player"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="42_game_camera"]
+[ext_resource type="Script" path="res://scripts/effects/foreground_fader.gd" id="43_foreground_f"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/door_frame.png" id="44_door_frame"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_curtain.png" id="45_camp_curtain"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_laundry.png" id="46_camp_laundry"]
+[ext_resource type="Texture2D" path="res://art/environment/foreground/camp_chair_blur.png" id="47_camp_chair_b"]
+[ext_resource type="Script" path="res://scripts/systems/dialogue_player.gd" id="48_dialogue_pla"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="49_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/region_map.tscn" id="50_region_map"]
+[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="51_confirm_dial"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_20"]
 atlas = ExtResource("19_candle")
@@ -65,10 +74,14 @@ animations = [{
 "speed": 6.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_34"]
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_36"]
+blend_mode = 1
+light_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_39"]
 size = Vector2(40.0, 40.0)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_35"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_40"]
 size = Vector2(44.0, 40.0)
 
 [node name="CampHub" type="Node2D"]
@@ -207,12 +220,63 @@ range_item_cull_mask = 3
 texture = ExtResource("31_window_beam")
 texture_scale = 0.8
 
+[node name="RoomFill" type="PointLight2D" parent="Lights"]
+position = Vector2(320.0, 120.0)
+color = Color(0.45, 0.5, 0.72, 1.0)
+energy = 0.2
+range_item_cull_mask = 3
+texture = ExtResource("32_soft_wide")
+texture_scale = 3.0
+
+[node name="WindowFloor" type="PointLight2D" parent="Lights"]
+position = Vector2(500.0, 220.0)
+color = Color(0.5, 0.6, 0.92, 1.0)
+energy = 0.4
+range_item_cull_mask = 3
+texture = ExtResource("33_floor_spill")
+texture_scale = 1.3
+
+[node name="DoorCrack" type="PointLight2D" parent="Lights"]
+position = Vector2(68.0, 172.0)
+color = Color(0.45, 0.55, 0.86, 1.0)
+energy = 0.32
+range_item_cull_mask = 3
+texture = ExtResource("34_door_slit")
+texture_scale = 1.2
+
+[node name="LampGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(278.0, 180.0)
+z_index = 5
+texture = ExtResource("35_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_36")
+modulate = Color(1, 0.72, 0.42, 0.3)
+scale = Vector2(1.5, 1.5)
+
+[node name="CandleGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(312.0, 176.0)
+z_index = 5
+texture = ExtResource("35_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_36")
+modulate = Color(1, 0.6, 0.3, 0.32)
+scale = Vector2(0.6, 0.6)
+
+[node name="NightGlow" type="Sprite2D" parent="Lights"]
+position = Vector2(452.0, 204.0)
+z_index = 5
+texture = ExtResource("35_halo")
+texture_filter = 2
+material = SubResource("CanvasItemMaterial_36")
+modulate = Color(1, 0.7, 0.45, 0.2)
+scale = Vector2(0.7, 0.7)
+
 [node name="Dust" type="CPUParticles2D" parent="."]
 position = Vector2(300.0, 150.0)
 amount = 18
 lifetime = 10.0
 preprocess = 10.0
-texture = ExtResource("32_pixel")
+texture = ExtResource("37_pixel")
 emission_shape = 3
 emission_rect_extents = Vector2(120.0, 60.0)
 direction = Vector2(1.0, 0.2)
@@ -224,23 +288,23 @@ color = Color(1, 0.9, 0.75, 0.45)
 
 [node name="DoorInteract" type="Area2D" parent="."]
 position = Vector2(68.0, 204.0)
-script = ExtResource("33_interactable")
+script = ExtResource("38_interactable")
 prompt_text = "外出"
 prompt_offset = Vector2(0.0, -94.0)
 
 [node name="Shape" type="CollisionShape2D" parent="DoorInteract"]
-shape = SubResource("RectangleShape2D_34")
+shape = SubResource("RectangleShape2D_39")
 
 [node name="SisterInteract" type="Area2D" parent="."]
 position = Vector2(420.0, 204.0)
-script = ExtResource("33_interactable")
+script = ExtResource("38_interactable")
 prompt_text = "与妹妹交谈"
 prompt_offset = Vector2(0.0, -44.0)
 
 [node name="Shape" type="CollisionShape2D" parent="SisterInteract"]
-shape = SubResource("RectangleShape2D_35")
+shape = SubResource("RectangleShape2D_40")
 
-[node name="Player" parent="." instance=ExtResource("36_player")]
+[node name="Player" parent="." instance=ExtResource("41_player")]
 position = Vector2(250.0, 224.0)
 
 [node name="GameCamera" type="Camera2D" parent="."]
@@ -249,15 +313,52 @@ limit_left = 0
 limit_top = 0
 limit_right = 640
 limit_bottom = 270
-script = ExtResource("37_game_camera")
+script = ExtResource("42_game_camera")
 target_path = NodePath("../Player")
 
+[node name="Foreground" type="Parallax2D" parent="."]
+scroll_scale = Vector2(1.25, 1.0)
+z_index = 20
+script = ExtResource("43_foreground_f")
+
+[node name="DoorFrame" type="Sprite2D" parent="Foreground"]
+position = Vector2(-6.0, 0.0)
+texture = ExtResource("44_door_frame")
+centered = false
+flip_h = false
+
+[node name="Curtain" type="Sprite2D" parent="Foreground"]
+position = Vector2(648.0, 0.0)
+texture = ExtResource("45_camp_curtain")
+centered = false
+flip_h = false
+
+[node name="Laundry" type="Sprite2D" parent="Foreground"]
+position = Vector2(225.0, 0.0)
+texture = ExtResource("46_camp_laundry")
+centered = false
+flip_h = false
+
+[node name="ForegroundBlur" type="Parallax2D" parent="."]
+scroll_scale = Vector2(1.6, 1.0)
+z_index = 22
+script = ExtResource("43_foreground_f")
+texture_filter = 2
+visible_alpha = 0.9
+faded_alpha = 0.22
+
+[node name="Chair" type="Sprite2D" parent="ForegroundBlur"]
+position = Vector2(522.0, 86.0)
+texture = ExtResource("47_camp_chair_b")
+centered = false
+flip_h = false
+
 [node name="DialoguePlayer" type="Node" parent="."]
-script = ExtResource("38_dialogue_pla")
+script = ExtResource("48_dialogue_pla")
 
-[node name="HUD" parent="." instance=ExtResource("39_hud")]
+[node name="HUD" parent="." instance=ExtResource("49_hud")]
 
-[node name="RegionMap" parent="." instance=ExtResource("40_region_map")]
+[node name="RegionMap" parent="." instance=ExtResource("50_region_map")]
 
-[node name="ConfirmDialog" parent="." instance=ExtResource("41_confirm_dial")]
+[node name="ConfirmDialog" parent="." instance=ExtResource("51_confirm_dial")]
 
