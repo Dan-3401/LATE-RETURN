@@ -19,6 +19,7 @@ GameState="*res://scripts/systems/game_state.gd"
 AudioManager="*res://scripts/systems/audio_manager.gd"
 NoiseSystem="*res://scripts/systems/noise_system.gd"
 SceneManager="*res://scripts/systems/scene_manager.gd"
+SaveSystem="*res://scripts/systems/save_system.gd"
 
 [debug]
 

@@ -32,9 +32,11 @@ func _ready() -> void:
 		player.face(1)
 	GameState.spawn_point = &""
 	camera.snap_to_target()
-	if not GameState.pending_settlement.is_empty():
-		var got := GameState.pending_settlement
-		GameState.pending_settlement = {}
+	var got := GameState.pending_settlement
+	GameState.pending_settlement = {}
+	# autosave: start of a day / just came home (supplies already handed over)
+	SaveSystem.save_here(scene_file_path, "学校营地")
+	if not got.is_empty():
 		await wait(1.0)
 		hud.show_settlement(got)
 		await wait(1.5)

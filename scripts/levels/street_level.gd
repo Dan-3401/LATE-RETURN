@@ -17,6 +17,7 @@ func _ready() -> void:
 	super._ready()
 	if GameState.checkpoint.get("id", &"") != &"street":
 		GameState.save_checkpoint(&"street", scene_file_path)
+		SaveSystem.save_checkpoint("街道")
 	GameState.start_objective(&"street", "穿过街道，返回营地", {})
 	exit_zone.triggered.connect(_on_exit)
 	first_sight.triggered.connect(_on_first_sight)

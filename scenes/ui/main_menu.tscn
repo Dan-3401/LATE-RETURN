@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main_menu"]
 [ext_resource type="Texture2D" path="res://art/environment/city/sky.png" id="2_sky"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://art/fx/pixel.png" id="11_pixel"]
 [ext_resource type="Texture2D" path="res://art/ui/vignette.png" id="12_vignette"]
 [ext_resource type="Texture2D" path="res://art/ui/logo.png" id="13_logo"]
+[ext_resource type="PackedScene" path="res://scenes/ui/confirm_dialog.tscn" id="14_confirm"]
 
 [node name="MainMenu" type="Node2D"]
 script = ExtResource("1_main_menu")
@@ -171,10 +172,16 @@ horizontal_alignment = 2
 
 [node name="Menu" type="VBoxContainer" parent="UI"]
 offset_left = 42.0
-offset_top = 160.0
+offset_top = 150.0
 offset_right = 150.0
-offset_bottom = 210.0
+offset_bottom = 218.0
 theme_override_constants/separation = 2
+
+[node name="Continue" type="Button" parent="UI/Menu"]
+visible = false
+layout_mode = 2
+text = "继续游戏"
+alignment = 0
 
 [node name="Start" type="Button" parent="UI/Menu"]
 layout_mode = 2
@@ -186,3 +193,12 @@ layout_mode = 2
 text = "退出游戏"
 alignment = 0
 
+
+[node name="SaveInfo" type="Label" parent="UI"]
+offset_left = 156.0
+offset_top = 152.0
+offset_right = 320.0
+offset_bottom = 166.0
+theme_override_colors/font_color = Color(0.5, 0.48, 0.43, 1)
+
+[node name="ConfirmDialog" parent="." instance=ExtResource("14_confirm")]

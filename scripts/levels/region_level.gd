@@ -25,6 +25,7 @@ func _ready() -> void:
 		player.face(-1)
 		if GameState.checkpoint.get("id", &"") != cp_id:
 			GameState.save_checkpoint(cp_id, scene_file_path)
+			SaveSystem.save_checkpoint("外出途中")
 	else:
 		player.global_position.x = location_door_x
 		player.face(1)

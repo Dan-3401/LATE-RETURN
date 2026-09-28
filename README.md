@@ -65,6 +65,23 @@ BOTTLE noise at the impact point, zombies sprint to it but never prefer it over 
 player they see), longer widening zombie searches after seeing someone hide,
 green environmental language on every hide spot, sister small-talk pool.
 
+## Saving
+
+One autosave slot (`user://savegame.dat`, managed by the `SaveSystem` autoload).
+The game saves itself at safe points only, and a small "进度已保存" note shows
+in the bottom-right corner:
+
+* the **Street Checkpoint** (day 1),
+* every time the **camp hub** is reached (start of a day, coming home — after
+  the supplies were handed over),
+* the **expedition checkpoint** on entering a region.
+
+The main menu then offers **继续游戏** (with the date and place of the save).
+Continuing a save made during an outing resumes at the expedition start, like
+restarting after death: the cost is not paid twice and nothing is duplicated.
+**新游戏** asks before overwriting an existing save. Test scripts use their own
+temporary save file and never touch the real one.
+
 ## Project layout
 
 ```
@@ -74,7 +91,7 @@ scripts/
   components/  movement, health, breath, stealth, flashlight, weapon,
                interaction, vision, hearing, ground_nav, patrol, attack
   ai/          state_machine.gd, zombie_state.gd, states/*.gd (13 states)
-  systems/     GameState, AudioManager, NoiseSystem, SceneManager (autoloads),
+  systems/     GameState, AudioManager, NoiseSystem, SceneManager, SaveSystem (autoloads),
                inventory, loot_director, dialogue_player, game_camera
   interactables/, levels/, ui/, effects/, data/ (Resource classes)
 resources/   items, weapons, loot_tables, containers, enemies, dialogue, tilesets
@@ -99,6 +116,7 @@ godot --path . -s res://tools/tests/test_store.gd      -- /tmp/shots   # store l
 godot --path . -s res://tools/tests/test_street.gd     -- /tmp/shots   # AI, stealth, death, checkpoint
 godot --path . -s res://tools/tests/test_full_flow.gd  -- /tmp/shots   # menu → first diary
 godot --path . -s res://tools/tests/test_day_loop.gd   -- /tmp/shots   # Demo 2 day loop
+godot --path . -s res://tools/tests/test_save.gd       -- /tmp/shots   # autosave / continue
 ```
 
 Each prints `PASS/FAIL` lines and `RESULT: OK` on success.

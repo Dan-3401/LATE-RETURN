@@ -31,10 +31,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -60.0
-offset_top = -44.0
-offset_right = 60.0
-offset_bottom = 44.0
+offset_left = -80.0
+offset_top = -52.0
+offset_right = 80.0
+offset_bottom = 52.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -60,3 +60,9 @@ text = "返回主菜单"
 [node name="Quit" type="Button" parent="Root/Panel/VBox"]
 layout_mode = 2
 text = "退出游戏"
+
+[node name="Note" type="Label" parent="Root/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.44, 0.4, 1)
+text = "检查点和营地会自动存档"
+horizontal_alignment = 1

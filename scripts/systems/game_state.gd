@@ -365,6 +365,8 @@ func snapshot() -> Dictionary:
 		"daily": daily.duplicate(true),
 		"obtained_ever": obtained_ever.duplicate(true),
 		"world": world.duplicate(true),
+		"expedition_done_today": expedition_done_today,
+		"loot_seed": loot_seed,
 	}
 
 
@@ -381,25 +383,34 @@ func has_checkpoint() -> bool:
 func restore_checkpoint() -> void:
 	if checkpoint.is_empty():
 		return
-	hp = checkpoint.hp
-	oxygen = checkpoint.oxygen
-	ammo = checkpoint.ammo
-	inventory.resize(int(checkpoint.get("capacity", BASE_CAPACITY)), true)
-	inventory.from_data(checkpoint.inventory)
-	for k in checkpoint.equipment:
-		var p: String = checkpoint.equipment[k]
-		equipment[k] = load(p) if p != "" else null
-	objective = checkpoint.objective.duplicate(true)
-	flags = checkpoint.flags.duplicate(true)
+	apply_snapshot(checkpoint)
 	if checkpoint.has("phase"):
-		phase = checkpoint.phase
-		day_index = checkpoint.day_index
-		camp = checkpoint.camp.duplicate(true)
-		expedition = checkpoint.expedition.duplicate(true)
-		daily = checkpoint.daily.duplicate(true)
-		obtained_ever = checkpoint.obtained_ever.duplicate(true)
-		world = checkpoint.world.duplicate(true)
 		spawn_point = &"region_start" if is_free_phase() else &""
+
+
+## Puts a snapshot() back (checkpoint restart, loading a save).
+func apply_snapshot(d: Dictionary) -> void:
+	hp = d.hp
+	oxygen = d.oxygen
+	ammo = d.ammo
+	inventory.resize(int(d.get("capacity", BASE_CAPACITY)), true)
+	inventory.from_data(d.inventory)
+	for k in d.equipment:
+		var p: String = d.equipment[k]
+		equipment[k] = load(p) if p != "" and ResourceLoader.exists(p) else null
+	objective = d.objective.duplicate(true)
+	flags = d.flags.duplicate(true)
+	if d.has("phase"):
+		phase = d.phase
+		day_index = d.day_index
+		camp = d.camp.duplicate(true)
+		expedition = d.expedition.duplicate(true)
+		daily = d.daily.duplicate(true)
+		obtained_ever = d.obtained_ever.duplicate(true)
+		world = d.world.duplicate(true)
+	if d.has("expedition_done_today"):
+		expedition_done_today = d.expedition_done_today
+		loot_seed = d.loot_seed
 	objective_changed.emit()
 	camp_changed.emit()
 	equipment_changed.emit()
