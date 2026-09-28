@@ -1,11 +1,11 @@
 extends SceneTree
-## Camp storage (spec 156-172): the storage is the only source of truth
-## for camp supplies. Automatic settlement of everything picked up on an
-## outing (junk, money, materials, a newly worn uniform...), carried-out
-## gear stays, the storage entity + 40-slot screen with drag & drop,
-## trip costs taken from real items (HUD in sync), checkpoint without
-## double charge / refund, a full storage never swallows anything,
-## persistence over scene change / new day / save-load, visual stages.
+## Camp storage: the storage is the only source of truth for camp supplies.
+## Coming home moves NOTHING automatically — the player puts things in /
+## takes them out himself at the storage screen, any item (weapons and
+## equipment too). Storage entity + 40-slot screen showing backpack, hand
+## and gear slots; trip costs taken from real items (HUD in sync);
+## checkpoint without double charge / refund; a full storage refuses items
+## instead of swallowing them; persistence; visual stages.
 ##   godot --path . -s res://tools/tests/test_storage.gd -- [shot_dir]
 
 var shot_dir := ""
@@ -124,6 +124,14 @@ func drag(from: Control, to: Control) -> void:
 	await wait(0.15)
 
 
+func find_slot(inv, id: StringName) -> int:
+	for i in inv.size:
+		var s = inv.slots[i]
+		if s and s.item.id == id:
+			return i
+	return -1
+
+
 func _run() -> void:
 	GS = root.get_node("/root/GameState")
 	SM = root.get_node("/root/SceneManager")
@@ -131,19 +139,20 @@ func _run() -> void:
 	await wait(0.3)
 	check(not "camp" in GS or GS.get("camp") == null, "no separate food / water counter any more")
 
-	# --- start of the free phase: day-1 finds + the old stock go into the storage ------------
+	# --- start of the free phase: nothing is moved for the player -------------------------
 	GS.new_game()
 	GS.inventory.add(item("water"), 4)
 	GS.inventory.add(item("canned_food"), 3)
 	GS.inventory.add(item("junk"), 2)
 	GS.start_free_phase()
 	check(GS.storage.size == 40, "camp storage has 40 slots")
-	check(GS.camp_water() == 5 and GS.camp_food() == 5 and GS.storage.count_item(&"junk") == 2 and GS.inventory.used_slots() == 0, "day-1 finds (junk too) + old stock stored (food %d water %d)" % [GS.camp_food(), GS.camp_water()])
+	check(GS.camp_food() == 2 and GS.camp_water() == 1, "storage holds the old camp stock (2 food, 1 water)")
+	check(GS.inventory.count_item(&"water") == 4 and GS.inventory.count_item(&"junk") == 2, "day-1 finds stay in the backpack")
 	check(await goto("res://scenes/maps/camp_hub.tscn"), "camp hub")
 	await wait(1.0)
 	var hub = current_scene
 	var hud = hub.hud
-	check(hud.camp_food.text == str(GS.camp_food()) and hud.camp_water.text == str(GS.camp_water()), "top-right counts come from the storage")
+	check(hud.camp_food.text == "2" and hud.camp_water.text == "1", "top-right counts come from the storage")
 
 	# --- the storage entity and its screen ---------------------------------------------------
 	var p = player()
@@ -155,45 +164,39 @@ func _run() -> void:
 	await wait(0.4)
 	var ui = hub.storage_ui
 	check(ui.is_open() and ui.storage_slots.size() == 40, "storage screen with 40 slots")
-	check(ui._storage_title.text.contains("/ 40") and ui._bag_title.text.contains("背包"), "storage and backpack side by side")
+	check(ui.bag_slots.size() == GS.inventory.size and ui.hand_slots.size() == 3 and ui.gear_slots.size() == 4, "backpack, hand slots and gear slots shown with it")
 	await shot("st02_storage_ui")
-	# drag water: storage -> backpack; the HUD follows at once
-	var water_i: int = -1
-	for i in GS.storage.size:
-		var s = GS.storage.slots[i]
-		if s and s.item.id == &"water":
-			water_i = i
-	var water_before: int = GS.camp_water()
-	await drag(ui.storage_slots[water_i], ui.bag_slots[0])
-	check(GS.inventory.count_item(&"water") > 0 and GS.camp_water() < water_before, "storage -> backpack by drag")
-	check(hud.camp_water.text == str(GS.camp_water()), "HUD water follows the storage at once (%s)" % hud.camp_water.text)
-	# and back (merges into the stack in the storage)
-	var target_i: int = GS.storage.first_free()
-	await drag(ui.bag_slots[0], ui.storage_slots[target_i])
-	check(GS.camp_water() == water_before and GS.inventory.count_item(&"water") == 0, "backpack -> storage by drag")
-	# storage -> storage swap
-	var a_i := 0
-	var b_i := 1
-	var a_id: StringName = GS.storage.slots[a_i].item.id
-	var b_id: StringName = GS.storage.slots[b_i].item.id
-	await drag(ui.storage_slots[a_i], ui.storage_slots[b_i])
-	check(a_id == b_id or (GS.storage.slots[a_i].item.id == b_id and GS.storage.slots[b_i].item.id == a_id), "storage <-> storage swap")
-	# take bottles for the trip into a hand slot (loadout preparation)
+	# put the water away: backpack -> storage (merges into the stack there)
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"water")], ui.storage_slots[find_slot(GS.storage, &"water")])
+	check(GS.camp_water() == 5 and GS.inventory.count_item(&"water") == 0, "backpack -> storage (water stacked)")
+	check(hud.camp_water.text == "5", "HUD water follows at once (%s)" % hud.camp_water.text)
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"canned_food")], ui.storage_slots[GS.storage.first_free()])
+	check(GS.camp_food() == 5, "food put away (5)")
+	# take one stack out again, then back
+	await drag(ui.storage_slots[find_slot(GS.storage, &"water")], ui.bag_slots[GS.inventory.first_free()])
+	check(GS.camp_water() == 0 and hud.camp_water.text == "0", "storage -> backpack; HUD shows 0 at once")
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"water")], ui.storage_slots[GS.storage.first_free()])
+	check(GS.camp_water() == 5, "and back")
+	# weapons and equipment can be stored too
+	var pistol := item("pistol")
+	await drag(ui.hand_slots["hand1"], ui.storage_slots[GS.storage.first_free()])
+	check(GS.equip_get("hand1") == null and GS.storage.count_item(&"pistol") == 1, "pistol: hand slot -> storage")
+	await drag(ui.storage_slots[find_slot(GS.storage, &"pistol")], ui.hand_slots["hand1"])
+	check(GS.equip_get("hand1") == pistol and GS.storage.count_item(&"pistol") == 0, "pistol: storage -> hand slot")
+	await drag(ui.gear_slots["backpack"], ui.storage_slots[GS.storage.first_free()])
+	check(GS.storage.count_item(&"backpack") == 1 and GS.equip_get("backpack") == null, "even the old backpack (gear) can be stored")
+	await drag(ui.storage_slots[find_slot(GS.storage, &"backpack")], ui.gear_slots["backpack"])
+	check(GS.equip_get("backpack") != null, "and put back on")
+	# bottles for the trip into a hand slot
 	GS.stash(item("empty_bottle"), 3)
 	await wait(0.1)
-	var bi := -1
-	for i in GS.storage.size:
-		var s = GS.storage.slots[i]
-		if s and s.item.id == &"empty_bottle":
-			bi = i
-	await drag(ui.storage_slots[bi], ui.hand_slots["hand3"])
-	check(GS.equip_get("hand3") == item("empty_bottle") and GS.equip_count("hand3") == 3, "storage -> hand slot 3 (bottles for the trip)")
+	await drag(ui.storage_slots[find_slot(GS.storage, &"empty_bottle")], ui.hand_slots["hand3"])
+	check(GS.equip_get("hand3") == item("empty_bottle") and GS.equip_count("hand3") == 3, "storage -> hand slot 3 (loadout)")
 	await press("inventory")
 	await wait(0.3)
 	check(not ui.is_open(), "storage screen closes")
 
 	# --- the trip cost comes out of the storage --------------------------------------------
-	var total_before: Dictionary = grand_total()
 	var pre: Dictionary = GS.camp_view()
 	check(GS.begin_expedition(load("res://resources/locations/store.tres")), "departure")
 	check(GS.camp_food() == pre.food - 1 and GS.camp_water() == pre.water - 1, "food -1 water -1 taken from the storage")
@@ -203,74 +206,47 @@ func _run() -> void:
 	var storage_after_pay: Array = GS.storage.to_data()
 	check(await goto("res://scenes/maps/region_store.tscn"), "region")
 	check(GS.checkpoint.get("storage") == storage_after_pay, "expedition checkpoint holds the paid storage")
-	# pick things up (the real pickup path: inventory.add)
-	GS.inventory.add(item("water"), 3)
-	GS.inventory.add(item("cash"), 1200)
-	GS.inventory.add(item("junk"), 3)
-	GS.inventory.add(item("parts"), 1)
-	GS.inventory.add(item("warehouse_key"), 1)
-	GS.inventory.add(item("work_uniform"), 1)
-	var ui_i := -1
-	for i in GS.inventory.size:
-		var s = GS.inventory.slots[i]
-		if s and s.item.id == &"work_uniform":
-			ui_i = i
-	check(GS.quick_equip(ui_i) == "" and GS.inventory.size == 15, "found uniform put on")
-	GS.consume_hand("hand3", 1)   # one carried bottle thrown
-	# die -> restart: nothing refunded, nothing charged twice
+	GS.inventory.add(item("cash"), 50)
 	GS.restore_checkpoint()
-	check(GS.camp_view() == after_pay and GS.storage.to_data() == storage_after_pay, "restart: storage exactly as after paying")
-	check(GS.inventory.count_item(&"cash") == 0 and GS.equip_count("hand3") == 3, "restart: pickups gone, bottles back")
-	# pick up again, then go home through the gate
-	GS.inventory.add(item("water"), 3)
-	GS.inventory.add(item("cash"), 1200)
-	GS.inventory.add(item("junk"), 3)
-	GS.inventory.add(item("parts"), 1)
-	GS.inventory.add(item("warehouse_key"), 1)
-	GS.inventory.add(item("work_uniform"), 1)
-	for i in GS.inventory.size:
-		var s = GS.inventory.slots[i]
-		if s and s.item.id == &"work_uniform":
-			GS.quick_equip(i)
-			break
-	GS.consume_hand("hand3", 1)
-	var storage_before_home: Dictionary = GS.storage.counts()
+	check(GS.storage.to_data() == storage_after_pay and GS.camp_view() == after_pay, "restart: no refund, no second charge")
+	# pick things up, put a found uniform on, go home
+	for pair in [["water", 3], ["cash", 1200], ["junk", 3], ["parts", 1], ["warehouse_key", 1], ["work_uniform", 1]]:
+		GS.inventory.add(item(pair[0]), pair[1])
+	GS.quick_equip(find_slot(GS.inventory, &"work_uniform"))
+	var bag_before_home: Dictionary = GS.item_counts()
+	var storage_before_home: Array = GS.storage.to_data()
 	GS.mark_location_visited()
 	var region = current_scene
 	region._on_gate(null)
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0, region), "home")
-	await wait(2.6)
+	await wait(2.0)
 	await shot("st03_brought_home")
-	var sc: Dictionary = GS.storage.counts()
-	var ok := true
-	for pair in [[&"water", 3], [&"cash", 1200], [&"junk", 3], [&"parts", 1], [&"warehouse_key", 1], [&"work_uniform", 1]]:
-		if int(sc.get(pair[0], 0)) - int(storage_before_home.get(pair[0], 0)) != pair[1]:
-			ok = false
-			print("  missing: ", pair, " storage ", sc.get(pair[0], 0), " before ", storage_before_home.get(pair[0], 0))
-	check(ok, "water, cash, junk, parts, key and uniform all went into the storage")
-	check(GS.equip_get("clothing") == null and GS.inventory.size == 10, "the uniform found on this trip was taken off and stored")
-	check(GS.equip_get("hand1") != null and GS.equip_get("hand2") != null and GS.equip_count("hand3") == 2, "carried-out gear stays (pistol, knife, 2 bottles left)")
-	check(GS.inventory.used_slots() == 0, "nothing found stays in the backpack")
+	check(GS.storage.to_data() == storage_before_home, "coming home moves nothing into the storage")
+	check(GS.item_counts() == bag_before_home and GS.equip_get("clothing") == item("work_uniform") and GS.inventory.size == 15, "everything found (and the worn uniform) is still on the player")
 	hub = current_scene
 	hud = hub.hud
-	check(hud.settlement_rows.text.contains("现金 ×1200") and hud.settlement_rows.text.contains("废纸 ×3") and hud.settlement_rare.text.contains("仓库的钥匙 ×1"), "本次带回 lists everything, rare finds apart")
-	var total_after: Dictionary = grand_total()
-	var lost := false
-	for id in total_before:
-		if int(total_after.get(id, 0)) < int(total_before[id]) - (1 if id in [&"canned_food", &"water", &"empty_bottle", &"biscuits", &"noodles"] else 0):
-			lost = true
-	check(not lost, "nothing that existed before the trip disappeared (except the cost and one thrown bottle)")
+	check(hud.settlement_rows.text.contains("现金 ×1200") and hud.settlement_rare.text.contains("仓库的钥匙 ×1"), "本次带回 note lists the finds")
+	# put things away by hand, gear included
+	ui = hub.storage_ui
+	hub.open_storage()
+	await wait(0.4)
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"cash")], ui.storage_slots[GS.storage.first_free()])
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"junk")], ui.storage_slots[GS.storage.first_free()])
+	await drag(ui.gear_slots["clothing"], ui.storage_slots[GS.storage.first_free()])
+	check(GS.storage.count_item(&"cash") > 0 and GS.storage.count_item(&"junk") >= 3 and GS.inventory.count_item(&"junk") == 0, "cash and junk put away by hand")
+	check(GS.equip_get("clothing") == null and GS.storage.count_item(&"work_uniform") == 1 and GS.inventory.size == 10, "the uniform taken off straight into the storage")
+	await shot("st04_put_away")
+	ui.close()
+	await wait(0.2)
 
 	# --- visual stages follow the real stock -----------------------------------------------
 	var corner = hub.get_node("Furniture/Storage")
-	var tex_now: Texture2D = corner.water.texture
 	GS.storage.remove_tag(&"water", 999)
 	await wait(0.1)
 	check(corner.water.texture == corner.water_textures[0], "no water -> empty look")
 	GS.stash(item("water"), 12)
 	await wait(0.1)
 	check(corner.water.texture == corner.water_textures[3], "10+ water -> big stock look")
-	await shot("st04_stock_visual")
 
 	# --- persistence -------------------------------------------------------------------------
 	var snap: Array = GS.storage.to_data()
@@ -283,86 +259,36 @@ func _run() -> void:
 	GS.new_day()
 	check(GS.storage.to_data() == snap, "storage kept over a new day")
 
-	# --- full storage: nothing is swallowed --------------------------------------------------
+	# --- full storage: refuses, never swallows ---------------------------------------------
 	check(await goto("res://scenes/maps/camp_hub.tscn"), "camp for the full-storage case")
 	await wait(0.6)
-	var fill_i: int = GS.storage.first_free()
-	while fill_i >= 0:
-		GS.storage.slots[fill_i] = {"item": item("soap"), "count": 10}
-		fill_i = GS.storage.first_free()
-	GS.storage.changed.emit()
-	check(GS.storage.used_slots() == 40, "storage 40 / 40")
-	check(GS.begin_expedition(load("res://resources/locations/store.tres")), "go out with a full storage")
-	GS.inventory.add(item("parts"), 5)
-	GS.inventory.add(item("bandage"), 2)
-	GS.inventory.add(item("noodles"), 2)
-	var before_full: Dictionary = grand_total()
-	var settle: Dictionary = GS.end_expedition()
-	var after_full: Dictionary = grand_total()
-	check(before_full == after_full, "full storage: every item still exists somewhere")
-	check(settle.overflow and GS.has_pending() and GS.pending.used_slots() >= 1, "what did not fit waits under 待整理物资 (%d stacks)" % GS.pending.used_slots())
-	check(GS.inventory.used_slots() == 0, "the backpack is still emptied")
-	GS.expedition_done_today = false   # allow the door check below
-	old_scene_home()
-	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0), "home with overflow")
-	await wait(5.5)
 	hub = current_scene
 	ui = hub.storage_ui
-	check(ui.is_open() and ui._pending_box.visible and ui._desc_text.text == "仓库已经放不下了。", "storage screen opens by itself: 仓库已经放不下了。")
-	await shot("st05_full_storage")
-	# going out is blocked until it is sorted
-	ui.close()
-	await wait(0.2)
-	var said: Array = []
-	player().said.connect(func(t): said.append(t))
-	hub._on_door(player())
-	await wait(0.3)
-	check(not hub.region_map.is_open and "带回来的东西还没整理好。" in said, "cannot go out with unsorted things")
-	# make room: throw away soap, move the overflow in
-	await wait(0.3)
-	if not ui.is_open():
-		ui.open()
-	await wait(0.3)
-	var soap_cell = null
-	for s in ui.storage_slots:
-		if s.item and s.item.id == &"soap":
-			soap_cell = s
-			break
-	await drag(soap_cell, ui.discard_slot)
-	check(GS.storage.used_slots() == 39, "丢弃: one stack thrown away (39 / 40)")
-	var key_i := -1
-	for i in GS.storage.size:
-		var s = GS.storage.slots[i]
-		if s and s.item.id == &"warehouse_key":
-			key_i = i
-	if key_i >= 0:
-		await drag(ui.storage_slots[key_i], ui.discard_slot)
-		check(GS.storage.count_item(&"warehouse_key") == 1, "the key cannot be thrown away")
-	var guard := 0
-	while GS.has_pending() and guard < 6:
-		guard += 1
-		var free: int = GS.storage.first_free()
-		if free < 0:
-			for s in ui.storage_slots:
-				if s.item and s.item.id == &"soap":
-					await drag(s, ui.discard_slot)
-					break
-			free = GS.storage.first_free()
-		await drag(ui.pending_slots[0], ui.storage_slots[free])
-	check(not GS.has_pending() and not ui._pending_box.visible, "overflow sorted into the storage")
-	await shot("st06_sorted")
-	ui.close()
-	await wait(0.2)
-	hub._on_door(player())
+	var f: int = GS.storage.first_free()
+	while f >= 0:
+		GS.storage.slots[f] = {"item": item("soap"), "count": 10}
+		f = GS.storage.first_free()
+	GS.storage.changed.emit()
+	GS.inventory.add(item("bandage"), 2)
+	var total_before: Dictionary = grand_total()
+	hub.open_storage()
 	await wait(0.4)
-	check(hub.region_map.is_open, "sorted -> the door opens the map again")
-	hub.region_map.close()
+	check(ui._storage_title.text.contains("40 / 40"), "storage 40 / 40")
+	var soap_i := find_slot(GS.storage, &"soap")
+	await drag(ui.bag_slots[find_slot(GS.inventory, &"bandage")], ui.storage_slots[soap_i])
+	check(grand_total() == total_before and GS.storage.used_slots() == 40, "full: dropping on an occupied slot swaps, nothing is swallowed")
+	soap_i = find_slot(GS.storage, &"soap")
+	await drag(ui.storage_slots[soap_i], ui.discard_slot)
+	check(GS.storage.used_slots() == 39, "丢弃 makes room (39 / 40)")
+	var key_i := find_slot(GS.storage, &"warehouse_key")
+	if key_i < 0:
+		GS.stash(item("warehouse_key"), 1)
+		key_i = find_slot(GS.storage, &"warehouse_key")
+	await drag(ui.storage_slots[key_i], ui.discard_slot)
+	check(GS.storage.count_item(&"warehouse_key") == 1, "the key cannot be thrown away")
+	await shot("st05_full_storage")
+	ui.close()
 
 	SS.delete_save()
 	print("RESULT: %s (%d failures)" % ["OK" if failures.is_empty() else "FAILED", failures.size()])
 	quit(0 if failures.is_empty() else 1)
-
-
-func old_scene_home() -> void:
-	GS.spawn_point = &"camp_return"
-	SM.change_scene("res://scenes/maps/camp_hub.tscn", 0.05)

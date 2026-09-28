@@ -154,8 +154,13 @@ func _run() -> void:
 	check(current_scene.get_node("Task/Title").text == "寻找能够治疗哮喘病的药", "task update shown in the dark")
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 15.0), "day 2 starts in the camp hub")
 	check(GS.is_free_phase() and GS.day_index == 1, "free phase, day 2 (9月29日)")
-	check(GS.camp_food() >= 2 + 4 and GS.camp_water() >= 1 + 4 and GS.inventory.used_slots() == 0, "day-1 finds + the old stock are in the camp storage (%d/%d)" % [GS.camp_food(), GS.camp_water()])
-	check(GS.inventory.count_tag(&"water") == 0, "camp supplies no longer in the backpack")
+	check(GS.camp_food() == 2 and GS.camp_water() == 1 and GS.inventory.count_tag(&"water") >= 4, "old stock in the storage, day-1 finds still in the backpack (%d/%d)" % [GS.camp_food(), GS.camp_water()])
+	# put the day-1 supplies away (what the player does at the storage)
+	for i in GS.inventory.size:
+		var s = GS.inventory.slots[i]
+		if s and s.item.task_tag in [&"food", &"water"]:
+			GS.move_item({"kind": "bag", "index": i}, {"kind": "storage", "index": GS.storage.first_free()})
+	check(GS.inventory.count_tag(&"water") == 0 and GS.camp_water() >= 5, "supplies put into the storage")
 	check(GS.objective.title == "寻找能够治疗哮喘病的药", "main objective shown")
 	var hud = current_scene.get_node("HUD")
 	check(hud.get_node("Overlay/Camp").visible and hud.get_node("Overlay/Camp/HBox/Food").text == str(GS.camp_food()), "camp resource UI (top right)")
@@ -430,9 +435,8 @@ func _run() -> void:
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 10.0), "gate -> camp")
 	await wait(2.2)
 	await shot("d15_settlement")
-	check(GS.camp_food() == camp_before.food + carry_food and GS.camp_water() == camp_before.water + carry_water, "food and water went into the storage (+%d food +%d water)" % [carry_food, carry_water])
-	check(acquired.has(&"work_uniform") and GS.equip_get("clothing") == null and GS.storage.count_item(&"work_uniform") == 1 and GS.inventory.size == 10, "the uniform found today was taken off and stored")
-	check(GS.equip_get("hand1") != null and GS.equip_get("hand2") != null, "gear carried out stays with the player")
+	check(GS.camp_view() == camp_before and GS.inventory.count_tag(&"food") == carry_food and GS.inventory.count_tag(&"water") == carry_water, "coming home moves nothing: finds stay in the backpack")
+	check(acquired.has(&"work_uniform") and GS.equip_get("clothing") == uniform and GS.inventory.size == 15, "the uniform stays on")
 	check(GS.expedition_done_today and GS.daily.rare.has(&"work_uniform"), "day marked done; uniform is a rare find")
 	await wait(3.5)
 	hub = current_scene
@@ -468,7 +472,7 @@ func _run() -> void:
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0), "diary -> new day")
 	check(GS.day_index == 2 and GS.date_text() == "9月30日", "new day: 9月30日")
 	check(GS.ammo == 10, "pistol ammo reset to 10 (not stacked)")
-	check(GS.storage.count_item(&"work_uniform") == 1 and GS.inventory.size == 10, "uniform waits in the storage")
+	check(GS.equip_get("clothing") == uniform and GS.inventory.size == 15, "uniform and capacity kept")
 	check(GS.world_get("warehouse_unlocked", false), "warehouse stays unlocked")
 	check(not GS.expedition_done_today and GS.daily.gains.is_empty(), "daily state reset")
 	await shot("d18_new_day")

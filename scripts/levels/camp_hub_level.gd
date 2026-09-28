@@ -49,13 +49,8 @@ func _ready() -> void:
 		hud.show_settlement(got)
 		await wait(1.5)
 		_refresh_sister_prompt()
-		if GameState.has_pending():
-			# the storage is full: sort things out now, nothing is thrown away
-			await wait(1.8)
-			say(player, FULL_LINE)
-			open_storage(FULL_LINE)
-		else:
-			hud.show_hint("靠近妹妹  G：结束本日", 5.0)
+		await wait(2.4)
+		hud.show_hint("靠近仓库  F：存放物资", 5.0)
 	elif not GameState.expedition_done_today:
 		await wait(1.2)
 		hud.show_hint("走到门口  F：外出", 5.0)

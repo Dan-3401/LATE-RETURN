@@ -101,18 +101,15 @@ top-right food / water numbers, the storage corner's look (stock stages) and
 the trip costs all read the real items in it; paying for a trip removes real
 food and water from it.
 
-* **Settlement:** every item picked up during an outing (recorded as it is
-  picked up) goes into the storage when you come home — water, food, junk,
-  money, materials, gear; a newly found uniform that was put on is taken off
-  first. What you carried out (pistol, knife, bottles...) stays with you.
-  A short "本次带回：" note lists it all, rare finds apart.
-* **Full storage:** what does not fit waits under **待整理物资**; the storage
-  screen opens by itself ("仓库已经放不下了。") and going out / ending the
-  day waits until it is sorted. Nothing is ever deleted — except what you
-  drop on **丢弃** yourself (never keys or story items).
-* **Storage screen:** [F] 互动 at the storage corner. Storage, backpack and
-  the three hand slots side by side, same drag & drop as the backpack
-  screen (stack, swap, validation) — also for preparing a loadout.
+* **Coming home moves nothing.** Everything found stays in the backpack /
+  equipment; a short "本次带回：" note lists the trip's finds (rare ones apart).
+* **Storage screen:** [F] 互动 at the storage corner. The storage (40 slots)
+  next to the backpack, the three hand slots and the gear slots (头盔 / 护甲 /
+  服装 / 背包). The player drags whatever he wants in or out — any item,
+  weapons and equipment included — with the same drag & drop as the backpack
+  screen (stack, swap, validation). Food and water only count for trips once
+  they are in the storage. **丢弃** throws a stack away (never keys / story
+  items). A full storage refuses or swaps, it never swallows anything.
 * Persistent: saves, checkpoints (the expedition checkpoint keeps the
   already-paid storage: no refund, no double charge), scene changes, days.
 

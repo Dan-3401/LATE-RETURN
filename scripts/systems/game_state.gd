@@ -66,8 +66,9 @@ var day_index := 0
 ## the real items here; there is no separate food / water counter).
 const STORAGE_CAPACITY := 40
 var storage := Inventory.new(STORAGE_CAPACITY)
-## Brought home but did not fit into the storage (待整理物资). Kept until the
-## player makes room; never deleted.
+## Safety net for stash(): anything the storage could not hold (待整理物资).
+## Kept until the player makes room; never deleted. (Coming home does not
+## move anything, so in normal play this stays empty.)
 var pending := Inventory.new(0)
 ## Current expedition: {active, location, region, location_visited, seed,
 ## acquired: {item_id: count picked up during this outing},
@@ -501,17 +502,11 @@ func _compact_pending() -> void:
 ## After the first diary: day 2 begins and the game opens up.
 func start_free_phase() -> void:
 	phase = Phase.FREE
-	# what the siblings already had at the camp...
+	# what the siblings already had at the camp; what he carried home on
+	# the first day stays in his backpack until he puts it away himself
 	storage.clear()
 	stash(preload("res://resources/items/canned_food.tres"), 2)
 	stash(preload("res://resources/items/water.tres"), 1)
-	# ...and everything the brother carried home on the first day
-	for i in inventory.size:
-		var s = inventory.slots[i]
-		if s != null:
-			inventory.slots[i] = null
-			stash(s.item, s.count)
-	inventory.changed.emit()
 	pending_settlement = {}
 	start_objective(&"medicine", MAIN_QUEST_TITLE, {})
 	_begin_day(day_index + 1)
@@ -565,79 +560,27 @@ func mark_location_visited() -> void:
 		expedition.location_visited = true
 
 
-## Coming home (Expedition Settlement): every item picked up on this outing
-## goes into the camp storage — food, water, junk, money, materials, gear
-## (a new uniform that was put on is taken off first). What the player
-## carried out stays with him. Anything the storage cannot hold goes to the
-## overflow area; nothing is ever deleted.
-## Returns {"items": {item_id: count}, "overflow": bool}.
+## Coming home. Nothing is moved automatically: everything he found stays in
+## his backpack / equipment, and the player decides at the storage what to
+## put away or take out. This only records what the trip brought home (for
+## the short "本次带回：" note and the diary): items picked up that are more
+## than what he left with (a found item used / dropped on the way does not
+## count). Returns {"items": {item_id: count}, "overflow": false}.
 func end_expedition() -> Dictionary:
 	var acquired: Dictionary = expedition.get("acquired", {})
 	var carried_out: Dictionary = expedition.get("carried_out", {})
 	var brought := {}
 	for id in acquired:
-		# only what was picked up AND is more than he left with (a found item
-		# that was used / dropped on the way never costs him his own gear)
 		var extra := count_carried(id) - int(carried_out.get(id, 0))
-		var want := mini(int(acquired[id]), maxi(extra, 0))
-		var got := _take_carried(id, want)
-		if got > 0:
-			brought[id] = got
-			daily.gains[id] = int(daily.gains.get(id, 0)) + got
-	_fit_backpack()
+		var n := mini(int(acquired[id]), maxi(extra, 0))
+		if n > 0:
+			brought[id] = n
+			daily.gains[id] = int(daily.gains.get(id, 0)) + n
 	expedition = {}
 	expedition_done_today = true
 	checkpoint = {}
-	pending_settlement = {"items": brought, "overflow": has_pending()}
-	inventory.changed.emit()
-	equipment_changed.emit()
+	pending_settlement = {"items": brought, "overflow": false}
 	return pending_settlement
-
-
-## Move up to `n` of an item from the player (backpack first, then hand
-## slots, then gear) into the storage. Returns how many were moved.
-func _take_carried(id: StringName, n: int) -> int:
-	var moved := 0
-	var item: ItemData = null
-	for i in range(inventory.size - 1, -1, -1):
-		var s = inventory.slots[i]
-		if moved >= n:
-			break
-		if s != null and s.item.id == id:
-			item = s.item
-			var take := mini(n - moved, s.count)
-			s.count -= take
-			moved += take
-			if s.count <= 0:
-				inventory.slots[i] = null
-	for slot in SLOT_TYPES:
-		if moved >= n:
-			break
-		var e = equipment[slot]
-		if e != null and e.item.id == id:
-			item = e.item
-			var take := mini(n - moved, int(e.count))
-			e.count -= take
-			moved += take
-			if e.count <= 0:
-				equipment[slot] = null
-	if moved > 0:
-		stash(item, moved)
-	return moved
-
-
-## After gear was taken off the bag may be smaller: whatever no longer fits
-## goes to the storage (never dropped).
-func _fit_backpack() -> void:
-	var cap := capacity()
-	while inventory.used_slots() > cap:
-		for i in range(inventory.size - 1, -1, -1):
-			var s = inventory.slots[i]
-			if s != null:
-				inventory.slots[i] = null
-				stash(s.item, s.count)
-				break
-	inventory.resize(cap)
 
 
 # --- World state ------------------------------------------------------------------

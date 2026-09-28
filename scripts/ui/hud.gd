@@ -77,13 +77,10 @@ func _flash_damage() -> void:
 	damage_vignette.modulate.a = 0.55
 
 
-var _camp_hold := false
 
 
 func _refresh_camp() -> void:
 	camp_box.visible = GameState.is_free_phase()
-	if _camp_hold:
-		return
 	# counted from the real items in the camp storage
 	camp_food.text = str(GameState.camp_food())
 	camp_water.text = str(GameState.camp_water())
@@ -92,23 +89,17 @@ func _refresh_camp() -> void:
 const SETTLEMENT_MAX_ROWS := 7
 
 
-## Short "本次带回：" list (everything that went into the storage, rare
-## finds highlighted); the camp numbers tick up afterwards.
+## Short "本次带回：" list of what this trip brought home (still in the
+## backpack — the player puts things away at the storage), rare finds apart.
 func show_settlement(got: Dictionary) -> void:
 	var items: Dictionary = got.get("items", {})
 	var rows: Array = []
 	var rare_rows: Array = []
-	var food_in := 0
-	var water_in := 0
 	for id in items:
 		var it: ItemData = DiaryWriter.item(id)
 		var n: int = items[id]
 		if it == null:
 			continue
-		if it.task_tag == &"food":
-			food_in += n
-		elif it.task_tag == &"water":
-			water_in += n
 		var line := "%s ×%d" % [it.display_name, n]
 		if id in GameState.RARE_ITEMS:
 			rare_rows.append(line)
@@ -127,21 +118,9 @@ func show_settlement(got: Dictionary) -> void:
 	settlement_rare.text = "\n".join(rare_rows)
 	settlement_rare.visible = not rare_rows.is_empty()
 	settlement.reset_size()
-	_camp_hold = true
-	camp_food.text = str(GameState.camp_food() - food_in)
-	camp_water.text = str(GameState.camp_water() - water_in)
 	var t := create_tween()
 	t.tween_property(settlement, "modulate:a", 1.0, 0.4)
-	t.tween_interval(1.4)
-	t.tween_callback(func():
-		_camp_hold = false
-		_refresh_camp()
-		AudioManager.play(&"pickup", -8.0)
-		var p := create_tween()
-		camp_box.scale = Vector2(1.0, 1.0)
-		p.tween_property(camp_box, "modulate", Color(1.4, 1.35, 1.1, 1), 0.12)
-		p.tween_property(camp_box, "modulate", Color(1, 1, 1, 0.9), 0.4))
-	t.tween_interval(2.4)
+	t.tween_interval(3.8)
 	t.tween_property(settlement, "modulate:a", 0.0, 0.8)
 
 

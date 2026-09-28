@@ -173,11 +173,12 @@ func _run() -> void:
 	check(await wait_scene(store_loc.region_scene, 20.0, old), "region loaded")
 	info = SS.read_info()
 	check(info.place == "外出途中", "expedition checkpoint autosaved (%s)" % str(info))
+	var water_at_save: int = GS.inventory.count_item(&"water")
 	GS.inventory.add(load("res://resources/items/water.tres"), 3)   # picked up after the save
 	GS.new_game()
 	scene = SS.load_game()
 	check(scene == store_loc.region_scene and GS.camp_view() == camp_after_pay, "resume at the expedition start, cost paid once (%s)" % str(GS.camp_view()))
-	check(GS.expedition.get("active", false) and GS.inventory.count_item(&"water") == 0, "expedition active, no duplicated loot")
+	check(GS.expedition.get("active", false) and GS.inventory.count_item(&"water") == water_at_save, "expedition active, no duplicated loot")
 	old = current_scene
 	SM.change_scene(scene, 0.2)
 	check(await wait_scene(scene, 20.0, old), "resumed region")
