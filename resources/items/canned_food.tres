@@ -11,7 +11,6 @@ description = "午餐肉罐头。保质期还有两年——如果还有人在�
 icon = ExtResource("2_i")
 item_type = 0
 stackable = true
-max_stack = 10
 value = 10
 weight = 0.4
 task_tag = &"food"

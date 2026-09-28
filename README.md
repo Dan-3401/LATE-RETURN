@@ -83,6 +83,33 @@ neutral (backpack cell) frame; a refused drop leaves the item where it
 was. All of it is `GameState.move_item()` on the real data, so scene
 changes, checkpoints, saves and new days keep every item in place.
 
+## Stacking & item actions (A1.1)
+
+One stack core for the backpack, the camp storage and ground pickups
+(`Inventory` slots `{item, count}`; a pickup is just the world form of one
+stack). Stack sizes come from the item type (`ItemData.STACK_BY_TYPE`,
+`stack_limit()`), with `max_stack_override` for a special item: weapons,
+equipment, keys and story items 1 · throwables 20 · materials and junk 67
+(consumables 10, cash 999 kept from before). Adding always tops up the
+existing stacks first (60/67 + 10 → 67 + 3).
+
+**Right-click** a backpack or storage stack: 【使用】【拆分】【丢弃】 for that
+one stack. What each does is decided by `InventoryActions` from the stack's
+context (PLAYER_BACKPACK / CAMP_STORAGE), not by the buttons:
+
+* 使用 — only when the item has a `use_behavior` (bandage: heal); one item
+  of this stack is used up. Equipping is not using.
+* 拆分 — only for ×2 or more; "xx / yy" with yy = this stack; 1 … yy−1; the
+  new stack goes into an empty slot of the same container, else
+  "没有空余位置。" and nothing changes.
+* 丢弃 — in the storage: red "你确定要销毁当前物品？" 是 / 否 (是 destroys it,
+  also for the storage screen's 丢弃 slot); from the backpack: the whole
+  stack lands next to the player as ONE pickup ("空瓶子 ×8 / [F] 拾取").
+  Keys and story items cannot be thrown away.
+
+Pickups are taken whole or not at all: if the stack does not fit completely
+the player says "已经装不下了。" and it stays on the ground unchanged.
+
 ## Lighting & foreground
 
 Pixel-art sprites stay Nearest; light, glows and the nearest foreground are
@@ -108,8 +135,8 @@ food and water from it.
   服装 / 背包). The player drags whatever he wants in or out — any item,
   weapons and equipment included — with the same drag & drop as the backpack
   screen (stack, swap, validation). Food and water only count for trips once
-  they are in the storage. **丢弃** throws a stack away (never keys / story
-  items). A full storage refuses or swaps, it never swallows anything.
+  they are in the storage. **丢弃** destroys a stack after a red confirmation
+  (never keys / story items). A full storage refuses or swaps, it never swallows anything.
 * Persistent: saves, checkpoints (the expedition checkpoint keeps the
   already-paid storage: no refund, no double charge), scene changes, days.
 
@@ -192,6 +219,7 @@ godot --path . -s res://tools/tests/test_visual_layers.gd  -- /tmp/shots   # lig
 godot --path . -s res://tools/tests/test_round_hide.gd     -- /tmp/shots   # searchables, corpses, traversal, skip, hide gameplay
 godot --path . -s res://tools/tests/test_settings.gd       -- /tmp/shots   # settings (run on a >= 2560x1440 screen)
 godot --path . -s res://tools/tests/test_storage.gd        -- /tmp/shots   # camp storage
+godot --path . -s res://tools/tests/test_stacking.gd       -- /tmp/shots   # stack limits, right-click menu, split, discard, pickups
 godot --path . -s res://tools/tests/shoot_scenes.gd    -- /tmp/shots   # screenshots of every map (no checks)
 ```
 

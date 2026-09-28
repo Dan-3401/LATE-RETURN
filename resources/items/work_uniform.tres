@@ -11,7 +11,6 @@ description = "口袋很多的工装服。装备后背包容量 +5。"
 icon = ExtResource("2_i")
 item_type = 6
 stackable = false
-max_stack = 1
 value = 20
 weight = 1.2
 task_tag = &""

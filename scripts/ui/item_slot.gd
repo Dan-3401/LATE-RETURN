@@ -9,6 +9,10 @@ extends PanelContainer
 
 signal clicked(slot: ItemSlot)
 signal hovered(slot: ItemSlot, on: bool)
+## Right-click on a filled slot: open the item's action menu.
+signal context_requested(slot: ItemSlot)
+## A stack was dropped on a 丢弃 slot: the owner asks before destroying it.
+signal discard_requested(src_ref: Dictionary)
 
 const OK_EQUIP := Color(0.46, 0.82, 0.42)
 const BAD := Color(0.88, 0.3, 0.24)
@@ -103,6 +107,9 @@ func _can_drop_data(_at: Vector2, data: Variant) -> bool:
 
 func _drop_data(_at: Vector2, data: Variant) -> void:
 	_set_frame(Color(0, 0, 0, 0))
+	if ref.get("kind") == "discard":
+		discard_requested.emit(data.item_slot_ref)
+		return
 	var err := GameState.move_item(data.item_slot_ref, ref)
 	if err == "":
 		AudioManager.play(&"equip" if ref.kind == "equip" else &"ui_move", -10.0, 0.0, &"UI")
@@ -121,8 +128,12 @@ func _notification(what: int) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		clicked.emit(self)
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			clicked.emit(self)
+		elif event.button_index == MOUSE_BUTTON_RIGHT and item != null:
+			accept_event()
+			context_requested.emit(self)
 
 
 func _set_frame(c: Color) -> void:

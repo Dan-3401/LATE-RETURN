@@ -11,7 +11,6 @@ description = "包装有点压扁了。她以前很爱吃这个。"
 icon = ExtResource("2_i")
 item_type = 0
 stackable = true
-max_stack = 10
 value = 6
 weight = 0.2
 task_tag = &"food"

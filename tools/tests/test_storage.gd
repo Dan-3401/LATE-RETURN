@@ -279,6 +279,9 @@ func _run() -> void:
 	check(grand_total() == total_before and GS.storage.used_slots() == 40, "full: dropping on an occupied slot swaps, nothing is swallowed")
 	soap_i = find_slot(GS.storage, &"soap")
 	await drag(ui.storage_slots[soap_i], ui.discard_slot)
+	check(ui.context_menu.confirm_panel.visible and GS.storage.used_slots() == 40, "丢弃 slot asks first (red confirmation), nothing gone yet")
+	ui.context_menu.confirm_yes.pressed.emit()
+	await wait(0.1)
 	check(GS.storage.used_slots() == 39, "丢弃 makes room (39 / 40)")
 	var key_i := find_slot(GS.storage, &"warehouse_key")
 	if key_i < 0:

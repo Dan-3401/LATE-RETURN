@@ -26,6 +26,8 @@ var _selected: ItemSlot = null
 ## slot id -> ItemSlot (hand1..3, helmet, armor, clothing, backpack)
 var equip_slots := {}
 var bag_slots: Array[ItemSlot] = []
+## Right-click menu (使用 / 拆分 / 丢弃) for backpack stacks.
+var context_menu: ItemContextMenu
 
 
 func _ready() -> void:
@@ -37,6 +39,9 @@ func _ready() -> void:
 	GameState.ammo_changed.connect(func(_a): _refresh())
 	action_btn.pressed.connect(_on_action)
 	action_btn.visible = false
+	context_menu = ItemContextMenu.new()
+	root.add_child(context_menu)
+	context_menu.acted.connect(func(_a): _selected = null; _refresh())
 
 
 func is_open() -> bool:
@@ -58,6 +63,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func set_open(v: bool) -> void:
 	_open = v
 	root.visible = v
+	context_menu.close_all()
 	AudioManager.play(&"bag_open" if v else &"bag_close", -6.0)
 	var p := get_tree().get_first_node_in_group(&"player") as Player
 	if p:
@@ -115,7 +121,16 @@ func _make_slot(ref: Dictionary) -> ItemSlot:
 	s.ref = ref
 	s.clicked.connect(_on_slot_clicked)
 	s.hovered.connect(_on_slot_hovered)
+	s.context_requested.connect(_on_slot_context)
 	return s
+
+
+## Right-click: the action menu for this one stack (backpack cells only;
+## equipment is handled by drag & drop / 装备 / 卸下).
+func _on_slot_context(s: ItemSlot) -> void:
+	if InventoryActions.context_of(s.ref) == InventoryActions.Context.NONE:
+		return
+	context_menu.open_for(s.ref, s.global_position + Vector2(s.size.x + 1, 0))
 
 
 func _ensure_bag_slots() -> void:
@@ -181,7 +196,7 @@ func _show_desc(item: ItemData) -> void:
 	desc_text.remove_theme_color_override(&"font_color")
 	if item == null:
 		desc_name.text = ""
-		desc_text.text = "拖动物品整理    点击查看    Tab 关闭"
+		desc_text.text = "拖动物品整理    点击查看    右键操作    Tab 关闭"
 		desc_text.modulate.a = 0.5
 		return
 	desc_text.modulate.a = 1.0

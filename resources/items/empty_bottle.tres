@@ -12,7 +12,6 @@ description = "空的玻璃瓶。扔出去能摔出很大的声音。\n拖到手
 icon = ExtResource("2_i")
 item_type = 8
 stackable = true
-max_stack = 5
 value = 1
 weight = 0.1
 task_tag = &""

@@ -11,7 +11,6 @@ description = "在这样的世界里，钱又有什么用呢。"
 icon = ExtResource("2_i")
 item_type = 3
 stackable = true
-max_stack = 999
 value = 0
 weight = 0.0
 task_tag = &""

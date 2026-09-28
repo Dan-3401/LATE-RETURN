@@ -22,15 +22,15 @@ func add(item: ItemData, count: int = 1) -> int:
 		for s in slots:
 			if left <= 0:
 				break
-			if s != null and s.item.id == item.id and s.count < item.max_stack:
-				var take := mini(left, item.max_stack - s.count)
+			if s != null and s.item.id == item.id and s.count < item.stack_limit():
+				var take := mini(left, item.stack_limit() - s.count)
 				s.count += take
 				left -= take
 	for i in size:
 		if left <= 0:
 			break
 		if slots[i] == null:
-			var take := mini(left, item.max_stack if item.stackable else 1)
+			var take := mini(left, item.stack_limit())
 			slots[i] = {"item": item, "count": take}
 			left -= take
 	if left != count:
@@ -75,9 +75,9 @@ func can_add(item: ItemData, count: int = 1) -> bool:
 	var room := 0
 	for s in slots:
 		if s == null:
-			room += item.max_stack if item.stackable else 1
+			room += item.stack_limit()
 		elif item.stackable and s.item.id == item.id:
-			room += item.max_stack - s.count
+			room += item.stack_limit() - s.count
 	return room >= count
 
 
@@ -111,6 +111,27 @@ func remove_tag(tag: StringName, count: int = 1) -> int:
 	if left != count:
 		changed.emit()
 	return count - left
+
+
+## Split `amount` items off the stack in `index` into a new stack in the
+## first empty slot of THIS inventory. Only this stack is read (never the
+## total of the item). Valid amounts: 1 .. count - 1. Returns "" or a reason;
+## on failure nothing changes.
+func split(index: int, amount: int) -> String:
+	if index < 0 or index >= size or slots[index] == null:
+		return "empty"
+	var s: Dictionary = slots[index]
+	if amount < 1 or amount > s.count - 1:
+		return "invalid"
+	var free := first_free()
+	if free < 0:
+		return "没有空余位置。"
+	var fresh := s.duplicate(true)
+	fresh.count = amount
+	s.count -= amount
+	slots[free] = fresh
+	changed.emit()
+	return ""
 
 
 func first_free() -> int:

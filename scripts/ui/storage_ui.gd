@@ -6,7 +6,8 @@ extends CanvasLayer
 ## and what to take out, any item at all (weapons and equipment too).
 ## Uses the same ItemSlot drag & drop as the backpack screen — every move is
 ## GameState.move_item() on the real data (stack, swap, validation). A 丢弃
-## slot throws unwanted stacks away (never keys / story items).
+## slot destroys unwanted stacks after a red confirmation (never keys /
+## story items). Right-click opens the per-stack action menu.
 
 signal closed
 
@@ -28,6 +29,8 @@ var hand_slots := {}
 ## helmet / armor / clothing / backpack
 var gear_slots := {}
 var discard_slot: ItemSlot
+## Right-click menu (使用 / 拆分 / 丢弃) for storage and backpack stacks.
+var context_menu: ItemContextMenu
 
 var _open := false
 var _root: Control
@@ -72,6 +75,7 @@ func close() -> void:
 		return
 	_open = false
 	_root.visible = false
+	context_menu.close_all()
 	var p := get_tree().get_first_node_in_group(&"player") as Player
 	if p:
 		p.input_enabled = true
@@ -178,6 +182,9 @@ func _build() -> void:
 	_desc_text.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	_desc_text.custom_minimum_size = Vector2(400, 0)
 	dv.add_child(_desc_text)
+	context_menu = ItemContextMenu.new()
+	_root.add_child(context_menu)
+	discard_slot.discard_requested.connect(context_menu.ask_destroy)
 
 
 func _label(t: String, col: Color) -> Label:
@@ -199,7 +206,17 @@ func _slot(ref: Dictionary) -> ItemSlot:
 	var s := ItemSlot.new()
 	s.ref = ref
 	s.hovered.connect(func(sl: ItemSlot, on: bool): _show_desc(sl.item if on else null))
+	s.context_requested.connect(_on_slot_context)
 	return s
+
+
+## Right-click: the action menu for this one stack. Storage stacks are
+## CAMP_STORAGE (丢弃 = destroy after a red confirmation), backpack stacks
+## PLAYER_BACKPACK (丢弃 = dropped next to the player).
+func _on_slot_context(s: ItemSlot) -> void:
+	if InventoryActions.context_of(s.ref) == InventoryActions.Context.NONE:
+		return
+	context_menu.open_for(s.ref, s.global_position + Vector2(s.size.x + 1, 0))
 
 
 # --- refresh from the real data ----------------------------------------------------------
@@ -263,5 +280,5 @@ func _show_desc(item: ItemData) -> void:
 		_desc_text.text = _message
 		_desc_text.add_theme_color_override(&"font_color", WARN)
 	else:
-		_desc_text.text = "拖动物品存入或取出（武器、装备也可以）    F / Tab 关闭"
+		_desc_text.text = "拖动物品存入或取出（武器、装备也可以）    右键操作    F / Tab 关闭"
 		_desc_text.add_theme_color_override(&"font_color", DIM)

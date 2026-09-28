@@ -15,11 +15,18 @@ enum SlotType { NONE, HAND, CLOTHING, HEAD, ARMOR, BACKPACK }
 @export var icon: Texture2D
 @export var item_type: ItemType = ItemType.MATERIAL
 @export var stackable: bool = true
-@export var max_stack: int = 10
+## 0 = the default stack size of the item type (see STACK_BY_TYPE). Only set
+## this for a special item that must differ from its category.
+@export var max_stack_override: int = 0
 @export var value: int = 0
 @export var weight: float = 0.0
 ## Objective tag counted by tasks (e.g. &"water", &"food"). Empty = none.
 @export var task_tag: StringName = &""
+
+@export_group("Use")
+## What happens when the item is used from the right-click menu (使用).
+## null = the item cannot be used. Equipping is not using.
+@export var use_behavior: ItemUseBehavior
 
 @export_group("Equipment")
 @export var equippable: bool = false
@@ -37,6 +44,36 @@ enum SlotType { NONE, HAND, CLOTHING, HEAD, ARMOR, BACKPACK }
 @export_group("Diary")
 ## Name used in the diary ("水", "食物"...). Empty = display_name.
 @export var diary_name: String = ""
+
+
+## Default stack size per item type. A new item of a type gets this
+## automatically; `max_stack_override` is the per-item exception.
+const STACK_BY_TYPE := {
+	ItemType.WEAPON: 1,
+	ItemType.EQUIPMENT: 1,
+	ItemType.KEY: 1,
+	ItemType.QUEST: 1,
+	ItemType.THROWABLE: 20,
+	ItemType.MATERIAL: 67,
+	ItemType.JUNK: 67,
+	ItemType.AMMO: 67,
+	ItemType.CONSUMABLE: 10,
+	ItemType.CURRENCY: 999,
+}
+
+
+## How many of this item fit into one slot.
+func stack_limit() -> int:
+	if not stackable:
+		return 1
+	if max_stack_override > 0:
+		return max_stack_override
+	return int(STACK_BY_TYPE.get(item_type, 1))
+
+
+## Can be used from the right-click menu (decided by data, never by name).
+func is_usable() -> bool:
+	return use_behavior != null
 
 
 const _CATEGORY_SLOT := {

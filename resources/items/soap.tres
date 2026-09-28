@@ -11,7 +11,6 @@ description = "一块没拆封的肥皂。她会高兴的。"
 icon = ExtResource("2_i")
 item_type = 1
 stackable = true
-max_stack = 10
 value = 4
 weight = 0.1
 task_tag = &""

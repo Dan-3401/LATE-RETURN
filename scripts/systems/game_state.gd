@@ -268,6 +268,16 @@ func _ref_valid(ref: Dictionary) -> bool:
 	return ref.get("kind") == "equip" and SLOT_TYPES.has(ref.get("slot", ""))
 
 
+## The stack a ref points at ({"item", "count"}) or null.
+func stack_at(ref: Dictionary):
+	return _ref_get(ref) if _ref_valid(ref) else null
+
+
+## The Inventory a slot ref belongs to (null for equipment slots).
+func container_of(ref: Dictionary) -> Inventory:
+	return _container(String(ref.get("kind", "")))
+
+
 ## Items the player may throw away (never keys or story items).
 func can_discard(item: ItemData) -> bool:
 	return item != null and not item.item_type in [ItemData.ItemType.KEY, ItemData.ItemType.QUEST]
@@ -311,7 +321,7 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 	var b = _ref_get(dst)
 	if dst.kind == "equip" and not can_accept(dst.slot, a.item):
 		return "这个不能装备在这里。"
-	var merge: bool = b != null and b.item.id == a.item.id and a.item.stackable and b.count < a.item.max_stack
+	var merge: bool = b != null and b.item.id == a.item.id and a.item.stackable and b.count < a.item.stack_limit()
 	if b != null and not merge and b.item.id == a.item.id and a.item.stackable:
 		return "已经放满了。"
 	var swap: bool = b != null and not merge
@@ -335,14 +345,14 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 			used_after -= 1
 		elif dst.kind == "bag" and src.kind != "bag" and not swap:
 			used_after += 1
-	elif src.kind == "bag" and dst.kind != "bag" and a.count <= a.item.max_stack - b.count:
+	elif src.kind == "bag" and dst.kind != "bag" and a.count <= a.item.stack_limit() - b.count:
 		used_after -= 1
 	if used_after > cap_after:
 		return "背包里的东西太多了。"
 	if dry_run:
 		return ""
 	if merge:
-		var take: int = mini(a.count, a.item.max_stack - b.count)
+		var take: int = mini(a.count, a.item.stack_limit() - b.count)
 		b.count += take
 		a.count -= take
 		if a.count <= 0:
@@ -407,7 +417,7 @@ func consume_hand(slot: String, n: int = 1) -> void:
 	s.count -= n
 	if s.count <= 0:
 		equipment[slot] = null
-		var refill := mini(inventory.count_item(item.id), item.max_stack)
+		var refill := mini(inventory.count_item(item.id), item.stack_limit())
 		if refill > 0:
 			inventory.remove(item.id, refill)
 			equipment[slot] = {"item": item, "count": refill}
@@ -477,7 +487,7 @@ func missing_for(cost: Dictionary) -> Array[String]:
 func stash(item: ItemData, count: int) -> int:
 	var left := storage.add(item, count)
 	if left > 0:
-		var per: int = item.max_stack if item.stackable else 1
+		var per: int = item.stack_limit()
 		var free := 0
 		for s in pending.slots:
 			if s == null:

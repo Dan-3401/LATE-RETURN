@@ -418,11 +418,13 @@ func end_takedown(hide_pos: Vector2) -> void:
 
 
 # --- Items ---------------------------------------------------------------------
+## Take a whole stack into the backpack (normal stacking rules), or nothing
+## at all when it does not fit completely. Returns how many were NOT taken.
 func receive_item(item: ItemData, count: int) -> int:
-	var left := GameState.inventory.add(item, count)
-	if left == count:
-		say("背包已经装不下了。")
-	return left
+	if not GameState.inventory.can_add(item, count):
+		say("已经装不下了。")
+		return count
+	return GameState.inventory.add(item, count)
 
 
 # --- Damage & death --------------------------------------------------------------

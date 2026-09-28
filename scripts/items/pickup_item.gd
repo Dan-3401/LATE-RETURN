@@ -1,9 +1,14 @@
 class_name PickupItem
 extends CharacterBody2D
 ## A dropped item: hops out, bounces on the floor, then glints until picked up.
+## The world form of ONE item stack (item + count + instance data), however
+## large: it is picked up whole or not at all.
 
 @export var item: ItemData
 @export var count := 1
+## Extra per-stack data carried with the stack (none of the current items
+## has any; kept so a dropped stack comes back exactly as it was).
+var instance_data := {}
 
 var _gravity := 700.0
 var _settled := false
@@ -21,9 +26,37 @@ func _ready() -> void:
 	add_to_group(&"pickup")
 	if item:
 		sprite.texture = item.icon
-		interactable.prompt_text = "拾取 %s%s" % [item.display_name, (" ×%d" % count) if count > 1 else ""]
+	_update_prompt()
 	interactable.interacted.connect(_on_interacted)
 	glint.visible = false
+
+
+## Take over a whole inventory stack {"item", "count", ...}.
+func set_stack(stack: Dictionary) -> void:
+	item = stack.item
+	count = int(stack.count)
+	instance_data = stack.duplicate(true)
+	instance_data.erase("item")
+	instance_data.erase("count")
+	if is_node_ready():
+		sprite.texture = item.icon
+		_update_prompt()
+
+
+## The stack this pickup stands for.
+func get_stack() -> Dictionary:
+	var st := instance_data.duplicate(true)
+	st.item = item
+	st.count = count
+	return st
+
+
+func _update_prompt() -> void:
+	if item == null:
+		return
+	interactable.prompt_title = "%s ×%d" % [item.display_name, count] if count > 1 else item.display_name
+	interactable.prompt_text = "拾取"
+	interactable.refresh_prompt()
 
 
 func launch(v: Vector2, delay: float = 0.0) -> void:
@@ -84,19 +117,16 @@ func _play_glint() -> void:
 func _on_interacted(actor: Node2D) -> void:
 	if not actor.has_method(&"receive_item"):
 		return
+	# whole stack or nothing: a refused pickup stays exactly as it was
 	var left: int = actor.call(&"receive_item", item, count)
-	if left >= count:
+	if left != 0:
 		return
 	AudioManager.play(&"pickup", -4.0)
 	var ui := WorldUI.get_instance(self)
 	if ui:
-		ui.call(&"toast", "%s ×%d" % [item.display_name, count - left], global_position + Vector2(0, -18))
-	if left > 0:
-		count = left
-		interactable.prompt_text = "拾取 %s ×%d" % [item.display_name, count]
-		interactable.refresh_prompt()
-		return
+		ui.call(&"toast", "%s ×%d" % [item.display_name, count], global_position + Vector2(0, -18))
 	interactable.enabled = false
+	remove_from_group(&"pickup")
 	var t := create_tween()
 	t.tween_property(sprite, "position:y", sprite.position.y - 10, 0.15)
 	t.parallel().tween_property(self, "modulate:a", 0.0, 0.15)

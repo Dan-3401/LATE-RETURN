@@ -13,7 +13,6 @@ description = "旧式手枪。子弹只剩下这么多了。"
 icon = ExtResource("2_i")
 item_type = 4
 stackable = false
-max_stack = 1
 value = 50
 weight = 1.0
 task_tag = &""

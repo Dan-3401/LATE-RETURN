@@ -13,7 +13,6 @@ description = "磨过很多次的折叠刀。"
 icon = ExtResource("2_i")
 item_type = 4
 stackable = false
-max_stack = 1
 value = 10
 weight = 0.2
 task_tag = &""

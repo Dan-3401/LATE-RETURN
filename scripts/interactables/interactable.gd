@@ -7,6 +7,8 @@ signal interacted(actor: Node2D)
 signal actor_near(actor: Node2D, near: bool)
 
 @export var prompt_text := "互动"
+## Optional line shown above "[F] prompt_text" (e.g. "机械零件 ×35").
+@export var prompt_title := ""
 @export var prompt_key := "F"
 @export var prompt_offset := Vector2(0, -40)
 @export var focus_priority := 0.0
@@ -53,7 +55,7 @@ func set_focused(value: bool) -> void:
 	if ui == null:
 		return
 	if value:
-		ui.show_prompt(self, "[%s] %s" % [prompt_key, prompt_text], global_position + prompt_offset)
+		ui.show_prompt(self, _prompt_string(), global_position + prompt_offset)
 	else:
 		ui.hide_prompt(self)
 
@@ -62,4 +64,9 @@ func refresh_prompt() -> void:
 	if _focused:
 		var ui := WorldUI.get_instance(self)
 		if ui:
-			ui.show_prompt(self, "[%s] %s" % [prompt_key, prompt_text], global_position + prompt_offset)
+			ui.show_prompt(self, _prompt_string(), global_position + prompt_offset)
+
+
+func _prompt_string() -> String:
+	var line := "[%s] %s" % [prompt_key, prompt_text]
+	return line if prompt_title == "" else prompt_title + "\n" + line
