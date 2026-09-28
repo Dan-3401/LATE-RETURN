@@ -5,6 +5,8 @@ extends Node
 var owner_body: Node2D
 var data: ZombieData
 var cooldown := 0.0
+## Off once the owner is dead: a corpse never hits.
+var enabled := true
 
 
 func setup(o: Node2D, d: ZombieData) -> void:
@@ -25,12 +27,14 @@ func in_reach(target: Node2D, extra := 0.0) -> bool:
 
 
 func can_attack(target: Node2D) -> bool:
-	return cooldown <= 0.0 and in_reach(target)
+	return enabled and cooldown <= 0.0 and in_reach(target)
 
 
 ## Resolve the hit at the strike frame. Returns true on hit.
 func strike(target: Node2D) -> bool:
 	cooldown = data.attack_cooldown
+	if not enabled:
+		return false
 	if in_reach(target, 8.0) and target.has_method(&"take_damage"):
 		var facing: int = owner_body.get(&"facing")
 		# must be facing the target

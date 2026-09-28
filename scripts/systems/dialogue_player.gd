@@ -12,13 +12,15 @@ var speakers := {}
 var command_handler: Callable
 var playing := false
 var _bubble: Control
+var _stopped := false
 
 
 func play(data: DialogueData) -> void:
 	playing = true
+	_stopped = false
 	var ui := WorldUI.get_instance(self)
 	for entry in data.parse():
-		if not is_inside_tree():
+		if not is_inside_tree() or _stopped:
 			return
 		match entry.type:
 			"pause":
@@ -39,6 +41,16 @@ func play(data: DialogueData) -> void:
 				await _wait(0.22)
 	playing = false
 	finished.emit()
+
+
+## Abandon the script (cutscene skip). Any open bubble is closed; no more
+## lines or commands run.
+func stop() -> void:
+	_stopped = true
+	playing = false
+	if _bubble and is_instance_valid(_bubble):
+		_bubble.call(&"skip")
+	_bubble = null
 
 
 func _unhandled_input(event: InputEvent) -> void:

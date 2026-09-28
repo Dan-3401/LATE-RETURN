@@ -137,6 +137,14 @@ func _swing(actor: Node2D, origin: Vector2, _facing: int) -> void:
 	t.tween_callback(func(): busy = false)
 
 
+## The swing motion only (no hit test) — used by scripted kills.
+func swing_only() -> void:
+	var t := create_tween()
+	t.tween_property(self, "_swing_offset", -1.1, 0.06)
+	t.tween_property(self, "_swing_offset", 0.7, 0.07)
+	t.tween_property(self, "_swing_offset", 0.0, 0.16)
+
+
 func _knife_hit(actor: Node2D, origin: Vector2, w: WeaponData) -> void:
 	if not is_instance_valid(actor):
 		return

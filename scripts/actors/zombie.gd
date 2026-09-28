@@ -185,7 +185,13 @@ func is_vulnerable_to_sneak_attack(attacker: Node2D) -> bool:
 func die() -> void:
 	dead = true
 	hp = 0.0
+	# stop at once, and stay stopped (nav.halt keeps velocity.x at 0 every
+	# frame, the Dead state cannot be left, the attack hitbox is off)
+	velocity = Vector2(0.0, maxf(velocity.y, 0.0))
+	nav.halt()
+	attack.enabled = false
 	collision_layer = 0
+	collision_mask = 1   # only rests on the ground; never pushes or is pushed
 	hearing.enabled = false
 	vocal(&"zombie_death", -2.0)
 	machine.transition_to(&"Dead")

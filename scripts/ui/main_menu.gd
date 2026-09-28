@@ -4,6 +4,7 @@ extends Node2D
 const FIRST_SCENE := "res://scenes/maps/convenience_store.tscn"
 
 @onready var continue_btn: Button = $UI/Menu/Continue
+@onready var settings_btn: Button = $UI/Menu/Settings
 @onready var start_btn: Button = $UI/Menu/Start
 @onready var save_info: Label = $UI/SaveInfo
 @onready var confirm: ConfirmDialog = $ConfirmDialog
@@ -22,6 +23,7 @@ func _ready() -> void:
 	AudioManager.play_loop(&"menu", &"amb_menu", -2.0, 3.0)
 	start_btn.pressed.connect(_on_start)
 	continue_btn.pressed.connect(_on_continue)
+	settings_btn.pressed.connect(open_settings)
 	quit_btn.pressed.connect(func(): get_tree().quit())
 	var info := SaveSystem.read_info()
 	continue_btn.visible = not info.is_empty()
@@ -30,7 +32,7 @@ func _ready() -> void:
 	save_info.modulate.a = 0.0
 	continue_btn.focus_entered.connect(func(): create_tween().tween_property(save_info, "modulate:a", 1.0, 0.3))
 	continue_btn.focus_exited.connect(func(): create_tween().tween_property(save_info, "modulate:a", 0.0, 0.3))
-	for b in [continue_btn, start_btn, quit_btn]:
+	for b in [continue_btn, start_btn, settings_btn, quit_btn]:
 		b.mouse_entered.connect(func():
 			b.grab_focus())
 		b.focus_entered.connect(func(): AudioManager.play(&"ui_move", -14.0, 0.0, &"UI"))
@@ -62,6 +64,19 @@ func _on_start() -> void:
 	AudioManager.play(&"ui_confirm", -6.0, 0.0, &"UI")
 	GameState.new_game()
 	SceneManager.change_scene(FIRST_SCENE, 1.6)
+
+
+var settings_menu: SettingsMenu = null
+
+
+## Settings on top of the menu; closing it comes back here.
+func open_settings() -> void:
+	if _starting or settings_menu or confirm.is_open:
+		return
+	settings_menu = SettingsMenu.open_over(self)
+	settings_menu.closed.connect(func():
+		settings_menu = null
+		settings_btn.grab_focus())
 
 
 func _on_continue() -> void:

@@ -9,6 +9,8 @@ signal readied(on: bool)
 signal thrown(item: ItemData)
 
 const PROJECTILE := preload("res://scenes/items/bottle_projectile.tscn")
+## World + vision blockers (cars): a bottle breaks on them too.
+const HIT_MASK := 1 | 64
 
 @export var gravity := 620.0
 @export var max_speed := 480.0
@@ -79,7 +81,7 @@ func simulate(actor: Node2D, from: Vector2, v: Vector2) -> PackedVector2Array:
 	for i in 160:
 		var nv := v + Vector2(0, gravity) * dt
 		var np := p + nv * dt
-		var q := PhysicsRayQueryParameters2D.create(p, np, 1)
+		var q := PhysicsRayQueryParameters2D.create(p, np, HIT_MASK)
 		q.exclude = [actor.get_rid()]
 		var hit := space.intersect_ray(q)
 		if not hit.is_empty():

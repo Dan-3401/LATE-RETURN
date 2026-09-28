@@ -44,6 +44,10 @@ func on_noise(ev: Dictionary, intensity: float) -> void:
 	if ev.kind in LOUD_KINDS:
 		machine.transition_to(&"Investigate", {"pos": ev.position, "fast": true})
 		return
+	if ev.kind == &"hide_lure":
+		zombie.last_heard_pos = ev.position
+		machine.transition_to(&"Investigate", {"pos": ev.position})
+		return
 	_hits += 1
 	_pos = ev.position
 	zombie.face_x(_pos.x)

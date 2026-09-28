@@ -42,6 +42,28 @@ func holster() -> void:
 	_sync()
 
 
+## Temporarily hold another slot (the hide takedown grabs the knife from
+## whichever slot it is in) and put everything back afterwards.
+var _borrowed_from := -2
+
+
+func borrow(index: int) -> void:
+	if _borrowed_from == -2:
+		_borrowed_from = active_slot_index
+	active_slot_index = index
+	GameState.set_active_hand(index)
+	_sync()
+
+
+func give_back() -> void:
+	if _borrowed_from == -2:
+		return
+	active_slot_index = _borrowed_from
+	_borrowed_from = -2
+	GameState.set_active_hand(active_slot_index)
+	_sync()
+
+
 func primary() -> bool:
 	return active_behavior != null and active_behavior.primary()
 

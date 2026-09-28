@@ -24,7 +24,11 @@ def solid_prop(out, tex, poly, occluder=True, extra=None):
     props.add_sprite(sc, ".", tex)
     if occluder:
         props.add_occluder(sc, ".", poly, mask=1, cull=0)
-    sc.node("Body", "StaticBody2D", ".", {"collision_layer": 1, "collision_mask": 0})
+    # Not a movement obstacle (the game is horizontal exploration, not
+    # platforming): the body lives on the vision_blockers layer only, so it
+    # still breaks zombie line of sight and stops thrown bottles, but the
+    # player and zombies walk past (in front of) it.
+    sc.node("Body", "StaticBody2D", ".", {"collision_layer": 64, "collision_mask": 0})
     sc.node("Shape", "CollisionPolygon2D", "Body", {"polygon": PV2(poly)})
     if extra:
         extra(sc)
@@ -44,7 +48,8 @@ def hide_spot_scene(out, tex, occupied_tex, poly=None, hide_offset=(0, 0), solid
     if poly:
         props.add_occluder(sc, ".", poly, mask=1, cull=0)
         if solid:
-            sc.node("Body", "StaticBody2D", ".", {"collision_layer": 1, "collision_mask": 0})
+            # sight / bottle blocker only, never a movement obstacle
+            sc.node("Body", "StaticBody2D", ".", {"collision_layer": 64, "collision_mask": 0})
             sc.node("Shape", "CollisionPolygon2D", "Body", {"polygon": PV2(poly)})
     sc.save(out)
 
@@ -79,7 +84,7 @@ def grass_scene(out, tex, frames=4, width=None, count=1):
 
 
 def build_props():
-    # cars (solid, climbable, block light and zombie sight)
+    # cars / barriers: passable, but block light, zombie sight and bottles
     solid_prop("scenes/props/street/car_sedan_blue.tscn", ART + "car_sedan_blue.png",
                [(-50, 0), (-49, -10), (-36, -20), (-22, -34), (18, -36), (32, -22), (48, -19), (51, 0)])
     solid_prop("scenes/props/street/car_van.tscn", ART + "car_van.png",
@@ -87,6 +92,7 @@ def build_props():
     solid_prop("scenes/props/street/barrier.tscn", ART + "barrier.png", [(-25, 0), (-21, -26), (21, -26), (25, 0)])
     # hide spots
     hide_spot_scene("scenes/interactables/street/dumpster.tscn", ART + "dumpster_open.png", ART + "dumpster.png")
+    hide_spot_scene("scenes/interactables/street/nook.tscn", ART + "nook.png", ART + "nook_occupied.png", hide_offset=(4, 0))
     hide_spot_scene("scenes/interactables/street/car_hide.tscn", ART + "car_hide_open.png", ART + "car_hide_closed.png",
                     poly=[(-50, 0), (-49, -10), (-36, -20), (-22, -34), (18, -36), (32, -22), (48, -19), (51, 0)], hide_offset=(-6, 0), solid=False)
     # grass
@@ -230,6 +236,11 @@ def build_street(region=False):
         ("TrashBags2", P + "trash_bags.tscn", 2120),
         ("Dumpster2", I + "dumpster.tscn", 2172),
         ("Grass5", I + "grass_small.tscn", 2400),
+        # more Hide -> Observe -> Relocate spots along the long stealth stretch
+        ("NookA", I + "nook.tscn", 236),
+        ("CarHide2", I + "car_hide.tscn", 956),
+        ("NookB", I + "nook.tscn", 1736),
+        ("NookC", I + "nook.tscn", 2300),
     ]
     for name, path, px in placements:
         sc.node(name, None, "Props", {"position": V2(px, FLOOR_Y)}, instance=sc.ext_res("PackedScene", path))

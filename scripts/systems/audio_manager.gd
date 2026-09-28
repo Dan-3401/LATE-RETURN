@@ -21,13 +21,21 @@ func _ready() -> void:
 		_pool.append(p)
 
 
+## Bus tree (the three volume sliders are Master, Music and SFX):
+##   Master <- Music <- Ambience          (background / atmosphere loops)
+##   Master <- SFX   <- World, UI, Voice   (every gameplay / UI sound)
+## A bus may only send to one created before it, hence the order.
+const BUSES := [["Music", &"Master"], ["SFX", &"Master"], ["Ambience", &"Music"],
+	["World", &"SFX"], ["UI", &"SFX"], ["Voice", &"SFX"]]
+
+
 func _setup_buses() -> void:
-	for bus_name in ["SFX", "World", "Ambience", "UI", "Voice"]:
-		if AudioServer.get_bus_index(bus_name) == -1:
+	for b in BUSES:
+		if AudioServer.get_bus_index(b[0]) == -1:
 			AudioServer.add_bus()
 			var idx := AudioServer.bus_count - 1
-			AudioServer.set_bus_name(idx, bus_name)
-			AudioServer.set_bus_send(idx, &"Master")
+			AudioServer.set_bus_name(idx, b[0])
+		AudioServer.set_bus_send(AudioServer.get_bus_index(b[0]), b[1])
 	# a subtle room reverb on positional world sounds
 	var w := AudioServer.get_bus_index("World")
 	if AudioServer.get_bus_effect_count(w) == 0:

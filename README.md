@@ -19,16 +19,16 @@ The main scene is `scenes/ui/main_menu.tscn`. The game renders at 480×270 and s
 | Key | Action |
 |---|---|
 | A / D | Move |
-| Space | Jump |
+| Space | Jump · in a hide spot: knock to lure zombies · in a long story scene: hold to skip |
 | Shift | Run (loud) |
 | Caps Lock | Toggle quiet walk (静步) |
-| F | Interact / search / pick up / hide / leave |
+| F | Interact / search / pick up / hide / leave (every searchable can always be checked) |
 | Tab | Backpack |
 | H | Flashlight |
 | 1 / 2 / 3 | Select hand slot 1 / 2 / 3 (pressing the selected one again = empty hands) |
 | G | (camp, next to the sister, after an outing) End the day |
 | Mouse | Aim |
-| Left mouse | Use the held item: shoot, swing, throw |
+| Left mouse | Use the held item: shoot, swing, throw · in a hide spot with a zombie in reach: knife takedown |
 | Right mouse (hold) | Hold breath |
 | Esc | Pause |
 | F3 | Debug overlay (debug builds only: FPS, player state, presence, noise, zombie states, vision cones, last seen/heard positions) |
@@ -93,6 +93,28 @@ zombies or anything interactable. Gameplay exposure (lamp pools vs.
 shadows) is placed by hand and kept separate from the rendered light. See
 `docs/rendering_layers.md` for the layer / z_index convention.
 
+## Hide spots as tactical nodes
+
+Inside a hide spot (green language: weeds, vines, moss, a green rag) the
+player can: wait; pick the bottle slot and **throw** (normal arc, same
+bottle rules, stays hidden); press **Space** to knock (`hide_lure` noise
+from the spot) and draw a zombie over; and when a living zombie is within
+reach and a knife sits in **any** hand slot, **left mouse** performs a
+takedown — quick camera zoom, lean out, one blow, back in hiding, the
+previously active slot restored. Only the nearest zombie is targeted; the
+rest of the world keeps running and may see or hear it.
+
+## Settings
+
+设置 (main menu and pause menu, same data, saved to `user://settings.cfg`):
+**屏幕** — 显示模式 (全屏 / 无边框窗口 / 窗口) and 分辨率 (16:9 sizes the
+monitor can show; used in windowed mode, too-large sizes shrink to fit). A
+display change applies at once and reverts after 15 s unless kept.
+**声音** — 主音量 / 音乐 / 音效 (0-100, perceptual dB curve, live). Buses:
+Master ← Music ← Ambience; Master ← SFX ← World, UI, Voice.
+The game always renders at 480×270 and is integer-scaled, so every output
+resolution shows the same part of the world.
+
 ## Saving
 
 One autosave slot (`user://savegame.dat`, managed by the `SaveSystem` autoload).
@@ -147,6 +169,8 @@ godot --path . -s res://tools/tests/test_day_loop.gd   -- /tmp/shots   # Demo 2 
 godot --path . -s res://tools/tests/test_save.gd       -- /tmp/shots   # autosave / continue
 godot --path . -s res://tools/tests/test_hand_equipment.gd -- /tmp/shots   # hand slots, drag & drop
 godot --path . -s res://tools/tests/test_visual_layers.gd  -- /tmp/shots   # lighting, foreground
+godot --path . -s res://tools/tests/test_round_hide.gd     -- /tmp/shots   # searchables, corpses, traversal, skip, hide gameplay
+godot --path . -s res://tools/tests/test_settings.gd       -- /tmp/shots   # settings (run on a >= 2560x1440 screen)
 godot --path . -s res://tools/tests/shoot_scenes.gd    -- /tmp/shots   # screenshots of every map (no checks)
 ```
 

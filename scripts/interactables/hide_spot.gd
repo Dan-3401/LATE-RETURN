@@ -55,6 +55,20 @@ func release(actor: Node2D) -> void:
 		ui.hide_prompt(self)
 
 
+## Space while hiding: knock on the hiding place to lure the dead over.
+## The sound comes from the spot itself (HIDE_LURE_NOISE).
+const LURE_RADIUS := 190.0
+
+
+func lure(actor: Node2D) -> void:
+	if occupant != actor:
+		return
+	_wiggle(1.4)
+	AudioManager.play_at(&"hide_enter", global_position, -1.0, 700.0, 0.15)
+	AudioManager.play_at(&"knife_hit", global_position, -14.0, 700.0, 0.2)
+	NoiseSystem.emit_noise(global_position + Vector2(0, -16), LURE_RADIUS, actor, &"hide_lure")
+
+
 ## A zombie is clawing at it.
 func set_disturbed(on: bool) -> void:
 	if on and (_shake == null or not _shake.is_running()):

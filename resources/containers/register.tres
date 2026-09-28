@@ -9,6 +9,6 @@ display_name = "收银台"
 prompt = "搜刮"
 search_time = 1.6
 loot_table = ExtResource("2_t")
-empty_lines = PackedStringArray("……")
+empty_lines = PackedStringArray("什么都没有。")
 accepts_guaranteed = false
 search_sound = &"register"

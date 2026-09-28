@@ -61,6 +61,10 @@ func calm_noise(ev: Dictionary, intensity: float) -> void:
 	if bottle_noise(ev):
 		return
 	zombie.last_heard_pos = ev.position
+	if ev.kind == &"hide_lure":
+		# a knock somewhere: shamble over and look (the lure's whole point)
+		machine.transition_to(&"Investigate", {"pos": ev.position})
+		return
 	if ev.kind in LOUD_KINDS:
 		machine.transition_to(&"Investigate", {"pos": ev.position, "fast": true})
 	elif intensity > 0.55:

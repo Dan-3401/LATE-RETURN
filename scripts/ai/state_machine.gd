@@ -27,6 +27,9 @@ func transition_to(state_name: StringName, msg: Dictionary = {}) -> void:
 		push_error("Unknown state " + state_name)
 		return
 	var from: StringName = current.name if current else &""
+	# Dead is final: nothing may bring a corpse back into an AI state
+	if from == &"Dead":
+		return
 	if current:
 		current.exit()
 	current = states[state_name]

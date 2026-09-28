@@ -26,7 +26,7 @@ func _physics_process(delta: float) -> void:
 	_life -= delta
 	var nv := velocity + Vector2(0, gravity) * delta
 	var np := global_position + nv * delta
-	var q := PhysicsRayQueryParameters2D.create(global_position, np, 1)
+	var q := PhysicsRayQueryParameters2D.create(global_position, np, ThrowComponent.HIT_MASK)
 	if is_instance_valid(_thrower):
 		q.exclude = [_thrower.get_rid()]
 	var hit := get_world_2d().direct_space_state.intersect_ray(q)

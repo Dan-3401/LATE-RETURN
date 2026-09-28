@@ -19,5 +19,9 @@ func update(_delta: float, shoulder: Vector2, aim: Vector2, facing: int) -> void
 	player.throw.update(player, shoulder, aim, facing)
 
 
+func usable_while_hidden() -> bool:
+	return true
+
+
 func count_text() -> String:
 	return "×%d" % GameState.equip_count(slot)

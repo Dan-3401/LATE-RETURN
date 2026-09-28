@@ -18,7 +18,7 @@ occluder = SubResource("OccluderPolygon2D_2")
 occluder_light_mask = 1
 
 [node name="Body" type="StaticBody2D" parent="."]
-collision_layer = 1
+collision_layer = 64
 collision_mask = 0
 
 [node name="Shape" type="CollisionPolygon2D" parent="Body"]

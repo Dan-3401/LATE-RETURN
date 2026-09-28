@@ -114,9 +114,16 @@ func _run() -> void:
 			await wait(0.2)
 			await press("interact")
 			await wait(0.25)
-	# second search of a container must be impossible
+	# a searched container can still be checked, but gives nothing twice
 	var c0 = containers[0]
-	check(not c0.interactable.can_interact(player), "container can only be searched once")
+	check(c0.interactable.can_interact(player), "a searched container can still be checked")
+	var pickups_before := get_nodes_in_group(&"pickup").size()
+	var inv_before: int = GS.inventory.used_slots()
+	player.global_position = Vector2(c0.global_position.x, 224)
+	await wait(0.3)
+	await press("interact")
+	await wait(1.4)
+	check(get_nodes_in_group(&"pickup").size() == pickups_before and GS.inventory.used_slots() == inv_before, "checking it again finds nothing new")
 
 	var inv: Inventory = GS.inventory
 	print("inventory: ", inv.to_data().map(func(s): return null if s == null else "%s x%d" % [s.path.get_file(), s.count]))

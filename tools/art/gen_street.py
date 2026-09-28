@@ -749,7 +749,61 @@ def green_mark(cv, rng, kind):
     return cv
 
 
+def nook(occupied=False, seed=31):
+    """Hide spot: a collapsed wall corner with a slab leaning on it, grown
+    over by tall weeds and a vine (the green hide language). Occupied: the
+    weeds in the gap are pushed apart and a dark shape shows between them."""
+    rng = random.Random(seed)
+    w, h = 60, 54
+    cv = Canvas(w, h)
+    # broken wall stub on the left, slab leaning against it
+    cv.rect(0, 6, 14, h - 6, c("concrete", 2))
+    for y in range(6, h, 7):
+        cv.hline(0, y, 14, c("concrete", 1))
+    cv.poly([(0, 6), (5, 2), (9, 5), (14, 3), (14, 8), (0, 10)], c("concrete", 3))
+    cv.poly([(12, h), (46, 14), (52, 18), (22, h)], c("concrete", 3))
+    cv.line(12, h - 1, 46, 14, c("concrete", 5))
+    for k in range(5):
+        # cracks on the slab (only where the slab is)
+        t = rng.uniform(0.2, 0.8)
+        cv.px(int(12 + 34 * t) + 3, int(h - (h - 14) * t) + 2, c("concrete", 1))
+    # rubble at the foot
+    for k in range(9):
+        rx = rng.randint(2, w - 8)
+        cv.ellipse(rx, h - 2, rng.randint(2, 4), rng.randint(1, 2), c("concrete", rng.randint(1, 4)))
+    # the dark gap under the slab
+    gap = [(16, h), (38, 26), (42, 28), (28, h)]
+    cv.poly(gap, c("ink", 1) if occupied else c("ink", 0))
+    if occupied:
+        # a crouched shape in the dark and parted weeds
+        cv.rect(24, h - 16, 5, 12, c("jacket", 1))
+        cv.rect(25, h - 20, 3, 4, c("hair", 2))
+    # tall weeds (part in the middle when occupied)
+    for _ in range(int(w * 1.1)):
+        gx = rng.randint(1, w - 2)
+        if occupied and 20 <= gx <= 32:
+            gx += rng.choice([-9, 9])
+        gh = rng.randint(4, 18)
+        lean = rng.uniform(-0.3, 0.3)
+        for y in range(gh):
+            cv.px(int(gx + lean * y), h - 1 - y, c("grass", rng.randint(2, 5)))
+    # a vine up the wall stub and over the slab
+    vx = 6
+    for y in range(h - 1, 4, -1):
+        vx = max(1, min(12, vx + rng.choice([-1, 0, 1])))
+        cv.px(vx, y, c("grass", 3))
+        if rng.random() < 0.4:
+            cv.px(vx + 1, y, c("grass", 5))
+    for x in range(20, 46):
+        if rng.random() < 0.5:
+            cv.px(x, int(h - (x - 12) * (h - 14) / 34.0) - 1, c("grass", rng.randint(3, 5)))
+    cv.outline(c("ink", 0))
+    return cv
+
+
 def main():
+    nook(False).save(f"{OUT}/nook.png")
+    nook(True).save(f"{OUT}/nook_occupied.png")
     tiles().save(f"{OUT}/tiles.png")
     segs = {
         "seg_store": seg_store_exterior(), "seg_shops": seg_shops(), "seg_alley": seg_alley(),

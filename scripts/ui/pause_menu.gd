@@ -2,10 +2,12 @@ extends CanvasLayer
 
 @onready var root: Control = $Root
 @onready var resume_btn: Button = $Root/Panel/VBox/Resume
+@onready var settings_btn: Button = $Root/Panel/VBox/Settings
 @onready var menu_btn: Button = $Root/Panel/VBox/MainMenu
 @onready var quit_btn: Button = $Root/Panel/VBox/Quit
 
 var _open := false
+var settings_menu: SettingsMenu = null
 
 
 func _ready() -> void:
@@ -13,9 +15,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	root.visible = false
 	resume_btn.pressed.connect(func(): set_open(false))
+	settings_btn.pressed.connect(open_settings)
 	menu_btn.pressed.connect(_to_menu)
 	quit_btn.pressed.connect(func(): get_tree().quit())
-	for b in [resume_btn, menu_btn, quit_btn]:
+	for b in [resume_btn, settings_btn, menu_btn, quit_btn]:
 		b.mouse_entered.connect(func(): AudioManager.play(&"ui_move", -12.0, 0.0, &"UI"))
 
 
@@ -25,7 +28,7 @@ func is_open() -> bool:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause"):
-		if SceneManager.is_busy():
+		if SceneManager.is_busy() or settings_menu:
 			return
 		var p := get_tree().get_first_node_in_group(&"player") as Player
 		if not _open and p and p.is_dead():
@@ -41,6 +44,17 @@ func set_open(v: bool) -> void:
 	AudioManager.play(&"ui_confirm" if v else &"ui_back", -10.0, 0.0, &"UI")
 	if v:
 		resume_btn.grab_focus()
+
+
+## Settings over the (still open, still paused) pause menu; closing it
+## comes back here, never to the main menu.
+func open_settings() -> void:
+	if settings_menu:
+		return
+	settings_menu = SettingsMenu.open_over(self)
+	settings_menu.closed.connect(func():
+		settings_menu = null
+		settings_btn.grab_focus())
 
 
 func _to_menu() -> void:

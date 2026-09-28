@@ -58,6 +58,13 @@ func shake(amount: float, duration: float) -> void:
 	_shake_time = maxf(_shake_time, duration)
 
 
+## Quick zoom for short dramatic moments (hide takedown). Awaitable.
+func zoom_to(z: float, time: float) -> void:
+	var t := create_tween()
+	t.tween_property(self, "zoom", Vector2(z, z), time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await t.finished
+
+
 func snap_to_target() -> void:
 	if target:
 		_pos = _desired()

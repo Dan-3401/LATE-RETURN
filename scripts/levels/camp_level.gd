@@ -33,9 +33,42 @@ func _ready() -> void:
 	_start()
 
 
+var skipper: CutsceneSkip
+var _story_done := false
+
+
 func _start() -> void:
+	skipper = CutsceneSkip.new()
+	add_child(skipper)
+	skipper.skipped.connect(_skip)
+	skipper.begin()
 	await wait(1.2)
 	await dialogue_player.play(dialogue)
+
+
+## Hold Space: jump straight to the end. The scene's own coroutines are
+## abandoned (their timers and tweens belong to this level and die with it);
+## the outcome goes through the same _finish_story() as the normal ending.
+func _skip() -> void:
+	if _story_done:
+		return
+	dialogue_player.stop()
+	await SceneManager.fade_to(1.0, 0.5)
+	_finish_story()
+
+
+## The single exit of the first-day story, used by both the normal ending
+## and the skip, so both end in exactly the same game state.
+func _finish_story() -> void:
+	if _story_done:
+		return
+	_story_done = true
+	if skipper:
+		skipper.end()
+	AudioManager.stop_all_loops(2.0)
+	# the first day ends with the brother's diary
+	GameState.pending_diary = {"date": GameState.date_text(0), "lines": DiaryWriter.first_day(), "next": &"first"}
+	SceneManager.change_scene(DIARY, 0.01)
 
 
 func _on_command(cmd: String, args: Array):
@@ -131,11 +164,8 @@ func _do_ending() -> void:
 	fade_t.tween_property(lamp_light, "energy", lamp_light.energy * 0.6, 3.0)
 	await fade(1.0, 3.5)
 	await wait(1.4)
-	AudioManager.stop_all_loops(2.0)
 	_step_done.emit()
-	# the first day ends with the brother's diary
-	GameState.pending_diary = {"date": GameState.date_text(0), "lines": DiaryWriter.first_day(), "next": &"first"}
-	SceneManager.change_scene(DIARY, 0.01)
+	_finish_story()
 
 
 func _letterbox(on: bool, time: float) -> void:

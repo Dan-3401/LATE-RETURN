@@ -9,6 +9,6 @@ display_name = "货架"
 prompt = "搜刮"
 search_time = 2.0
 loot_table = ExtResource("2_t")
-empty_lines = PackedStringArray("……什么都没有。", "被人翻过了。", "空的。")
+empty_lines = PackedStringArray("什么都没有。")
 accepts_guaranteed = true
 search_sound = &"rummage"

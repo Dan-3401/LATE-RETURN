@@ -40,6 +40,11 @@ func aims_flashlight() -> bool:
 	return false
 
 
+## Can be used from inside a hide spot (throwables can; guns can't).
+func usable_while_hidden() -> bool:
+	return false
+
+
 ## Blocks switching (e.g. in the middle of a knife swing).
 func is_busy() -> bool:
 	return false

@@ -2,6 +2,12 @@ class_name LootContainer
 extends Node2D
 ## A searchable object. Its loot is assigned when the level loads
 ## (see LootDirector) and never changes afterwards.
+##
+## Can Interact and Has Loot are separate: a searchable can ALWAYS be
+## checked. Being empty, already searched or emptied by someone else only
+## changes what the search finds ("什么都没有。" / "已经搜过了。" /
+## "被人搜过了。") — the player learns it by searching, never by a missing
+## [F] prompt.
 
 signal searched(container: LootContainer, loot: Array)
 
@@ -14,9 +20,13 @@ signal searched(container: LootContainer, loot: Array)
 
 ## Array of { item: ItemData, count: int } — locked on level load.
 var loot: Array = []
+## Emptied (by the player, or already empty in the world state).
 var is_searched := false
+## True when the player did the emptying (vs. "someone else was here").
+var searched_by_player := false
 ## Key in GameState.world (set by the LootDirector).
 var persist_key := ""
+var _normal_texture: Texture2D
 
 @onready var interactable: Interactable = $Interactable
 
@@ -25,7 +35,8 @@ func _ready() -> void:
 	add_to_group(&"loot_container")
 	interactable.prompt_text = data.prompt if data else "搜刮"
 	interactable.interacted.connect(_on_interacted)
-	interactable.condition = func(_a): return not is_searched
+	if has_node(sprite_path):
+		_normal_texture = (get_node(sprite_path) as Sprite2D).texture
 
 
 ## Apply the persistent world state for this container.
@@ -34,12 +45,21 @@ func apply_state(st) -> void:
 		return
 	loot = LootDirector.from_data(st.get("loot", []))
 	if st.get("searched", false):
-		_mark_searched()
+		_mark_searched(st.get("by", "player") == "player")
+	else:
+		# refilled / untouched: back to a normal, unsearched container
+		is_searched = false
+		searched_by_player = false
+		interactable.focus_priority = 0.0
+		if _normal_texture and has_node(sprite_path):
+			(get_node(sprite_path) as Sprite2D).texture = _normal_texture
 
 
-func _mark_searched() -> void:
+func _mark_searched(by_player: bool) -> void:
 	is_searched = true
-	interactable.enabled = false
+	searched_by_player = by_player
+	# still interactable; nearby pickups simply win the focus
+	interactable.focus_priority = -0.3
 	if searched_texture and has_node(sprite_path):
 		(get_node(sprite_path) as Sprite2D).texture = searched_texture
 
@@ -49,25 +69,36 @@ func get_meter_position() -> Vector2:
 
 
 func _on_interacted(actor: Node2D) -> void:
-	if is_searched or not actor.has_method(&"begin_search"):
+	if not actor.has_method(&"begin_search"):
 		return
-	AudioManager.play_at(data.search_sound if data else &"rummage", global_position + Vector2(0, -20), -4.0)
-	NoiseSystem.emit_noise(global_position, 45.0, actor, &"search")
-	actor.call(&"begin_search", self, data.search_time if data else 2.0, _on_search_done.bind(actor))
+	var t: float = data.search_time if data else 2.0
+	if is_searched:
+		t = data.recheck_time if data else 0.8
+	AudioManager.play_at(data.search_sound if data else &"rummage", global_position + Vector2(0, -20), -4.0 if not is_searched else -9.0)
+	NoiseSystem.emit_noise(global_position, 45.0 if not is_searched else 25.0, actor, &"search")
+	actor.call(&"begin_search", self, t, _on_search_done.bind(actor))
 
 
 func _on_search_done(success: bool, actor: Node2D) -> void:
 	if not success:
 		return
-	_mark_searched()
+	if is_searched:
+		_say(actor, data.searched_lines if searched_by_player else data.picked_clean_lines, "已经搜过了。")
+		searched.emit(self, [])
+		return
+	_mark_searched(true)
 	if persist_key != "":
-		GameState.world_set(persist_key, {"searched": true, "loot": []})
+		GameState.world_set(persist_key, {"searched": true, "loot": [], "by": "player"})
 	if loot.is_empty():
-		if actor.has_method(&"say") and data and data.empty_lines.size() > 0:
-			actor.call(&"say", data.empty_lines[randi() % data.empty_lines.size()])
+		_say(actor, data.empty_lines if data else PackedStringArray(), "什么都没有。")
 	else:
 		_spawn_drops()
 	searched.emit(self, loot)
+
+
+func _say(actor: Node2D, lines: PackedStringArray, fallback: String) -> void:
+	if actor.has_method(&"say"):
+		actor.call(&"say", lines[randi() % lines.size()] if lines.size() > 0 else fallback)
 
 
 func _spawn_drops() -> void:

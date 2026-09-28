@@ -30,6 +30,7 @@ const FOOTSTEP_NOISE := {
 @onready var throw: ThrowComponent = $ThrowComponent
 ## The one active hand item (quick slots 1 / 2 / 3).
 @onready var hands: HandEquipmentComponent = $HandEquipmentComponent
+@onready var takedown: HideTakedownComponent = $HideTakedownComponent
 @onready var throw_pivot: Node2D = $Visual/ThrowPivot
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
@@ -44,6 +45,12 @@ var _landing := 0.0
 var _hurt_time := 0.0
 var _anim_lock := ""
 var _auto_move_x := 0.0
+## Aim point forced by a scripted action (hide takedown); null = mouse.
+var aim_override = null
+## Leaning out of a hiding place (hide takedown): visible and seeable.
+var _leaning := false
+var _lure_cd := 0.0
+const LURE_COOLDOWN := 1.2
 
 
 func _ready() -> void:
@@ -57,6 +64,7 @@ func _ready() -> void:
 	breath.gasp_started.connect(func(): say("哈……哈……", 1.2))
 	body_sprite.animation_finished.connect(_on_anim_finished)
 	hands.setup(self)
+	takedown.setup(self)
 	# pull persistent stats
 	health.max_hp = GameState.max_hp
 	health.set_hp(GameState.hp)
@@ -78,11 +86,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		AudioManager.play(&"ui_soft", -18.0)
 	elif event.is_action_pressed(&"flashlight"):
 		flashlight.toggle()
+	elif state == State.HIDDEN:
+		_hidden_input(event)
 	elif event.is_action_pressed(&"interact"):
-		if state == State.HIDDEN:
-			if is_instance_valid(stealth.hide_spot):
-				stealth.hide_spot.call(&"release", self)
-		elif state == State.NORMAL:
+		if state == State.NORMAL:
 			interaction.try_interact()
 	elif state == State.NORMAL:
 		for i in HAND_ACTIONS.size():
@@ -91,6 +98,33 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 		if event.is_action_pressed(&"attack"):
 			hands.primary()
+
+
+## Inside a hiding place: F leaves, Space knocks (lure), 1/2/3 pick a hand
+## item (only throwables can be used from here), left mouse = takedown if a
+## zombie is in reach, otherwise the held throwable.
+## Space here never reaches the cutscene skip: that one only listens while
+## the player is in CUTSCENE.
+func _hidden_input(event: InputEvent) -> void:
+	if takedown.busy:
+		return
+	if event.is_action_pressed(&"interact"):
+		if is_instance_valid(stealth.hide_spot):
+			stealth.hide_spot.call(&"release", self)
+	elif event.is_action_pressed(&"jump"):
+		if _lure_cd <= 0.0 and is_instance_valid(stealth.hide_spot) and stealth.hide_spot.has_method(&"lure"):
+			_lure_cd = LURE_COOLDOWN
+			stealth.hide_spot.call(&"lure", self)
+	elif event.is_action_pressed(&"attack"):
+		if takedown.can_perform():
+			takedown.perform()
+		elif hands.active_behavior and hands.active_behavior.usable_while_hidden():
+			hands.primary()
+	else:
+		for i in HAND_ACTIONS.size():
+			if event.is_action_pressed(HAND_ACTIONS[i]):
+				hands.select(i)
+				return
 
 
 func _accepts_input() -> bool:
@@ -116,8 +150,13 @@ func _physics_process(delta: float) -> void:
 		movement.physics_step(delta, move_x, jump_pressed, jump_held, sprint)
 
 	var mouse := get_global_mouse_position()
+	_lure_cd = maxf(_lure_cd - delta, 0.0)
+	var aiming_hidden: bool = state == State.HIDDEN and not _leaning and hands.active_behavior != null \
+		and hands.active_behavior.usable_while_hidden() and _accepts_input()
 	# facing
-	if hands.is_aiming() and active:
+	if _leaning:
+		pass
+	elif hands.is_aiming() and (active or aiming_hidden):
 		facing = 1 if mouse.x >= global_position.x else -1
 	elif absf(move_x) > 0.1 and state != State.HIDDEN:
 		facing = 1 if move_x > 0 else -1
@@ -149,7 +188,8 @@ func _update_attachments(delta: float, mouse: Vector2) -> void:
 	var sh := RIG.get_point(anim, fr, "shoulder", Vector2(0, -29))
 	arm_pivot.position = sh.round()
 	throw_pivot.position = sh.round()
-	hands.update(delta, shoulder_global(), mouse, facing)
+	var aim: Vector2 = aim_override if aim_override != null else mouse
+	hands.update(delta, shoulder_global(), aim, facing)
 	var chest := RIG.get_point(anim, fr, "chest", Vector2(1, -27))
 	var chest_global := global_position + Vector2(chest.x * facing, chest.y)
 	flashlight.update(delta, chest_global, facing, mouse, hands.aims_flashlight())
@@ -197,7 +237,7 @@ func _update_animation() -> void:
 			if armed and anim in ["idle", "walk", "sneak", "run", "jump", "fall", "land"]:
 				anim = "armed_" + anim
 	throw_pivot.visible = throw.is_ready and state == State.NORMAL and not anim.begins_with("hurt")
-	if state == State.SEARCHING or state == State.HIDDEN:
+	if state == State.SEARCHING or (state == State.HIDDEN and not _leaning):
 		arm_pivot.visible = false
 	else:
 		arm_pivot.visible = weapons.is_armed() and not anim.begins_with("hurt")
@@ -358,7 +398,23 @@ func exit_hide(exit_pos: Vector2) -> void:
 
 
 func is_hidden() -> bool:
-	return state == State.HIDDEN
+	return state == State.HIDDEN and not _leaning
+
+
+## Hide takedown: lean out of the hiding place toward `dir`.
+func begin_takedown(dir: float, lean: float) -> void:
+	_leaning = true
+	face(int(dir))
+	global_position += Vector2(dir * lean, 0)
+	visual.visible = true
+	play_locked("armed_idle")
+
+
+func end_takedown(hide_pos: Vector2) -> void:
+	_leaning = false
+	unlock_animation()
+	global_position = hide_pos
+	visual.visible = false
 
 
 # --- Items ---------------------------------------------------------------------
