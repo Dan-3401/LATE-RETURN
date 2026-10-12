@@ -5,6 +5,8 @@ npm package `lxgw-wenkai-webfont`. Only the characters used by the project
 (all .gd / .tres text + an extra list) are kept so the file stays small.
 
 Usage: python3 tools/fonts/build_hand_font.py <path to extracted npm package>
+   or: python3 tools/fonts/build_hand_font.py <LXGWWenKai-Regular.ttf>
+       (the v1.250 TTF from github.com/lxgw/LxgwWenKai, fonts/TTF/)
 Re-run whenever new diary text/item names are added.
 """
 import glob
@@ -35,7 +37,11 @@ def main(pkg):
     parts = []
     tmp = os.path.join(ROOT, ".font_tmp")
     os.makedirs(tmp, exist_ok=True)
-    for i, src in enumerate(sorted(glob.glob(os.path.join(pkg, "files", "lxgwwenkai-regular-subset-*.woff2")))):
+    if pkg.lower().endswith((".ttf", ".otf")):
+        sources = [pkg]
+    else:
+        sources = sorted(glob.glob(os.path.join(pkg, "files", "lxgwwenkai-regular-subset-*.woff2")))
+    for i, src in enumerate(sources):
         font = TTFont(src)
         cmap = font.getBestCmap()
         need = [ch for ch in text if ord(ch) in cmap]
@@ -53,7 +59,7 @@ def main(pkg):
         out = os.path.join(tmp, f"p{i}.ttf")
         font.save(out)
         parts.append(out)
-    merged = Merger().merge(parts)
+    merged = Merger().merge(parts) if len(parts) > 1 else TTFont(parts[0])
     dst = os.path.join(ROOT, "fonts", "lxgw-wenkai-subset.ttf")
     merged.save(dst)
     for p in parts:

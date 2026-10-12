@@ -473,7 +473,7 @@ docs/            art_asset_requirements.md（素材清单）, rendering_layers.m
 | `build_actors.py` | `zombie.tscn` |
 
   > ⚠️ **重新运行生成器会覆盖对应的 .tscn**。改地图时请改生成器再重新生成，或者确认生成器与手改内容一致后再运行。
-- 字体：`tools/fonts/build_hand_font.py` 把日记手写字体裁成游戏用到的字符子集。**日记里新增汉字时要重新运行它**，否则缺字。
+- 字体：`tools/fonts/build_hand_font.py` 把日记手写字体裁成游戏用到的字符子集。**日记里新增汉字时要重新运行它**，否则缺字。参数可以是 npm 包 `lxgw-wenkai-webfont` 的目录，也可以直接是霞鹜文楷 v1.250 的 `LXGWWenKai-Regular.ttf`（仓库 `fonts/TTF/` 下）。
 
 一键重新生成的命令见 `docs/art_asset_requirements.md` 开头。
 
@@ -551,7 +551,6 @@ xvfb-run -a -s "-screen 0 1440x900x24" godot --path . --rendering-driver opengl3
 - **未明确规定上限的类型由开发者自定**：消耗品 10、现金 999、弹药 67（目前没有弹药物品）。如需调整，改 `ItemData.STACK_BY_TYPE`。
 - 待整理区（`pending`）现在基本用不到，只作安全网保留。
 - 地图上只有「学校旁边的便利店」可去，其余地点未制作。
-- **日记手写字体缺「间」字**：`fonts/lxgw-wenkai-subset.ttf` 里没有「间」，日记写到「储藏间的钥匙」时这个字会用系统字体顶替。需要霞鹜文楷 v1.250 原字体重新运行 `tools/fonts/build_hand_font.py`（构建环境访问不到字体下载地址）。
 - 音效是程序合成的占位品；角色动画是骨骼栅格化，最值得手绘重做（见 `docs/art_asset_requirements.md`）。
 
 ---
@@ -575,6 +574,8 @@ xvfb-run -a -s "-screen 0 1440x900x24" godot --path . --rendering-driver opengl3
 | 3826dd1 | A1.1：按类型堆叠上限、右键菜单（使用 / 拆分 / 丢弃）、整组拾取 |
 | ac8ba13 | README：中文交接手册 |
 | 370b1ea | **Demo v2.01**：背包成为唯一容量来源、背包不能进背包；丧尸 / 储藏间 / 六点省略号 / 学校旁边的便利店用词统一；地图地名纸色底；版本号；更新日志 |
+
+| （见 CHANGELOG） | Demo v2.01 补丁：日记手写字体补上「间」字；字体脚本支持直接用 TTF |
 
 完整的更新时间表见 `docs/CHANGELOG.md`。
 
