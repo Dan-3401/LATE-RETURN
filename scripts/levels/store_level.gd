@@ -85,7 +85,7 @@ func _intro() -> void:
 	await player.body_sprite.animation_finished
 	player.unlock_animation()
 	await wait(0.5)
-	await say(player, "我居然在这种地方睡着了吗……")
+	await say(player, "我居然在这种地方睡着了吗......")
 	await wait(0.7)
 	await say(player, "不行，我得加快了。")
 	player.set_cutscene(false)

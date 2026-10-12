@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_s")
 id = &"warehouse_key"
-display_name = "仓库的钥匙"
-description = "便利店后方仓库的钥匙。"
+display_name = "储藏间的钥匙"
+description = "便利店后方储藏间的钥匙。"
 icon = ExtResource("2_i")
 item_type = 9
 stackable = false
@@ -15,4 +15,4 @@ value = 0
 weight = 0.05
 task_tag = &""
 capacity_bonus = 0
-diary_name = "仓库的钥匙"
+diary_name = "储藏间的钥匙"

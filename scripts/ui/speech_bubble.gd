@@ -49,7 +49,7 @@ func _process(delta: float) -> void:
 		var now := mini(int(_chars), _label.text.length())
 		if now != before and now % 2 == 0 and voice != &"":
 			var ch := _label.text.substr(now - 1, 1)
-			if ch != "…" and ch != "。" and ch != " ":
+			if ch != "." and ch != "。" and ch != " ":
 				AudioManager.play(voice, -20.0, 0.12, &"UI")
 		_label.visible_characters = now
 		if now >= _label.text.length():

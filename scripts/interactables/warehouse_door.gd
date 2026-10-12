@@ -27,7 +27,7 @@ func is_unlocked() -> bool:
 
 func _refresh() -> void:
 	open_sprite.visible = is_unlocked()
-	interactable.prompt_text = "进入仓库" if is_unlocked() else "互动"
+	interactable.prompt_text = "进入储藏间" if is_unlocked() else "互动"
 	interactable.refresh_prompt()
 
 
@@ -58,5 +58,5 @@ func _on_interacted(actor: Node2D) -> void:
 		var key_at_camp: bool = key_item != null and GameState.storage.count_item(key_item.id) > 0
 		t.tween_callback(func():
 			if actor.has_method(&"say"):
-				actor.call(&"say", "钥匙还放在营地的仓库里……" if key_at_camp else "用蛮力的话，会引来很多丧尸吧……"))
+				actor.call(&"say", "钥匙还放在营地的仓库里......" if key_at_camp else "用蛮力的话，会引来很多丧尸吧......"))
 	t.tween_callback(func(): _busy = false)

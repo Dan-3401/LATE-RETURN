@@ -100,3 +100,10 @@ func slot_type() -> SlotType:
 
 func is_hand_equipment() -> bool:
 	return slot_type() == SlotType.HAND
+
+
+## Whether the item may be put into the player's backpack slots. A backpack
+## (the thing that provides those slots) never goes inside a backpack: it is
+## either worn or kept in another container such as the camp storage.
+func fits_in_bag() -> bool:
+	return equipment_category != EquipmentCategory.BACKPACK

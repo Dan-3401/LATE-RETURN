@@ -61,7 +61,7 @@ func _ready() -> void:
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	weapons.fired.connect(_on_fired)
-	breath.gasp_started.connect(func(): say("哈……哈……", 1.2))
+	breath.gasp_started.connect(func(): say("哈......哈......", 1.2))
 	body_sprite.animation_finished.connect(_on_anim_finished)
 	hands.setup(self)
 	takedown.setup(self)
@@ -421,6 +421,9 @@ func end_takedown(hide_pos: Vector2) -> void:
 ## Take a whole stack into the backpack (normal stacking rules), or nothing
 ## at all when it does not fit completely. Returns how many were NOT taken.
 func receive_item(item: ItemData, count: int) -> int:
+	if not item.fits_in_bag():
+		say(GameState.BACKPACK_IN_BAG)
+		return count
 	if not GameState.inventory.can_add(item, count):
 		say("已经装不下了。")
 		return count

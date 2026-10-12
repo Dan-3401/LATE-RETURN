@@ -36,7 +36,7 @@ func _intro() -> void:
 
 
 func _on_first_sight(_p: Player) -> void:
-	await say(player, "还是不要招惹这些家伙比较好……")
+	await say(player, "还是不要招惹这些家伙比较好......")
 
 
 func _on_exit(_p: Player) -> void:

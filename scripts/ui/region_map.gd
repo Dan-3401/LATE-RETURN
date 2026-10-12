@@ -10,6 +10,9 @@ signal departed(location: LocationData)
 const MARK_COLOR := Color(0.55, 0.14, 0.1)
 const MARK_HOVER := Color(0.78, 0.2, 0.12)
 const INK := Color(0.2, 0.16, 0.13)
+## Map paper colour: a patch of it sits behind every place name so the
+## roads drawn on the map never run through the text.
+const PAPER := Color(0.63, 0.6, 0.53)
 
 @export var locations: Array[LocationData] = []
 
@@ -218,6 +221,9 @@ func _draw_marks() -> void:
 
 
 func draw_label(font: Font, pos: Vector2, text: String, col: Color) -> void:
+	var size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
+	var top := pos.round() - Vector2(1, font.get_ascent(12))
+	marks.draw_rect(Rect2(top, size + Vector2(2, 0)).abs().grow_individual(0, -1, 0, -1), PAPER)
 	marks.draw_string(font, pos.round(), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
 
 

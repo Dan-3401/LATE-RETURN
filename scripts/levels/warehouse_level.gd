@@ -17,7 +17,7 @@ func _ready() -> void:
 	if not GameState.flags.get("warehouse_seen", false):
 		GameState.flags["warehouse_seen"] = true
 		await wait(0.8)
-		await say(player, "好黑……")
+		await say(player, "好黑......")
 
 
 func _on_exit(_a: Node2D) -> void:

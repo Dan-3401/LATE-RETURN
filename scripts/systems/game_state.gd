@@ -12,7 +12,10 @@ signal equipment_changed
 signal active_hand_changed(index: int)
 
 const START_AMMO := 10
-const BASE_CAPACITY := 10
+## The character himself has no slots: every backpack slot comes from the
+## worn equipment's capacity_bonus (the backpack, plus pockets such as the
+## work uniform). No backpack = no backpack slots.
+const BASE_CAPACITY := 0
 const PISTOL_ITEM := preload("res://resources/items/pistol.tres")
 const KNIFE_ITEM := preload("res://resources/items/knife.tres")
 const BACKPACK_ITEM := preload("res://resources/items/backpack.tres")
@@ -32,10 +35,10 @@ const SLOT_TYPES := {
 ## The date of day 0 (the first day, the linear story day).
 const START_DATE := {"year": 2025, "month": 9, "day": 28, "hour": 12, "minute": 0, "second": 0}
 const MAIN_QUEST_TITLE := "寻找能够治疗哮喘病的药"
-## Items that are handed over to the camp storage when coming home.
-const CAMP_TAGS := [&"food", &"water"]
 ## Items counted as a "rare discovery" for the diary.
 const RARE_ITEMS := [&"warehouse_key", &"work_uniform"]
+const BACKPACK_IN_BAG := "背包不能放进背包里。"
+const BACKPACK_NOT_EMPTY := "背包里还有东西，先拿出来才能取下。"
 
 enum Phase { STORY, FREE }
 
@@ -106,6 +109,7 @@ func new_game() -> void:
 	equipment.hand1 = {"item": PISTOL_ITEM, "count": 1}
 	equipment.hand2 = {"item": KNIFE_ITEM, "count": 1}
 	equipment.backpack = {"item": BACKPACK_ITEM, "count": 1}
+	inventory.resize(capacity())
 	active_hand = -1
 	ammo = START_AMMO
 	hp = max_hp
@@ -321,6 +325,8 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 	var b = _ref_get(dst)
 	if dst.kind == "equip" and not can_accept(dst.slot, a.item):
 		return "这个不能装备在这里。"
+	if dst.kind == "bag" and not a.item.fits_in_bag():
+		return BACKPACK_IN_BAG
 	var merge: bool = b != null and b.item.id == a.item.id and a.item.stackable and b.count < a.item.stack_limit()
 	if b != null and not merge and b.item.id == a.item.id and a.item.stackable:
 		return "已经放满了。"
@@ -329,6 +335,8 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 		return "这个不能装备在这里。"
 	if swap and src.kind == "pending":
 		return "invalid"   # swapping would put something into the overflow area
+	if swap and src.kind == "bag" and not b.item.fits_in_bag():
+		return BACKPACK_IN_BAG
 	# bag size after the move (clothing / backpack change the capacity)
 	var cap_after := capacity()
 	var used_after := inventory.used_slots()
@@ -348,6 +356,8 @@ func move_item(src: Dictionary, dst: Dictionary, dry_run := false) -> String:
 	elif src.kind == "bag" and dst.kind != "bag" and a.count <= a.item.stack_limit() - b.count:
 		used_after -= 1
 	if used_after > cap_after:
+		if src.kind == "equip" and a.item.equipment_category == ItemData.EquipmentCategory.BACKPACK:
+			return BACKPACK_NOT_EMPTY
 		return "背包里的东西太多了。"
 	if dry_run:
 		return ""
@@ -630,6 +640,27 @@ func snapshot() -> Dictionary:
 	}
 
 
+## Older saves could hold a backpack inside the bag. Wear it when the
+## backpack slot is free; otherwise _move_stray_backpacks() stores it.
+func _fix_backpacks_in_bag() -> void:
+	if equipment.get("backpack") != null:
+		return
+	for i in inventory.size:
+		var s = inventory.slots[i]
+		if s != null and not s.item.fits_in_bag():
+			equipment.backpack = s
+			inventory.slots[i] = null
+			return
+
+
+func _move_stray_backpacks() -> void:
+	for i in inventory.size:
+		var s = inventory.slots[i]
+		if s != null and not s.item.fits_in_bag():
+			inventory.slots[i] = null
+			stash(s.item, s.count)
+
+
 func save_checkpoint(id: StringName, scene_path: String) -> void:
 	checkpoint = snapshot()
 	checkpoint["id"] = id
@@ -662,6 +693,7 @@ func apply_snapshot(d: Dictionary) -> void:
 			var item := load(e.path) as ItemData
 			if item:
 				equipment[k] = {"item": item, "count": maxi(int(e.get("count", 1)), 1)}
+	_fix_backpacks_in_bag()
 	objective = d.objective.duplicate(true)
 	flags = d.flags.duplicate(true)
 	if d.has("phase"):
@@ -679,6 +711,10 @@ func apply_snapshot(d: Dictionary) -> void:
 	if d.has("expedition_done_today"):
 		expedition_done_today = d.expedition_done_today
 		loot_seed = d.loot_seed
+	_move_stray_backpacks()
+	# the bag size always follows the worn equipment (never drops items)
+	if inventory.used_slots() <= capacity():
+		inventory.resize(capacity())
 	objective_changed.emit()
 	camp_changed.emit()
 	equipment_changed.emit()

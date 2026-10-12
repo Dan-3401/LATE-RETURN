@@ -123,9 +123,9 @@ func unit_tests() -> void:
 	var three: PackedStringArray = DW.daily({&"water": 3, &"biscuits": 2, &"empty_bottle": 1, &"junk": 1}, [])
 	check(three[0] == "今天搜到了一些水、食物和空瓶子。", "diary: top three kinds (%s)" % three[0])
 	var rare1: PackedStringArray = DW.daily({&"water": 1}, [&"warehouse_key"])
-	check(rare1[1] == "甚至还搜到了仓库的钥匙！", "diary: one rare (%s)" % rare1[1])
+	check(rare1[1] == "甚至还搜到了储藏间的钥匙！", "diary: one rare (%s)" % rare1[1])
 	var rare2: PackedStringArray = DW.daily({&"soap": 1}, [&"warehouse_key", &"work_uniform"])
-	check(rare2[1] == "甚至还找到了仓库的钥匙和便利店员工的工装服！" and rare2[0] == "今天搜到了一些生活用品。", "diary: two rares in one line (%s)" % "|".join(rare2))
+	check(rare2[1] == "甚至还找到了储藏间的钥匙和便利店员工的工装服！" and rare2[0] == "今天搜到了一些生活用品。", "diary: two rares in one line (%s)" % "|".join(rare2))
 
 
 func _run() -> void:
@@ -229,7 +229,7 @@ func _run() -> void:
 	check(p.global_position.x > 2400, "starts at the school gate")
 	p.global_position = Vector2(2530, 224)
 	await wait(0.6)
-	check("还什么都没干呢……" in said, "cannot go home before exploring a location")
+	check("还什么都没干呢......" in said, "cannot go home before exploring a location")
 	check(not region.gate.can_interact(p), "gate closed until a location is visited")
 	await shot("d08_region_start")
 
@@ -339,7 +339,7 @@ func _run() -> void:
 	await wait(0.4)
 	await press("interact")
 	await wait(1.4)
-	check("用蛮力的话，会引来很多丧尸吧……" in said, "locked warehouse without key")
+	check("用蛮力的话，会引来很多丧尸吧......" in said, "locked warehouse without key")
 	check(not wdoor.is_unlocked(), "door stays locked")
 	await shot("d11_warehouse_locked")
 	# search the whole store
@@ -389,7 +389,7 @@ func _run() -> void:
 	check(GS.inventory.count_item(&"work_uniform") == 1, "work uniform found in the staff locker")
 	check(GS.quick_equip(bag_index(&"work_uniform")) == "" and GS.inventory.size == 15, "equipping the uniform: 15 slots")
 	# fill up to 13 used slots, then try to take it off
-	var junk_items := ["parts", "junk", "soap", "bandage", "cash", "biscuits", "noodles", "water", "canned_food", "empty_bottle", "knife", "pistol", "backpack"]
+	var junk_items := ["parts", "junk", "soap", "bandage", "cash", "biscuits", "noodles", "water", "canned_food", "empty_bottle", "knife", "pistol", "work_uniform"]
 	var k := 0
 	while GS.inventory.used_slots() < 13 and k < junk_items.size():
 		GS.inventory.add(load("res://resources/items/%s.tres" % junk_items[k]), 1)
@@ -403,7 +403,7 @@ func _run() -> void:
 	await shot("d14_inventory_uniform")
 	await press("inventory")
 	# drop extra test items again (keep supplies)
-	for id in ["parts", "junk", "bandage", "cash", "noodles", "empty_bottle", "knife", "pistol", "backpack"]:
+	for id in ["parts", "junk", "bandage", "cash", "noodles", "empty_bottle", "knife", "pistol", "work_uniform"]:
 		GS.inventory.remove(StringName(id), 99)
 	var searched_before: int = 0
 	for c in get_nodes_in_group(&"loot_container"):
@@ -467,7 +467,7 @@ func _run() -> void:
 	print("diary: ", date, " ", texts)
 	check(date == "9月29日", "diary date 9月29日")
 	check(texts[0].begins_with("今天搜到了一些") and texts[-1] == "妹妹也很开心。", "diary built from real loot")
-	check(("甚至还找到了仓库的钥匙和便利店员工的工装服！" in texts) or ("甚至还搜到了便利店员工的工装服！" in texts), "rare discovery line")
+	check(("甚至还找到了储藏间的钥匙和便利店员工的工装服！" in texts) or ("甚至还搜到了便利店员工的工装服！" in texts), "rare discovery line")
 	await any_key()
 	check(await wait_scene("res://scenes/maps/camp_hub.tscn", 20.0), "diary -> new day")
 	check(GS.day_index == 2 and GS.date_text() == "9月30日", "new day: 9月30日")

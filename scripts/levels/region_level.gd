@@ -57,7 +57,7 @@ func _on_gate_near(actor: Node2D, near: bool) -> void:
 	if near and not GameState.expedition.get("location_visited", false) and _gate_line_cd <= 0.0 \
 			and actor == player and player.state == Player.State.NORMAL:
 		_gate_line_cd = 5.0
-		player.say("还什么都没干呢……")
+		player.say("还什么都没干呢......")
 
 
 func _on_gate(_a: Node2D) -> void:

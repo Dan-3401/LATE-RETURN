@@ -562,8 +562,6 @@ def storeroom_door():
     cv.rect(2, 3, 5, h - 3, c("ink", 0))
     cv.vline(7, 3, h - 3, c("metal", 6))
     cv.rect(26, 34, 5, 2, c("metal", 7))  # handle
-    cv.rect(8, 10, 26, 14, c("paper", 4))
-    text(cv, 9, 11, "仓库", c("ink", 2), 12)
     for _ in range(5):
         rust_patch(cv, rng.randint(0, w), rng.randint(40, h), rng.randint(1, 3), rng)
     for _ in range(3):
@@ -776,6 +774,11 @@ def backwall():
     # --- storeroom door (painted into the wall, left side)
     sd = storeroom_door()
     cv.blit(sd, 40, BASE - sd.h + 12)
+    # paper sign above the door (储藏间 is three glyphs: too wide for the door)
+    sy = BASE - sd.h + 12 - 16
+    cv.rect(39, sy, 38, 14, c("paper", 4))
+    cv.hline(39, sy + 13, 38, c("paper", 2))
+    text(cv, 40, sy + 1, "储藏间", c("ink", 2), 12)
     # door frame shadow
     for yy in range(BASE - sd.h + 8, BASE + 12):
         cv.darken(38, yy, 0.4)

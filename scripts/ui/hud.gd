@@ -109,9 +109,9 @@ func show_settlement(got: Dictionary) -> void:
 	if rows.size() > room:
 		var extra := rows.size() - (room - 1)
 		rows = rows.slice(0, room - 1)
-		rows.append("…… 另有 %d 种" % extra)
+		rows.append("...... 另有 %d 种" % extra)
 	if rows.is_empty() and rare_rows.is_empty():
-		rows.append("这次什么也没带回来")
+		rows.append("这次什么也没带回来。")
 	settlement_rows.text = "\n".join(rows)
 	settlement_rows.visible = not rows.is_empty()
 	# rare finds get their own, warmer line on top

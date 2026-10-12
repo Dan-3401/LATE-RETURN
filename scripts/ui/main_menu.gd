@@ -12,6 +12,7 @@ const FIRST_SCENE := "res://scenes/maps/convenience_store.tscn"
 @onready var far: Node2D = $Far
 @onready var mid: Node2D = $Mid
 @onready var ui_root: Control = $UI/Root
+@onready var version_label: Label = $UI/Root/Version
 
 var _t := 0.0
 var _starting := false
@@ -19,6 +20,8 @@ var _starting := false
 
 func _ready() -> void:
 	get_tree().paused = false
+	# the version shown on the menu comes from project.godot (one place)
+	version_label.text = String(ProjectSettings.get_setting("application/config/version", "Demo"))
 	SceneManager.set_cursor(SceneManager.CursorMode.ARROW)
 	AudioManager.play_loop(&"menu", &"amb_menu", -2.0, 3.0)
 	start_btn.pressed.connect(_on_start)

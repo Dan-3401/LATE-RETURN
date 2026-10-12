@@ -83,7 +83,7 @@ func _run() -> void:
 		await wait(0.1)
 		if p.state == 0:
 			break
-	check("我居然在这种地方睡着了吗……" in lines and "不行，我得加快了。" in lines, "wake-up lines spoken")
+	check("我居然在这种地方睡着了吗......" in lines and "不行，我得加快了。" in lines, "wake-up lines spoken")
 	check(p.state == 0, "control returned after intro")
 	await press("flashlight")
 	await wait(1.5)
@@ -137,7 +137,7 @@ func _run() -> void:
 	# walk into the first-sight trigger
 	p.global_position = Vector2(300, 224)
 	await wait(3.5)
-	check("还是不要招惹这些家伙比较好……" in lines, "street warning line")
+	check("还是不要招惹这些家伙比较好......" in lines, "street warning line")
 
 	# --- get caught on purpose: fire the pistol near two zombies
 	var walker = current_scene.get_node("Zombies/Walker")

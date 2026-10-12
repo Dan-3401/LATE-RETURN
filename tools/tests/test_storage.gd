@@ -183,10 +183,11 @@ func _run() -> void:
 	check(GS.equip_get("hand1") == null and GS.storage.count_item(&"pistol") == 1, "pistol: hand slot -> storage")
 	await drag(ui.storage_slots[find_slot(GS.storage, &"pistol")], ui.hand_slots["hand1"])
 	check(GS.equip_get("hand1") == pistol and GS.storage.count_item(&"pistol") == 0, "pistol: storage -> hand slot")
+	# the backpack is the bag itself: it cannot be taken off while it holds
+	# things (emptying it and storing it is covered by test_backpack.gd)
+	var bag_before: Array = GS.inventory.to_data()
 	await drag(ui.gear_slots["backpack"], ui.storage_slots[GS.storage.first_free()])
-	check(GS.storage.count_item(&"backpack") == 1 and GS.equip_get("backpack") == null, "even the old backpack (gear) can be stored")
-	await drag(ui.storage_slots[find_slot(GS.storage, &"backpack")], ui.gear_slots["backpack"])
-	check(GS.equip_get("backpack") != null, "and put back on")
+	check(GS.storage.count_item(&"backpack") == 0 and GS.equip_get("backpack") != null and GS.inventory.to_data() == bag_before, "a backpack with things in it stays on")
 	# bottles for the trip into a hand slot
 	GS.stash(item("empty_bottle"), 3)
 	await wait(0.1)
@@ -225,7 +226,7 @@ func _run() -> void:
 	check(GS.item_counts() == bag_before_home and GS.equip_get("clothing") == item("work_uniform") and GS.inventory.size == 15, "everything found (and the worn uniform) is still on the player")
 	hub = current_scene
 	hud = hub.hud
-	check(hud.settlement_rows.text.contains("现金 ×1200") and hud.settlement_rare.text.contains("仓库的钥匙 ×1"), "本次带回 note lists the finds")
+	check(hud.settlement_rows.text.contains("现金 ×1200") and hud.settlement_rare.text.contains("储藏间的钥匙 ×1"), "本次带回 note lists the finds")
 	# put things away by hand, gear included
 	ui = hub.storage_ui
 	hub.open_storage()

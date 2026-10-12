@@ -7,7 +7,7 @@
 script = ExtResource("1_s")
 id = &"backpack"
 display_name = "旧背包"
-description = "跟着我跑了很多地方。"
+description = "跟着我跑了很多地方。\n装备后背包容量 10 格。"
 icon = ExtResource("2_i")
 item_type = 6
 stackable = false
@@ -16,5 +16,5 @@ weight = 1.0
 task_tag = &""
 equippable = true
 equipment_category = 8
-capacity_bonus = 0
+capacity_bonus = 10
 diary_name = ""
