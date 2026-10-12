@@ -20,14 +20,25 @@
 | 13 | 2026-09-29 08:57（09-28 23:57 UTC） | Demo 2 · A1.1 | `3826dd1` | 堆叠系统 | 堆叠、右键菜单、物品动作、掉落物 | 5 / 26 / 0 | +1125 / −48 | test_stacking.gd（67 项） |
 | 14 | 2026-10-13 01:35（10-12 16:35 UTC） | Demo 2 · 文档 | `ac8ba13` | README 交接手册 | 文档 | 0 / 1 / 0 | +550 / −208 | — |
 | 15 | 2026-10-13 02:40（10-12 17:40 UTC） | Demo v2.01 | `370b1ea` | 背包规则 + 用词统一 + 版本号 | 背包 / 装备、物品移动、拾取、存档读取、文案、储藏间美术、地区地图、主菜单、文档 | 2 / 30 / 0 | +607 / −66 | test_backpack.gd（26 项） |
+| 16 | 2026-10-13 02:56（10-12 17:56 UTC） | Demo v2.01 | `49439b9` | 日记字体补「间」字 | 日记字体、字体工具、文档 | 0 / 3 / 0 | +11 / −4 | —（相关的 test_full_flow / test_day_loop 重新运行通过） |
 
 ## 详细内容（按时间倒序）
 
 ### 2026-10-13
 
+#### 02:56 · Demo v2.01 · `49439b9` · 日记字体补「间」字
+
+- 提交信息：Diary font: rebuild the LXGW WenKai subset (adds 间); build script accepts the v1.250 TTF
+- 日记手写字体（霞鹜文楷 v1.250）重新裁剪，补上「储藏间」的「间」字，日记里不再用系统字体顶替
+- 字体脚本 build_hand_font.py 现在也可以直接用原版 TTF 文件生成
+- README 删除对应的已知问题
+- 涉及系统：日记字体、字体工具、文档
+- 新增测试：—（相关的 test_full_flow / test_day_loop 重新运行通过）
+- 改动：新增 0 个文件，修改 3 个，删除 0 个；+11 / −4 行
+
 #### 02:40 · Demo v2.01 · `370b1ea` · 背包规则 + 用词统一 + 版本号
 
-- 提交信息：Demo v2.01: backpack is the only bag capacity, no backpack inside a backpack; wording unified; version number
+- 提交信息：Demo v2.01: backpack is the only bag capacity; wording unified; version number
 - 背包改为塔科夫式：角色本身 0 格，背包提供全部格数（旧背包 10 格，工装服 +5 不变）
 - 背包不能放进背包，只能穿在背包栏或放进营地仓库等容器
 - 背包里还有东西时不能取下（提示「背包里还有东西，先拿出来才能取下。」）

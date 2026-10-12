@@ -575,7 +575,7 @@ xvfb-run -a -s "-screen 0 1440x900x24" godot --path . --rendering-driver opengl3
 | ac8ba13 | README：中文交接手册 |
 | 370b1ea | **Demo v2.01**：背包成为唯一容量来源、背包不能进背包；丧尸 / 储藏间 / 六点省略号 / 学校旁边的便利店用词统一；地图地名纸色底；版本号；更新日志 |
 
-| （见 CHANGELOG） | Demo v2.01 补丁：日记手写字体补上「间」字；字体脚本支持直接用 TTF |
+| 49439b9 | Demo v2.01 补丁：日记手写字体补上「间」字；字体脚本支持直接用 TTF |
 
 完整的更新时间表见 `docs/CHANGELOG.md`。
 
